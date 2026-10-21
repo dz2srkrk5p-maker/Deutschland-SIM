@@ -2,6 +2,7 @@ import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
 import { zufall } from './rng.js';
 import { wahl } from './wahl.js';
+import { mitVerlauf } from './state.js';
 
 const wk = config.wahlkampf;
 const name = (id) => parteien.find((p) => p.id === id).name;
@@ -93,7 +94,8 @@ export function wahlkampfWoche(zustand, params) {
   const woche = zustand.wahlkampfWoche;
   const anzahl = zustand.wahlkampfSerie?.aktion === params.aktion ? zustand.wahlkampfSerie.anzahl + 1 : 1;
   const wahlkampfSerie = { aktion: params.aktion, anzahl };
-  const state = { ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, wahlkampfWoche: woche + 1, wahlkampfSerie };
+  // nach der letzten Woche folgt die Wahl mit genau diesen Anteilen: Eintrag als Wahl markieren
+  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, wahlkampfWoche: woche + 1, wahlkampfSerie }, woche >= wk.wochen);
   const abnahme = faktor < 1 ? ` (${anzahl}. Mal in Folge, ${Math.round(faktor * 100)} % Wirkung)` : '';
   const ereignisse = [`Woche ${woche}: ${w.text}${abnahme}`];
 

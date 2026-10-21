@@ -2,7 +2,7 @@ import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 4; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08)
+export const ZUSTAND_VERSION = 5; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09)
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -20,6 +20,8 @@ export function neuesSpiel(spielerParteiId, seed) {
     wahlkampfSerie: null, // { aktion, anzahl }: wie oft die letzte Aktion in Folge gewählt wurde (abnehmender Ertrag)
     // letzte Wahl der Partie: { anteile, vorher (Anteile der Wahl davor, bei der ersten Wahl 2025), wahlkampf (Bilanz) }
     wahlergebnis: null,
+    // Umfrageverlauf der eigenen Partei: ein Eintrag je Aktion, die Anteile ändert; wahl: true bei der Bundestagswahl
+    verlauf: [{ schritt: 0, anteil: partei.startanteil }],
     sitze: null, // erst nach der Wahl gesetzt: { parteiId: Sitze }
     abgelehnt: [], // Parteien, die in dieser Wahlperiode eine Koalition abgelehnt haben
     koalition: null, // { partner: [parteiId] } nach erfolgreicher Verhandlung
@@ -32,6 +34,13 @@ export function neuesSpiel(spielerParteiId, seed) {
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
   };
+}
+
+// Eintrag in den Umfrageverlauf anhängen (eigene Partei, aktueller Anteil). Von den Aktionen aufgerufen, die Anteile ändern.
+export function mitVerlauf(zustand, wahl = false) {
+  const schritt = zustand.verlauf.at(-1).schritt + 1;
+  const eintrag = { schritt, anteil: zustand.anteile[zustand.spielerParteiId], ...(wahl && { wahl: true }) };
+  return { ...zustand, verlauf: [...zustand.verlauf, eintrag] };
 }
 
 // Zurück in den Wahlkampf (Neuwahl oder Ende der Wahlperiode): alles aus der alten Wahlperiode zurücksetzen.

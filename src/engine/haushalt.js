@@ -6,7 +6,7 @@ import { umverteilen, schwankung, runden } from './wahlkampf.js';
 import { bundesratAbstimmung } from './bundesrat.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
-import { zurueckInDenWahlkampf } from './state.js';
+import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
 
 const hh = config.haushalt;
 const festeSumme = Object.values(festeAusgaben2026).reduce((s, x) => s + x, 0);
@@ -81,7 +81,7 @@ export function haushaltBeschliessen(zustand, params) {
       (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
   ];
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
-  const state = { ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, statistik };
+  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, statistik });
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

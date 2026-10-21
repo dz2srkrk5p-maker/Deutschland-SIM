@@ -1,6 +1,10 @@
 import { test, expect } from 'vitest';
 import { neuesSpiel, speichern, laden, ZUSTAND_VERSION, seedAusAdresse } from '../src/engine/state.js';
 import { zufall } from '../src/engine/rng.js';
+import { config } from '../src/data/config.js';
+import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
+import { ministerien } from '../src/data/ministerien.js';
+import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 
 test('Anfangszustand enthält Startwerte aus den Daten', () => {
   const z = neuesSpiel('spd', 7);
@@ -51,4 +55,23 @@ test('Seed aus der Adresse: gültige ganze Zahl, sonst null', () => {
   for (const falsch of ['', '?seed=', '?seed=-1', '?seed=1.5', '?seed=abc', '?seed=4294967296', '?seed=1e5', '?seed=%2012', '?partei=spd']) {
     expect(seedAusAdresse(falsch)).toBeNull();
   }
+});
+
+test('Verlauf (F09): ein Eintrag je Aktion, Wahl markiert, Haushalt zählt mit, Version 4 abgelehnt', () => {
+  let z = neuesSpiel('union', 3);
+  expect(ZUSTAND_VERSION).toBe(5);
+  expect(z.verlauf).toEqual([{ schritt: 0, anteil: 28.6 }]);
+  expect(() => laden(JSON.stringify({ ...z, version: 4 }))).toThrow();
+  for (let woche = 1; woche <= config.wahlkampf.wochen; woche++) {
+    z = wahlkampfWoche(z, { aktion: 'plakate' }).state;
+    expect(z.verlauf).toHaveLength(woche + 1);
+    expect(z.verlauf.at(-1).anteil).toBe(z.anteile.union);
+  }
+  expect(z.verlauf.filter((e) => e.wahl).map((e) => e.schritt)).toEqual([config.wahlkampf.wochen]);
+  // Alleinregierung im Amt, ein Haushalt: ein weiterer Eintrag ohne Wahl-Markierung
+  const verteilung = Object.fromEntries(ministerien.map((m) => [m.id, 'union']));
+  const regierung = { ...z, phase: 'regierung', kanzlerParteiId: 'union', koalition: { partner: [], startAnteile: {} }, kabinett: { anspruch: { union: 16 }, verteilung } };
+  const nachher = haushaltBeschliessen(regierung, {}).state;
+  expect(nachher.verlauf).toHaveLength(regierung.verlauf.length + 1);
+  expect(nachher.verlauf.at(-1)).toEqual({ schritt: config.wahlkampf.wochen + 1, anteil: nachher.anteile.union });
 });

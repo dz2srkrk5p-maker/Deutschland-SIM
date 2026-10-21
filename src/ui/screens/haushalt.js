@@ -4,6 +4,7 @@ import { ministerien } from '../../data/ministerien.js';
 import { config } from '../../data/config.js';
 import { vorschau, mrd, bruchAbstand } from '../../engine/haushalt.js';
 import { protokollHtml } from '../components/protokoll.js';
+import { verlaufSvg } from '../components/verlauf.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
 import { andereParteien } from '../../data/laender.js';
@@ -87,6 +88,8 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
       ${koalitionHtml(zustand, v.anteile)}
       <h2>Wirkung auf die Umfragen</h2>
       <p>${wirkung.length ? wirkung.map(([id, w]) => `${partei(id).name} ${pp(w)}`).join(' · ') : 'Keine Änderung gegenüber dem Vorjahr.'}</p>
+      <h2>Umfrageverlauf</h2>
+      ${verlaufSvg(zustand.verlauf, partei(zustand.spielerParteiId))}
       <h2>Einnahmen</h2>
       ${zeile('steuern', `Steuern (${partei(verteilung.finanzen).name}, Finanzen)`, partei(verteilung.finanzen).farbe, v.steuern, steuerStufe, maxSteuer, hh.steuerSchrittProzent)}
       <h2>Ministerien</h2>

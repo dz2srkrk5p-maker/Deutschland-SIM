@@ -4,6 +4,7 @@ import { config } from '../../data/config.js';
 import { ueberHuerde } from '../../engine/wahl.js';
 import { ertragFaktor } from '../../engine/wahlkampf.js';
 import { protokollHtml } from '../components/protokoll.js';
+import { verlaufSvg } from '../components/verlauf.js';
 
 const SKALA = 40; // Prozent, die einer vollen Balkenbreite entsprechen
 const prozent = (a) => a.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
@@ -34,6 +35,9 @@ export function wahlkampfScreen(el, zustand, protokoll, { onAktion }) {
           <span class="wert">${prozent(zustand.anteile[p.id])}${p.sonstige ? '' : ueberHuerde(p, zustand.anteile[p.id]) ? '' : ' <small>unter Hürde</small>'}</span>
         </div>`).join('')}
     </div>
+
+    <h2>Umfrageverlauf</h2>
+    ${verlaufSvg(zustand.verlauf, spieler)}
 
     <h2>Deine Aktion diese Woche</h2>
     <div class="knoepfe">

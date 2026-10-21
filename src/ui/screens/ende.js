@@ -3,6 +3,7 @@ import { parteien } from '../../data/parteien.js';
 import { config } from '../../data/config.js';
 import { bundestagSvg } from '../components/bundestag.js';
 import { protokollHtml } from '../components/protokoll.js';
+import { verlaufSvg } from '../components/verlauf.js';
 import { mrd } from '../../engine/haushalt.js';
 
 // Spielende: Sieg oder Opposition, mit Statistik.
@@ -26,6 +27,8 @@ export function endeScreen(el, zustand, protokoll, { onNeu }) {
       <span>Bestes Wahlergebnis</span><span>${s.besteWahl === null ? '–' : `${zahl(s.besteWahl, 2)} %`}</span>
       <span>Neue Schulden insgesamt</span><span>${zahl(mrd(zustand.haushalt.neueSchuldenSeitStart), 2)} Mrd.</span>
     </div>
+    <h2>Umfrageverlauf</h2>
+    ${verlaufSvg(zustand.verlauf, spieler)}
     ${zustand.sitze ? `<h2>Letzter Bundestag</h2>${bundestagSvg(zustand.sitze, parteien)}` : ''}
     <h2>Partie teilen</h2>
     <p>Gleicher Start, gleicher Zufall: Bei gleichen Entscheidungen verläuft die Partie genau gleich.</p>
