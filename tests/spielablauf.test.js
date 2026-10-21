@@ -56,3 +56,9 @@ test('Durchlauf endet für jede Partei ohne Fehler mit Sieg oder Opposition', ()
 test('gleicher Seed, gleicher Durchlauf', () => {
   expect(durchlauf('spd', 3).z).toEqual(durchlauf('spd', 3).z);
 });
+
+test('geteilter Seed (F07): gleicher Seed und gleiche Züge ergeben denselben Endzustand, der Seed bleibt erhalten', () => {
+  const a = durchlauf('gruene', 4242).z;
+  expect(a).toEqual(durchlauf('gruene', 4242).z);
+  expect(a.seed).toBe(4242);
+});

@@ -2,7 +2,7 @@ import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 2; // 2: wahlergebnis, wahlkampfStart (F05)
+export const ZUSTAND_VERSION = 3; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07)
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -28,6 +28,7 @@ export function neuesSpiel(spielerParteiId, seed) {
     haushalt: { jahr: 1, etats: { ...etats2026 }, steuern: steuern2026, neueSchuldenSeitStart: 0 },
     // für Sieg und Endbildschirm; besteWahl = bester Stimmanteil der Spielerpartei bei einer Wahl
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
+    seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
   };
 }
@@ -47,6 +48,14 @@ export function zurueckInDenWahlkampf(zustand) {
     kabinett: null,
     haushalt: { ...zustand.haushalt, jahr: 1 },
   };
+}
+
+// Seed aus der Adresse (?seed=12345): ganze Zahl von 0 bis 2^32 − 1, sonst null (ungültig wird ignoriert)
+export function seedAusAdresse(suche) {
+  const text = new URLSearchParams(suche).get('seed');
+  if (!text || !/^\d{1,10}$/.test(text)) return null;
+  const seed = Number(text);
+  return seed <= 0xffffffff ? seed : null;
 }
 
 export function speichern(zustand) {

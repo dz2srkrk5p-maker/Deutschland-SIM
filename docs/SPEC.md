@@ -112,6 +112,7 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Startbildschirm: „Weiterspielen“ mit Partei, Phase und Kanzlerjahren, wenn ein Stand da ist; ein neues Spiel überschreibt ihn.
 - „Neues Spiel“ auf dem Endbildschirm löscht den Stand.
 - Kaputte oder veraltete Spielstände (andere `version`) werden verworfen. Gesperrter Speicher (z. B. privates Fenster) bricht das Spiel nicht ab, es wird dann nur nicht gesichert.
+- Partie teilen (F07, freigegeben 2026-10-21): Spielstand-Version 3 mit Feld `seed` (Start-Seed, bleibt unverändert). Endbildschirm zeigt den Link `…/?seed=<seed>` (nur Seed, keine Partei), Knopf „Link kopieren“ (Zwischenablage; geht das nicht, wird der Link im Feld markiert) und den Satz „Gleicher Start, gleicher Zufall: Bei gleichen Entscheidungen verläuft die Partie genau gleich.“ Öffnen des Links: Seed wird mit `seedAusAdresse()` (`src/engine/state.js`) geprüft, ganze Zahl 0 bis 2^32 − 1, ungültige Werte werden ignoriert. Danach wird der Parameter aus der Adresse entfernt (`history.replaceState`). Gibt es einen Spielstand, fragt der Startbildschirm „Gespeichertes Spiel überschreiben?“ (Nein: weiterspielen). Dann Parteiwahl mit diesem Seed.
 
 ## Oberfläche (M5)
 - Startbildschirm: Partei wählen (`src/ui/screens/start.js`). Seed wird zufällig gezogen.

@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { neuesSpiel, speichern, laden, ZUSTAND_VERSION } from '../src/engine/state.js';
+import { neuesSpiel, speichern, laden, ZUSTAND_VERSION, seedAusAdresse } from '../src/engine/state.js';
 import { zufall } from '../src/engine/rng.js';
 
 test('Anfangszustand enthält Startwerte aus den Daten', () => {
@@ -31,8 +31,24 @@ test('ungültige Eingaben werden abgelehnt', () => {
 
 test('Version 2 (F05): neue Felder gesetzt, Spielstände der Version 1 werden abgelehnt', () => {
   const z = neuesSpiel('spd', 1);
-  expect(ZUSTAND_VERSION).toBe(2);
+  expect(ZUSTAND_VERSION).toBeGreaterThanOrEqual(2);
   expect(z.wahlergebnis).toBeNull();
   expect(z.wahlkampfStart).toBe(16.4);
   expect(() => laden(JSON.stringify({ ...z, version: 1 }))).toThrow();
+});
+
+test('Version 3 (F07): Start-Seed bleibt im Spielstand, Version 2 wird abgelehnt', () => {
+  const z = neuesSpiel('spd', 12345);
+  expect(ZUSTAND_VERSION).toBe(3);
+  expect(z.seed).toBe(12345);
+  expect(() => laden(JSON.stringify({ ...z, version: 2 }))).toThrow();
+});
+
+test('Seed aus der Adresse: gültige ganze Zahl, sonst null', () => {
+  expect(seedAusAdresse('?seed=12345')).toBe(12345);
+  expect(seedAusAdresse('?seed=0')).toBe(0);
+  expect(seedAusAdresse('?seed=4294967295')).toBe(4294967295);
+  for (const falsch of ['', '?seed=', '?seed=-1', '?seed=1.5', '?seed=abc', '?seed=4294967296', '?seed=1e5', '?seed=%2012', '?partei=spd']) {
+    expect(seedAusAdresse(falsch)).toBeNull();
+  }
 });

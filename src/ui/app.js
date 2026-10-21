@@ -1,4 +1,4 @@
-import { neuesSpiel } from '../engine/state.js';
+import { neuesSpiel, seedAusAdresse } from '../engine/state.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
 import { verhandeln } from '../engine/koalition.js';
 import { startScreen } from './screens/start.js';
@@ -15,9 +15,25 @@ const el = document.querySelector('#app');
 const ansage = document.querySelector('#ansage');
 let zustand = null;
 let protokoll = [];
+// Geteilter Link ?seed=… (F07): einmal lesen, dann aus der Adresse entfernen, damit Neuladen nicht erneut startet
+let link = null;
+if (new URLSearchParams(location.search).has('seed')) {
+  const seed = seedAusAdresse(location.search);
+  if (seed !== null) link = { seed, bestaetigt: false };
+  history.replaceState(null, '', location.pathname);
+}
 
 function zeichne() {
-  if (!zustand) return startScreen(el, { gespeichert: spielLaden()?.zustand ?? null, onStart: starten, onWeiter: weiterspielen });
+  if (!zustand) {
+    return startScreen(el, {
+      gespeichert: spielLaden()?.zustand ?? null,
+      link,
+      onStart: starten,
+      onWeiter: weiterspielen,
+      onLinkJa: () => ((link.bestaetigt = true), zeichne(), fokusOben()),
+      onLinkNein: () => ((link = null), weiterspielen()),
+    });
+  }
   if (zustand.phase === 'wahlkampf') return wahlkampfScreen(el, zustand, protokoll, { onAktion: ausfuehren(wahlkampfWoche) });
   if (zustand.phase === 'koalition') return koalitionScreen(el, zustand, protokoll, { onVerhandeln: ausfuehren(verhandeln) });
   if (zustand.phase === 'kabinett') return kabinettScreen(el, zustand, protokoll, { onBestaetigen: ausfuehren(bestaetigen) });
@@ -33,8 +49,9 @@ function fokusOben() {
 }
 
 function starten(parteiId) {
-  // Zufall außerhalb der Engine ist erlaubt: nur der Seed für ein neues Spiel
-  zustand = neuesSpiel(parteiId, Math.floor(Math.random() * 2 ** 31));
+  // Zufall außerhalb der Engine ist erlaubt: nur der Seed für ein neues Spiel (außer er kommt aus einem Link)
+  zustand = neuesSpiel(parteiId, link ? link.seed : Math.floor(Math.random() * 2 ** 31));
+  link = null;
   protokoll = [];
   spielSichern(zustand, protokoll);
   zeichne();
