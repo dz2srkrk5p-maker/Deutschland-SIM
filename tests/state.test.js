@@ -39,7 +39,7 @@ test('Version 2 (F05): neue Felder gesetzt, Spielstände der Version 1 werden ab
 
 test('Version 3 (F07): Start-Seed bleibt im Spielstand, Version 2 wird abgelehnt', () => {
   const z = neuesSpiel('spd', 12345);
-  expect(ZUSTAND_VERSION).toBe(3);
+  expect(ZUSTAND_VERSION).toBeGreaterThanOrEqual(3);
   expect(z.seed).toBe(12345);
   expect(() => laden(JSON.stringify({ ...z, version: 2 }))).toThrow();
 });

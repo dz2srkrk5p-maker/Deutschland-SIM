@@ -4,8 +4,8 @@
 // sitze2025: echte Sitze laut derselben Quelle (Union = CDU 164 + CSU 44), nur zum Vergleich in der Anzeige.
 // sitzordnung: Platz im Plenum von links (1) nach rechts, für die Bundestag-Grafik. Spielentscheidung, keine offizielle Sitzordnung.
 // Farben sind Spielfarben, nicht offiziell.
-// schwierigkeit: Stufe für den Startbildschirm (F06), aus BALANCING.md vom 2026-10-21 (Siege bei „Haushalt unverändert“,
-// genau gezählt: CDU/CSU 42,5 %, SPD 19 %, Grüne 2 %, BSW 0,5 %, FDP 0,5 %, Linke 0 %, AfD 0 %). Grenzen: config.schwierigkeit.
+// schwierigkeit: Stufe für den Startbildschirm (F06), aus BALANCING.md vom 2026-10-21, gemessen an der besten Wahlkampf-
+// Strategie seit F08 (abwechselnd): CDU/CSU 48,5 %, SPD 26,5 %, Grüne 6,5 %, FDP 1 %, Linke, BSW, AfD 0 %. Grenzen: config.schwierigkeit.
 export const parteien = [
   { id: 'union', name: 'CDU/CSU', farbe: '#000000', startanteil: 28.6, sitze2025: 208, sitzordnung: 6, schwierigkeit: 'leicht' },
   { id: 'afd', name: 'AfD', farbe: '#009EE0', startanteil: 20.8, sitze2025: 152, sitzordnung: 7, schwierigkeit: 'fast unmöglich' },
@@ -13,7 +13,7 @@ export const parteien = [
   { id: 'gruene', name: 'Grüne', farbe: '#1AA037', startanteil: 11.6, sitze2025: 85, sitzordnung: 3, schwierigkeit: 'schwer' },
   { id: 'linke', name: 'Linke', farbe: '#BE3075', startanteil: 8.8, sitze2025: 64, sitzordnung: 1, schwierigkeit: 'fast unmöglich' },
   { id: 'bsw', name: 'BSW', farbe: '#7D254F', startanteil: 4.981, sitze2025: 0, sitzordnung: 2, schwierigkeit: 'fast unmöglich' },
-  { id: 'fdp', name: 'FDP', farbe: '#FFED00', startanteil: 4.3, sitze2025: 0, sitzordnung: 5, schwierigkeit: 'fast unmöglich' },
+  { id: 'fdp', name: 'FDP', farbe: '#FFED00', startanteil: 4.3, sitze2025: 0, sitzordnung: 5, schwierigkeit: 'schwer' },
   // Sammelposten, bekommt nie Sitze
   { id: 'sonstige', name: 'Sonstige', farbe: '#9E9E9E', startanteil: 4.519, sitze2025: 0, sonstige: true },
 ];

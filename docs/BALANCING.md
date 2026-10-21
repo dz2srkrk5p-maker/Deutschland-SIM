@@ -3,7 +3,7 @@
 Erzeugt mit `npm run balancing` am 2026-10-21. 200 Partien je Partei und Strategie (Seeds 1–200).
 
 ## Strategien der Simulation
-- Wahlkampf: jede Woche Plakate und Werbung.
+- Wahlkampf: jede Woche Plakate und Werbung (Hauptergebnisse); weitere Wahlkampf-Strategien siehe eigener Abschnitt.
 - Koalition: Partner nach Zustimmungschance absteigend, bis die Mehrheit reicht; nach Absagen erneut.
 - Kabinett: der vorausgefüllte Vorschlag.
 - Haushalt: siehe Spalte „Strategie“. Keine Steueränderungen.
@@ -12,33 +12,46 @@ Erzeugt mit `npm run balancing` am 2026-10-21. 200 Partien je Partei und Strateg
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |
 |---|---|---|---|---|---|
-| Haushalt unverändert | CDU/CSU | 70 % | 0 % | 43 % | 6.5 |
+| Haushalt unverändert | CDU/CSU | 60 % | 0 % | 27 % | 5.0 |
 | Haushalt unverändert | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Haushalt unverändert | SPD | 42 % | 0 % | 19 % | 3.4 |
-| Haushalt unverändert | Grüne | 11 % | 0 % | 2 % | 0.6 |
-| Haushalt unverändert | Linke | 2 % | 0 % | 0 % | 0.1 |
-| Haushalt unverändert | BSW | 1 % | 0 % | 1 % | 0.1 |
-| Haushalt unverändert | FDP | 4 % | 0 % | 1 % | 0.2 |
-| Partner kürzen | CDU/CSU | 70 % | 23 % | 43 % | 6.7 |
+| Haushalt unverändert | SPD | 36 % | 0 % | 6 % | 2.2 |
+| Haushalt unverändert | Grüne | 9 % | 0 % | 1 % | 0.4 |
+| Haushalt unverändert | Linke | 1 % | 0 % | 0 % | 0.0 |
+| Haushalt unverändert | BSW | 0 % | 0 % | 0 % | 0.0 |
+| Haushalt unverändert | FDP | 2 % | 0 % | 0 % | 0.1 |
+| Partner kürzen | CDU/CSU | 60 % | 24 % | 33 % | 5.4 |
 | Partner kürzen | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Partner kürzen | SPD | 42 % | 42 % | 18 % | 3.5 |
-| Partner kürzen | Grüne | 11 % | 6 % | 2 % | 0.6 |
-| Partner kürzen | Linke | 2 % | 1 % | 0 % | 0.1 |
-| Partner kürzen | BSW | 1 % | 1 % | 0 % | 0.0 |
-| Partner kürzen | FDP | 4 % | 3 % | 1 % | 0.2 |
+| Partner kürzen | SPD | 36 % | 35 % | 6 % | 2.2 |
+| Partner kürzen | Grüne | 9 % | 4 % | 0 % | 0.4 |
+| Partner kürzen | Linke | 1 % | 1 % | 0 % | 0.0 |
+| Partner kürzen | BSW | 0 % | 0 % | 0 % | 0.0 |
+| Partner kürzen | FDP | 2 % | 2 % | 0 % | 0.0 |
+
+## Wahlkampf-Strategien (F08)
+Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit dem höchsten erwarteten eigenen Gewinn nach abnehmendem Ertrag. Fett: beste Strategie je Partei. Maßstab (freigegeben): keine „immer …“-Strategie ist bei einer Partei die beste.
+
+| Partei | immer Plakate | immer Kundgebung | immer Angriff (Stärkster) | abwechselnd | klug |
+|---|---|---|---|---|---|
+| CDU/CSU | 27.0 | 37.5 | 32.0 | **48.5** | 42.5 |
+| AfD | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| SPD | 5.5 | 9.5 | 11.5 | **26.5** | 17.5 |
+| Grüne | 0.5 | 0.0 | 2.5 | **6.5** | 3.5 |
+| Linke | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| BSW | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| FDP | 0.0 | 0.0 | 0.0 | **1.0** | 0.5 |
 
 ## Schwierigkeitsanzeige (F06)
-Gemessen mit „Haushalt unverändert“, Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
+Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
 
 | Partei | Siege | gemessen | eingetragen | Abgleich |
 |---|---|---|---|---|
-| CDU/CSU | 42.5 % | leicht | leicht | passt |
+| CDU/CSU | 48.5 % | leicht | leicht | passt |
 | AfD | 0.0 % | fast unmöglich | fast unmöglich | passt |
-| SPD | 19.0 % | mittel | mittel | passt |
-| Grüne | 2.0 % | schwer | schwer | passt |
+| SPD | 26.5 % | mittel | mittel | passt |
+| Grüne | 6.5 % | schwer | schwer | passt |
 | Linke | 0.0 % | fast unmöglich | fast unmöglich | passt |
-| BSW | 0.5 % | fast unmöglich | fast unmöglich | passt |
-| FDP | 0.5 % | fast unmöglich | fast unmöglich | passt |
+| BSW | 0.0 % | fast unmöglich | fast unmöglich | passt |
+| FDP | 1.0 % | schwer | schwer | passt |
 
 ## Alle Konstanten (`src/data/config.js`)
 | Name | Wert | Freigegeben in |
@@ -53,6 +66,8 @@ Gemessen mit „Haushalt unverändert“, Grenzen aus `config.schwierigkeit`, ei
 | `wahlkampf.angriffZielVerlust` | 0.8 | M5 |
 | `wahlkampf.angriffEigenGewinn` | 0.3 | M5 |
 | `wahlkampf.schwankungMax` | 0.3 | M5 |
+| `wahlkampf.abnahmeJeWiederholung` | 0.25 | M5 |
+| `wahlkampf.mindestFaktor` | 0.25 | M5 |
 | `koalition.chanceNachAbstand.1` | 0.9 | M6 |
 | `koalition.chanceNachAbstand.2` | 0.7 | M6 |
 | `koalition.chanceNachAbstand.3` | 0.4 | M6 |

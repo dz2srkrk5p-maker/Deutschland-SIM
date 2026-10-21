@@ -27,19 +27,26 @@ export function umverteilen(anteile, feste) {
   return neu;
 }
 
-// Wirkung einer Aktion vor der wöchentlichen Schwankung.
-export function wirkung(anteile, spielerId, { aktion, ziel }, rngZustand) {
+// Anteil der vollen Wirkung, wenn diese Aktion jetzt gewählt wird: sinkt mit jeder Wiederholung in Folge (F08)
+export function ertragFaktor(zustand, aktion) {
+  const wiederholungen = zustand.wahlkampfSerie?.aktion === aktion ? zustand.wahlkampfSerie.anzahl : 0;
+  return Math.max(wk.mindestFaktor, 1 - wk.abnahmeJeWiederholung * wiederholungen);
+}
+
+// Wirkung einer Aktion vor der wöchentlichen Schwankung. faktor: abnehmender Ertrag, wirkt auf alle festen Änderungen.
+export function wirkung(anteile, spielerId, { aktion, ziel }, rngZustand, faktor = 1) {
   if (aktion === 'plakate') {
-    return { anteile: umverteilen(anteile, { [spielerId]: wk.plakateGewinn }), rngZustand, text: `Plakate und Werbung: ${pp(wk.plakateGewinn)}` };
+    const gewinn = wk.plakateGewinn * faktor;
+    return { anteile: umverteilen(anteile, { [spielerId]: gewinn }), rngZustand, text: `Plakate und Werbung: ${pp(gewinn)}` };
   }
   if (aktion === 'kundgebung') {
     const r = zufall(rngZustand);
-    const delta = wk.kundgebungMin + r.wert * (wk.kundgebungMax - wk.kundgebungMin);
+    const delta = (wk.kundgebungMin + r.wert * (wk.kundgebungMax - wk.kundgebungMin)) * faktor;
     return { anteile: umverteilen(anteile, { [spielerId]: delta }), rngZustand: r.rngZustand, text: `Großkundgebung: ${pp(delta)}` };
   }
   if (aktion === 'angriff') {
-    const verlust = Math.min(wk.angriffZielVerlust, anteile[ziel]);
-    const gewinn = Math.min(wk.angriffEigenGewinn, verlust);
+    const verlust = Math.min(wk.angriffZielVerlust * faktor, anteile[ziel]);
+    const gewinn = Math.min(wk.angriffEigenGewinn * faktor, verlust);
     return {
       anteile: umverteilen(anteile, { [ziel]: -verlust, [spielerId]: gewinn }),
       rngZustand,
@@ -80,11 +87,15 @@ export function wahlkampfWoche(zustand, params) {
     if (!ziel || ziel.sonstige || ziel.id === zustand.spielerParteiId) throw new Error(`Ungültiges Angriffsziel: ${params.ziel}`);
   }
 
-  const w = wirkung(zustand.anteile, zustand.spielerParteiId, params, zustand.rngZustand);
+  const faktor = ertragFaktor(zustand, params.aktion);
+  const w = wirkung(zustand.anteile, zustand.spielerParteiId, params, zustand.rngZustand, faktor);
   const s = schwankung(w.anteile, w.rngZustand);
   const woche = zustand.wahlkampfWoche;
-  const state = { ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, wahlkampfWoche: woche + 1 };
-  const ereignisse = [`Woche ${woche}: ${w.text}`];
+  const anzahl = zustand.wahlkampfSerie?.aktion === params.aktion ? zustand.wahlkampfSerie.anzahl + 1 : 1;
+  const wahlkampfSerie = { aktion: params.aktion, anzahl };
+  const state = { ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, wahlkampfWoche: woche + 1, wahlkampfSerie };
+  const abnahme = faktor < 1 ? ` (${anzahl}. Mal in Folge, ${Math.round(faktor * 100)} % Wirkung)` : '';
+  const ereignisse = [`Woche ${woche}: ${w.text}${abnahme}`];
 
   if (woche < wk.wochen) return { state, ereignisse };
   const ergebnis = wahl(state);

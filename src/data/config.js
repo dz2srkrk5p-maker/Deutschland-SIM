@@ -16,6 +16,10 @@ export const config = {
     angriffZielVerlust: 0.8,
     angriffEigenGewinn: 0.3, // Rest des Zielverlusts geht an die übrigen Parteien
     schwankungMax: 0.3, // jede Partei pro Woche zufällig ± bis zu diesem Wert
+    // Abnehmender Ertrag (F08, freigegeben 2026-10-21): dieselbe Aktion in Folge wirkt je Wiederholung um
+    // diesen Anteil schwächer, aber nie unter mindestFaktor. Andere Aktion oder neuer Wahlkampf setzt zurück.
+    abnahmeJeWiederholung: 0.25,
+    mindestFaktor: 0.25,
   },
 
   // Koalition und Kanzlerwahl, freigegeben 2026-10-20 (M6). Mehrheit = mehr als die Hälfte der Sitze (Art. 63 GG), wird berechnet.
@@ -47,8 +51,8 @@ export const config = {
     wirkungSteuerSenkungProMrd: 0.02,
   },
 
-  // Schwierigkeitsanzeige auf dem Startbildschirm (F06, freigegeben 2026-10-21): Stufe ab dieser Siegquote im
-  // Balancing (Strategie „Haushalt unverändert“), darunter „fast unmöglich“. Prüft scripts/balancing.js.
+  // Schwierigkeitsanzeige auf dem Startbildschirm (F06, freigegeben 2026-10-21): Stufe ab dieser Siegquote mit der
+  // besten Wahlkampf-Strategie im Balancing (seit F08), darunter „fast unmöglich“. Prüft scripts/balancing.js.
   schwierigkeit: { leicht: 0.3, mittel: 0.1, schwer: 0.01 },
 
   // Spielende, freigegeben 2026-10-21 (M10)

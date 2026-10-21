@@ -4,7 +4,7 @@ import { writeFileSync } from 'node:fs';
 import { config } from '../src/data/config.js';
 import { parteien } from '../src/data/parteien.js';
 import { neuesSpiel } from '../src/engine/state.js';
-import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
+import { wahlkampfWoche, ertragFaktor } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, chance, mehrheit } from '../src/engine/koalition.js';
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
@@ -34,12 +34,29 @@ const STRATEGIEN = {
   }),
 };
 
-function partie(parteiId, seed, haushaltZug) {
+// Wahlkampf-Strategien (F08): zeigt, ob eine Dauerstrategie klar die beste ist
+const staerksterGegner = (z) =>
+  parteien.filter((p) => !p.sonstige && p.id !== z.spielerParteiId).sort((a, b) => z.anteile[b.id] - z.anteile[a.id])[0].id;
+const wk = config.wahlkampf;
+const AKTION_SCHNITT = { plakate: wk.plakateGewinn, kundgebung: (wk.kundgebungMin + wk.kundgebungMax) / 2, angriff: wk.angriffEigenGewinn };
+const WAHLKAMPF = {
+  'immer Plakate': () => ({ aktion: 'plakate' }),
+  'immer Kundgebung': () => ({ aktion: 'kundgebung' }),
+  'immer Angriff (Stärkster)': (z) => ({ aktion: 'angriff', ziel: staerksterGegner(z) }),
+  abwechselnd: (z) => ({ aktion: ['plakate', 'kundgebung', 'angriff'][z.wahlkampfWoche % 3], ziel: staerksterGegner(z) }),
+  // jede Woche die Aktion mit dem höchsten erwarteten eigenen Gewinn nach abnehmendem Ertrag
+  klug: (z) => ({
+    aktion: Object.keys(AKTION_SCHNITT).sort((a, b) => ertragFaktor(z, b) * AKTION_SCHNITT[b] - ertragFaktor(z, a) * AKTION_SCHNITT[a])[0],
+    ziel: staerksterGegner(z),
+  }),
+};
+
+function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Plakate']) {
   let z = neuesSpiel(parteiId, seed);
   let bruch = false;
   for (let zug = 0; zug < MAX_ZUEGE; zug++) {
     let r;
-    if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, { aktion: 'plakate' });
+    if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, wahlkampfZug(z));
     else if (z.phase === 'koalition') r = verhandeln(z, { partner: partnerWaehlen(z) });
     else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
     else if (z.phase === 'regierung') r = haushaltBeschliessen(z, haushaltZug(z));
@@ -65,15 +82,25 @@ for (const [name, zugFn] of Object.entries(STRATEGIEN)) {
       if (z.phase === 'sieg') siege++;
       jahre += z.statistik.jahreKanzler;
     }
-    if (name === 'Haushalt unverändert') {
-      const gemessen = stufe(siege / PARTIEN);
-      const passt = gemessen === p.schwierigkeit;
-      abgleich.push(`| ${p.name} | ${((siege / PARTIEN) * 100).toFixed(1)} % | ${gemessen} | ${p.schwierigkeit} | ${passt ? 'passt' : '**anpassen**'} |`);
-      if (!passt) console.warn(`Schwierigkeit veraltet: ${p.name} eingetragen „${p.schwierigkeit}“, gemessen „${gemessen}“`);
-    }
     zeilen.push(`| ${name} | ${p.name} | ${prozent(regiert)} | ${prozent(brueche)} | ${prozent(siege)} | ${(jahre / PARTIEN).toFixed(1)} |`);
   }
 }
+
+// Siege je Wahlkampf-Strategie (Haushalt unverändert); beste Strategie je Partei fett
+const wahlkampfZeilen = spielbar.map((p) => {
+  const quoten = Object.values(WAHLKAMPF).map((wz) => {
+    let siege = 0;
+    for (let seed = 1; seed <= PARTIEN; seed++) if (partie(p.id, seed, STRATEGIEN['Haushalt unverändert'], wz).z.phase === 'sieg') siege++;
+    return (siege / PARTIEN) * 100;
+  });
+  const beste = Math.max(...quoten);
+  // F06: Schwierigkeit an der besten Wahlkampf-Strategie gemessen (freigegeben mit F08)
+  const gemessen = stufe(beste / 100);
+  const passt = gemessen === p.schwierigkeit;
+  abgleich.push(`| ${p.name} | ${beste.toFixed(1)} % | ${gemessen} | ${p.schwierigkeit} | ${passt ? 'passt' : '**anpassen**'} |`);
+  if (!passt) console.warn(`Schwierigkeit veraltet: ${p.name} eingetragen „${p.schwierigkeit}“, gemessen „${gemessen}“`);
+  return `| ${p.name} | ${quoten.map((q) => (q === beste && q > 0 ? `**${q.toFixed(1)}**` : q.toFixed(1))).join(' | ')} |`;
+});
 
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
@@ -86,7 +113,7 @@ const bericht = `# Balancing-Bericht
 Erzeugt mit \`npm run balancing\` am ${new Date().toISOString().slice(0, 10)}. ${PARTIEN} Partien je Partei und Strategie (Seeds 1–${PARTIEN}).
 
 ## Strategien der Simulation
-- Wahlkampf: jede Woche Plakate und Werbung.
+- Wahlkampf: jede Woche Plakate und Werbung (Hauptergebnisse); weitere Wahlkampf-Strategien siehe eigener Abschnitt.
 - Koalition: Partner nach Zustimmungschance absteigend, bis die Mehrheit reicht; nach Absagen erneut.
 - Kabinett: der vorausgefüllte Vorschlag.
 - Haushalt: siehe Spalte „Strategie“. Keine Steueränderungen.
@@ -97,8 +124,15 @@ Erzeugt mit \`npm run balancing\` am ${new Date().toISOString().slice(0, 10)}. $
 |---|---|---|---|---|---|
 ${zeilen.join('\n')}
 
+## Wahlkampf-Strategien (F08)
+Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit dem höchsten erwarteten eigenen Gewinn nach abnehmendem Ertrag. Fett: beste Strategie je Partei. Maßstab (freigegeben): keine „immer …“-Strategie ist bei einer Partei die beste.
+
+| Partei | ${Object.keys(WAHLKAMPF).join(' | ')} |
+|---|${Object.keys(WAHLKAMPF).map(() => '---').join('|')}|
+${wahlkampfZeilen.join('\n')}
+
 ## Schwierigkeitsanzeige (F06)
-Gemessen mit „Haushalt unverändert“, Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.
+Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.
 
 | Partei | Siege | gemessen | eingetragen | Abgleich |
 |---|---|---|---|---|

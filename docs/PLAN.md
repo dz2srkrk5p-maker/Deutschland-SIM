@@ -28,3 +28,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | F05 | Wahlabend mit Veränderung und Wahlkampfbilanz (Spielstand-Version 2) | fertig (2026-10-21) |
 | F06 | Schwierigkeitsanzeige je Partei | fertig (2026-10-21) |
 | F07 | Partie teilen über den Seed (Spielstand-Version 3) | fertig (2026-10-21) |
+| F08 | Wahlkampf ohne Dauerstrategie: abnehmender Ertrag (Spielstand-Version 4) | fertig (2026-10-21) |
