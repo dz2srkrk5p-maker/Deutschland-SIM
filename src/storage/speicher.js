@@ -34,3 +34,22 @@ export function spielLoeschen(speicher = globalThis.localStorage) {
     // nichts zu tun
   }
 }
+
+// Schalter für die Erklärtexte, unabhängig vom Spielstand. Ohne Eintrag oder bei gesperrtem Speicher: an.
+const HINWEISE = 'desim-hinweise';
+
+export function hinweiseAn(speicher = globalThis.localStorage) {
+  try {
+    return speicher.getItem(HINWEISE) !== 'aus';
+  } catch {
+    return true;
+  }
+}
+
+export function hinweiseSetzen(an, speicher = globalThis.localStorage) {
+  try {
+    speicher.setItem(HINWEISE, an ? 'an' : 'aus');
+  } catch {
+    // gesperrt: Schalter wird nicht gemerkt, Spiel läuft weiter
+  }
+}

@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { spielSichern, spielLaden, spielLoeschen } from '../src/storage/speicher.js';
+import { spielSichern, spielLaden, spielLoeschen, hinweiseAn, hinweiseSetzen } from '../src/storage/speicher.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
 
@@ -45,4 +45,21 @@ test('gesperrter Speicher (z. B. privates Fenster) bricht das Spiel nicht ab', (
   const gesperrt = { getItem: () => { throw new Error('gesperrt'); }, setItem: () => { throw new Error('voll'); }, removeItem: () => { throw new Error('gesperrt'); } };
   expect(() => spielSichern(neuesSpiel('spd', 1), [], gesperrt)).not.toThrow();
   expect(spielLaden(gesperrt)).toBeNull();
+});
+
+test('Hinweis-Schalter: ohne Eintrag an, wird gemerkt, unabhängig vom Spielstand', () => {
+  const s = ersatzSpeicher();
+  expect(hinweiseAn(s)).toBe(true);
+  hinweiseSetzen(false, s);
+  expect(hinweiseAn(s)).toBe(false);
+  spielLoeschen(s);
+  expect(hinweiseAn(s)).toBe(false);
+  hinweiseSetzen(true, s);
+  expect(hinweiseAn(s)).toBe(true);
+});
+
+test('Hinweis-Schalter: gesperrter Speicher bricht nichts, Hinweise bleiben an', () => {
+  const gesperrt = { getItem: () => { throw new Error('gesperrt'); }, setItem: () => { throw new Error('voll'); } };
+  expect(() => hinweiseSetzen(false, gesperrt)).not.toThrow();
+  expect(hinweiseAn(gesperrt)).toBe(true);
 });

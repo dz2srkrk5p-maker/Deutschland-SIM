@@ -1,3 +1,4 @@
+import { hinweisHtml } from '../components/hinweis.js';
 import { parteien } from '../../data/parteien.js';
 import { ministerien } from '../../data/ministerien.js';
 import { config } from '../../data/config.js';
@@ -73,6 +74,7 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
     const wirkung = Object.entries(v.wirkung).filter(([, w]) => w);
     el.innerHTML = `
       <h1>Haushalt</h1>
+      ${hinweisHtml('regierung')}
       <p><strong>Haushaltsjahr ${zustand.haushalt.jahr} von ${config.legislaturJahre}</strong> · Kanzler: ${partei(zustand.kanzlerParteiId).name}</p>
       <div class="bilanz">
         <span>Einnahmen</span><span>${euro(b.einnahmen)}</span>

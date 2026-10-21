@@ -1,3 +1,4 @@
+import { hinweisHtml } from '../components/hinweis.js';
 import { parteien } from '../../data/parteien.js';
 import { config } from '../../data/config.js';
 import { ueberHuerde } from '../../engine/wahl.js';
@@ -15,6 +16,7 @@ export function wahlkampfScreen(el, zustand, protokoll, { onAktion }) {
 
   el.innerHTML = `
     <h1>Wahlkampf: ${spieler.name}</h1>
+    ${hinweisHtml('wahlkampf')}
     <p><strong>Woche ${zustand.wahlkampfWoche} von ${config.wahlkampf.wochen}</strong></p>
 
     <h2>Umfrage</h2>

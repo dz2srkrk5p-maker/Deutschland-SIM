@@ -2,6 +2,7 @@ import { test, expect } from 'vitest';
 import { parteien } from '../src/data/parteien.js';
 import { laender, bundesratGesamt, bundesratMehrheit } from '../src/data/laender.js';
 import { ministerien } from '../src/data/ministerien.js';
+import { hinweise } from '../src/data/hinweise.js';
 
 const eindeutig = (liste) => new Set(liste.map((x) => x.id)).size === liste.length;
 
@@ -23,4 +24,12 @@ test('keine doppelten IDs', () => {
   expect(eindeutig(parteien)).toBe(true);
   expect(eindeutig(laender)).toBe(true);
   expect(eindeutig(ministerien)).toBe(true);
+});
+
+test('jede Phase hat einen Hinweis, Zahlen sind eingesetzt', () => {
+  for (const schluessel of ['start', 'wahlkampf', 'koalition', 'kabinett', 'regierung', 'ende']) {
+    expect(hinweise[schluessel]).toMatch(/\S/);
+    expect(hinweise[schluessel]).not.toMatch(/undefined|NaN|\$\{/);
+  }
+  expect(hinweise.koalition).toContain('316 Sitze');
 });

@@ -1,3 +1,4 @@
+import { hinweisHtml } from '../components/hinweis.js';
 import { parteien } from '../../data/parteien.js';
 import { bundestagSvg } from '../components/bundestag.js';
 import { mehrheit, chance, moeglichePartner, moeglicheKoalitionen } from '../../engine/koalition.js';
@@ -37,6 +38,7 @@ export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
 
   el.innerHTML = `
     <h1>Regierungsbildung</h1>
+    ${hinweisHtml('koalition')}
     <p>${spieler.name} hat <strong>${eigene} Sitze</strong>. Für eine Mehrheit braucht es <strong>${noetig}</strong>.</p>
     ${bundestagSvg(zustand.sitze, parteien)}
     <h2>Mögliche Mehrheiten</h2>

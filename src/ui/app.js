@@ -9,7 +9,7 @@ import { kabinettScreen } from './screens/kabinett.js';
 import { haushaltBeschliessen } from '../engine/haushalt.js';
 import { haushaltScreen } from './screens/haushalt.js';
 import { endeScreen } from './screens/ende.js';
-import { spielSichern, spielLaden, spielLoeschen } from '../storage/speicher.js';
+import { spielSichern, spielLaden, spielLoeschen, hinweiseSetzen } from '../storage/speicher.js';
 
 const el = document.querySelector('#app');
 let zustand = null;
@@ -45,5 +45,16 @@ const ausfuehren = (aktion) => (params) => {
   spielSichern(zustand, protokoll);
   zeichne();
 };
+
+// Hinweise aus-/einblenden (Knöpfe aus hinweis.js und start.js). Ausblenden entfernt nur die Box, damit z. B. Haushaltseingaben bleiben.
+el.addEventListener('click', (e) => {
+  const knopf = e.target.closest('[data-hinweise]');
+  if (!knopf) return;
+  const an = knopf.dataset.hinweise === 'an';
+  hinweiseSetzen(an);
+  // Startbildschirm neu zeichnen, damit dort der Knopf zum Wiedereinblenden erscheint
+  if (an || !zustand) zeichne();
+  else knopf.closest('.hinweis').remove();
+});
 
 zeichne();

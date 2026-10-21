@@ -23,3 +23,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 |----|---------|-------|
 | F01 | Warnung vor Koalitionsbruch im Haushalt | fertig (2026-10-21) |
 | F02 | Mögliche Mehrheiten bei der Regierungsbildung | fertig (2026-10-21) |
+| F03 | Erklärtexte je Bildschirm | fertig (2026-10-21) |

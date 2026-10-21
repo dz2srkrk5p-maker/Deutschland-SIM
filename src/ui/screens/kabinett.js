@@ -1,3 +1,4 @@
+import { hinweisHtml } from '../components/hinweis.js';
 import { parteien } from '../../data/parteien.js';
 import { ministerien, kanzleramt } from '../../data/ministerien.js';
 import { koalitionsParteien, vorschlag, pruefeVerteilung } from '../../engine/kabinett.js';
@@ -14,6 +15,7 @@ export function kabinettScreen(el, zustand, protokoll, { onBestaetigen }) {
 
   el.innerHTML = `
     <h1>Kabinett</h1>
+    ${hinweisHtml('kabinett')}
     <p>${kanzleramt.name}: ${partei(zustand.kanzlerParteiId).name}. Verteile die ${ministerien.length} Ministerien.</p>
     <p id="stand"></p>
     <div class="ministerien">

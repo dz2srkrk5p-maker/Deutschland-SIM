@@ -1,3 +1,4 @@
+import { hinweisHtml } from '../components/hinweis.js';
 import { parteien } from '../../data/parteien.js';
 import { config } from '../../data/config.js';
 import { bundestagSvg } from '../components/bundestag.js';
@@ -13,6 +14,7 @@ export function endeScreen(el, zustand, protokoll, { onNeu }) {
 
   el.innerHTML = `
     <h1>${sieg ? 'Sieg!' : 'Opposition'}</h1>
+    ${hinweisHtml('ende')}
     <p>${sieg
       ? `${spieler.name} hat ${s.jahreKanzler} Jahre lang den Kanzler gestellt. Ziel erreicht.`
       : `${spieler.name} hat keine Mehrheit für eine Regierung. Das Spiel ist vorbei.`}</p>
