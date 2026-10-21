@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { mehrheit, chance, moeglichePartner, mehrheitMoeglich, verhandeln } from '../src/engine/koalition.js';
+import { mehrheit, chance, moeglichePartner, mehrheitMoeglich, verhandeln, moeglicheKoalitionen } from '../src/engine/koalition.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { wahl } from '../src/engine/wahl.js';
 
@@ -102,4 +102,24 @@ test('Größenfaktor: größerer Partner sagt seltener zu, kleinerer unveränder
   expect(chance('union', 'fdp', sitze)).toBe(0.9); // Partner kleiner: keine Änderung
   expect(chance('spd', 'union', sitze)).toBeCloseTo(0.7 * 120 / 200, 9);
   expect(chance('fdp', 'union')).toBe(0.9); // ohne Sitze: Grundchance (für die Anzeige der Brandmauer)
+});
+
+test('mögliche Koalitionen mit den Startwerten 2025: minimal, nach Chance sortiert, Chance = Produkt', () => {
+  const z = nachWahl('union');
+  const liste = moeglicheKoalitionen(z);
+  expect(liste.map((k) => k.partner)).toEqual([['spd'], ['gruene', 'linke']]);
+  expect(liste[0]).toEqual({ partner: ['spd'], sitze: 329, chance: 0.7 });
+  expect(liste[1].chance).toBeCloseTo(chance('union', 'gruene', z.sitze) * chance('union', 'linke', z.sitze), 10);
+  // minimal: keine Kombination enthält eine andere
+  for (const a of liste) for (const b of liste) if (a !== b) expect(b.partner.every((id) => a.partner.includes(id))).toBe(false);
+  // SPD: nur mit der Union, Größenfaktor in der Chance
+  expect(moeglicheKoalitionen(nachWahl('spd'))).toEqual([{ partner: ['union'], sitze: 329, chance: chance('spd', 'union', nachWahl('spd').sitze) }]);
+});
+
+test('mögliche Koalitionen: abgelehnte Partner fehlen, eigene Mehrheit zuerst mit Alleinregierung', () => {
+  const z = nachWahl('union');
+  expect(moeglicheKoalitionen({ ...z, abgelehnt: ['spd'] }).map((k) => k.partner)).toEqual([['gruene', 'linke']]);
+  const allein = moeglicheKoalitionen(mitSitzen('union', { union: 400, spd: 100, gruene: 80, afd: 50 }));
+  expect(allein.map((k) => k.partner)).toEqual([[], ['spd'], ['gruene']]);
+  expect(allein[0].chance).toBe(1);
 });

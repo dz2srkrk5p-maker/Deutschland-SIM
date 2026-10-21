@@ -37,6 +37,23 @@ export function mehrheitMoeglich(zustand) {
   return eigene > 0 && eigene + sitzSumme(zustand.sitze, moeglichePartner(zustand)) >= mehrheit(zustand.sitze);
 }
 
+// Partnerkombinationen mit Mehrheit, nach Gesamtchance (Produkt der Einzelchancen wie in verhandeln), dann Sitzen.
+// Nur minimale: Ohne irgendeinen Partner fehlt die Mehrheit. Bei eigener Mehrheit: Alleinregierung plus je ein Partner.
+export function moeglicheKoalitionen(zustand) {
+  const spieler = zustand.spielerParteiId;
+  const kandidaten = moeglichePartner(zustand);
+  const noetig = mehrheit(zustand.sitze);
+  const liste = [];
+  for (let maske = 0; maske < 2 ** kandidaten.length; maske++) {
+    const partner = kandidaten.filter((_, i) => maske & (1 << i));
+    const sitze = sitzSumme(zustand.sitze, [spieler, ...partner]);
+    if (sitze < noetig) continue;
+    if (partner.length > 1 && partner.some((id) => sitze - zustand.sitze[id] >= noetig)) continue;
+    liste.push({ partner, sitze, chance: partner.reduce((c, id) => c * chance(spieler, id, zustand.sitze), 1) });
+  }
+  return liste.sort((a, b) => b.chance - a.chance || b.sitze - a.sitze);
+}
+
 // Kanzlerwahl: jeder Koalitionsabgeordnete weicht mit fester Wahrscheinlichkeit ab.
 function kanzlerwahl(zustand, koalitionsSitze) {
   let rngZustand = zustand.rngZustand;

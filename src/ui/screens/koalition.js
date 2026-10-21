@@ -1,6 +1,6 @@
 import { parteien } from '../../data/parteien.js';
 import { bundestagSvg } from '../components/bundestag.js';
-import { mehrheit, chance, moeglichePartner } from '../../engine/koalition.js';
+import { mehrheit, chance, moeglichePartner, moeglicheKoalitionen } from '../../engine/koalition.js';
 import { protokollHtml } from '../components/protokoll.js';
 
 // Wahlergebnis und Koalitionsbildung.
@@ -22,10 +22,25 @@ export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
     </label>`;
   };
 
+  const koalitionen = moeglicheKoalitionen(zustand);
+  const punkt = (p) => `<span class="punkt" style="background:${p.farbe}"></span>`;
+  const kombi = (k, i) => {
+    const mit = k.partner.map((id) => parteien.find((p) => p.id === id));
+    const titel = mit.length ? [spieler, ...mit].map((p) => p.name).join(', ') : 'Allein regieren';
+    return `<div class="kombi">
+      <span>${[spieler, ...mit].map(punkt).join('')} ${titel}</span>
+      <span>${k.sitze} Sitze</span>
+      <span>Chance ${Math.round(k.chance * 100)} %</span>
+      <button data-kombi="${i}" aria-label="${titel} auswählen">Auswählen</button>
+    </div>`;
+  };
+
   el.innerHTML = `
     <h1>Regierungsbildung</h1>
     <p>${spieler.name} hat <strong>${eigene} Sitze</strong>. Für eine Mehrheit braucht es <strong>${noetig}</strong>.</p>
     ${bundestagSvg(zustand.sitze, parteien)}
+    <h2>Mögliche Mehrheiten</h2>
+    <div class="kombiliste">${koalitionen.map(kombi).join('')}</div>
     <h2>Partner wählen</h2>
     <div class="partnerliste">${andere.map(zeile).join('')}</div>
     <p id="summe"></p>
@@ -41,6 +56,14 @@ export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
     knopf.textContent = gewaehlt().length ? 'Verhandeln' : 'Allein regieren';
   };
   el.querySelectorAll('input').forEach((i) => i.addEventListener('change', aktualisieren));
+  // setzt nur die Häkchen; verhandelt wird erst mit dem Knopf
+  el.querySelectorAll('[data-kombi]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const { partner } = koalitionen[Number(b.dataset.kombi)];
+      el.querySelectorAll('input').forEach((i) => (i.checked = partner.includes(i.value)));
+      aktualisieren();
+    }),
+  );
   knopf.addEventListener('click', () => onVerhandeln({ partner: gewaehlt() }));
   aktualisieren();
 }
