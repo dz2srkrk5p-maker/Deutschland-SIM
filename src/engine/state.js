@@ -2,7 +2,7 @@ import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 1;
+export const ZUSTAND_VERSION = 2; // 2: wahlergebnis, wahlkampfStart (F05)
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -16,6 +16,9 @@ export function neuesSpiel(spielerParteiId, seed) {
     wahlkampfWoche: 1,
     spielerParteiId,
     anteile: Object.fromEntries(parteien.map((p) => [p.id, p.startanteil])),
+    wahlkampfStart: partei.startanteil, // eigener Anteil vor Woche 1, für die Wahlkampfbilanz
+    // letzte Wahl der Partie: { anteile, vorher (Anteile der Wahl davor, bei der ersten Wahl 2025), wahlkampf (Bilanz) }
+    wahlergebnis: null,
     sitze: null, // erst nach der Wahl gesetzt: { parteiId: Sitze }
     abgelehnt: [], // Parteien, die in dieser Wahlperiode eine Koalition abgelehnt haben
     koalition: null, // { partner: [parteiId] } nach erfolgreicher Verhandlung
@@ -36,6 +39,7 @@ export function zurueckInDenWahlkampf(zustand) {
     ...zustand,
     phase: 'wahlkampf',
     wahlkampfWoche: 1,
+    wahlkampfStart: zustand.anteile[zustand.spielerParteiId],
     sitze: null,
     abgelehnt: [],
     koalition: null,

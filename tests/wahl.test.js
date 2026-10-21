@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 import { wahl } from '../src/engine/wahl.js';
 import { sainteLague } from '../src/engine/hoechstzahl.js';
-import { neuesSpiel } from '../src/engine/state.js';
+import { neuesSpiel, zurueckInDenWahlkampf } from '../src/engine/state.js';
 import { zufall } from '../src/engine/rng.js';
 import { parteien } from '../src/data/parteien.js';
 
@@ -75,4 +75,20 @@ test('Wahl mit Startwerten 2025: 630 Sitze, Phase Koalition, nah am echten Ergeb
   // echtes Ergebnis 2025 ohne SSW (1 Sitz): höchstens 1 Sitz Abweichung je Partei
   for (const p of parteien) expect(Math.abs((state.sitze[p.id] ?? 0) - p.sitze2025)).toBeLessThanOrEqual(1);
   expect(ereignisse).toHaveLength(1);
+});
+
+test('Wahlergebnis: erste Wahl gegen 2025, zweite gegen die erste, Wahlkampfbilanz netto', () => {
+  const start = neuesSpiel('spd', 1);
+  const erste = wahl({ ...start, anteile: { ...start.anteile, spd: 17.4, sonstige: start.anteile.sonstige - 1 } }).state;
+  expect(erste.wahlergebnis.vorher.spd).toBe(16.4); // Ergebnis 2025
+  expect(erste.wahlergebnis.anteile.spd).toBe(17.4);
+  expect(erste.wahlergebnis.wahlkampf).toBe(1);
+
+  const wahlkampf = zurueckInDenWahlkampf(erste);
+  expect(wahlkampf.wahlkampfStart).toBe(17.4);
+  expect(wahlkampf.wahlergebnis).toEqual(erste.wahlergebnis); // bleibt für den nächsten Vergleich
+  const zweite = wahl({ ...wahlkampf, anteile: { ...wahlkampf.anteile, spd: 16.9, sonstige: wahlkampf.anteile.sonstige + 0.5 } }).state;
+  expect(zweite.wahlergebnis.vorher).toEqual(erste.wahlergebnis.anteile);
+  expect(zweite.wahlergebnis.anteile.spd).toBe(16.9);
+  expect(zweite.wahlergebnis.wahlkampf).toBe(-0.5);
 });

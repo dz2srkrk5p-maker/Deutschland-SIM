@@ -22,6 +22,7 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Felder: `version`, `phase`, `spielerParteiId`, `anteile` (Prozent je Partei), `rngZustand`. Weitere Felder kommen mit ihren Meilensteinen.
 - Speichern als JSON-Text. Laden lehnt kaputte Spielstände und solche mit anderer `version` ab.
 - Zufall: Mulberry32 in `src/engine/rng.js`, Generatorzustand liegt im Spielzustand.
+- Version 2 (F05, freigegeben 2026-10-21): `wahlkampfStart` (eigener Anteil vor Woche 1; gesetzt bei neuem Spiel und bei Rückkehr in den Wahlkampf) und `wahlergebnis` (`null` bis zur ersten Wahl, danach `{ anteile, vorher, wahlkampf }`). `wahl()` schreibt es: `vorher` = Anteile der vorigen Wahl der Partie, bei der ersten Wahl die Ergebnisse 2025 aus `parteien.js`; `wahlkampf` = eigener Anteil bei der Wahl minus `wahlkampfStart` (enthält die Schwankung). Spielstände der Version 1 werden verworfen.
 
 ## System: Wahl und Sitzverteilung (freigegeben 2026-10-20, M3)
 - Datei: `src/engine/wahl.js` (`sainteLague`, Aktion `wahl`).
@@ -123,6 +124,7 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Endbildschirm (`src/ui/screens/ende.js`, ab M10) für Sieg und Opposition; ersetzt den früheren Platzhalter.
 - Erklärtexte (F03, freigegeben 2026-10-21): unter der Überschrift jedes Bildschirms eine Box mit 1–3 Sätzen (Texte in `src/data/hinweise.js`, Zahlen aus `config.js`), auf dem Startbildschirm das Spielziel. Ein Knopf „Hinweise ausblenden“ blendet alle aus; auf dem Startbildschirm dann „Hinweise wieder anzeigen“. Gemerkt in `localStorage` unter `desim-hinweise`, nicht im Spielstand (bleibt bei neuem Spiel). Gesperrter Speicher: Hinweise bleiben an.
 - Bedienbarkeit (F04, freigegeben 2026-10-21): Nach jeder Aktion (auch Spielstart, Weiterspielen, Neues Spiel, Hinweise aus/ein) bekommt die Überschrift (`h1`, `tabindex=-1`) den Fokus, beim ersten Laden nicht. Der neueste Protokolleintrag einer Aktion wird über die Live-Region `#ansage` (`aria-live="polite"`, visuell versteckt) angesagt. Haushalt: Bei −/+ bleibt der Fokus auf demselben Knopf; an der Grenze ist er `aria-disabled` statt `disabled`, damit der Fokus nicht verloren geht. Kontrast: gesperrte Partner `#666` statt `#888` (5,7:1 statt 3,5:1); `.ok`, `.rot`, `.gelb` liegen über 4,5:1.
+- Wahlabend (F05, freigegeben 2026-10-21): oben im Koalitionsbildschirm „Euer Wahlkampf: ±x,xx Punkte“ und Tabelle Partei | Stimmen | ± (zur vorigen Wahl, bei der ersten zu 2025) | Sitze, alle Parteien in der Reihenfolge von `parteien.js`, eigene fett. Führt die Wahl direkt in die Opposition, gibt es den Bildschirm nicht und damit auch keinen Wahlabend.
 
 ## Systeme
 Noch offen: Koalition, Kabinett, Haushalt, Bundesrat, Game Over. Werden abgefragt, wenn sie laut PLAN.md dran sind.

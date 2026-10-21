@@ -1,5 +1,6 @@
 import { hinweisHtml } from '../components/hinweis.js';
 import { parteien } from '../../data/parteien.js';
+import { config } from '../../data/config.js';
 import { bundestagSvg } from '../components/bundestag.js';
 import { mehrheit, chance, moeglichePartner, moeglicheKoalitionen } from '../../engine/koalition.js';
 import { protokollHtml } from '../components/protokoll.js';
@@ -36,9 +37,24 @@ export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
     </div>`;
   };
 
+  // Wahlabend: Stimmen, Veränderung zur vorigen Wahl (bei der ersten: 2025), Sitze
+  const w = zustand.wahlergebnis;
+  const zahl = (x) => x.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const plusMinus = (x) => (Math.round(x * 100) === 0 ? '±0,00' : (x > 0 ? '+' : '−') + zahl(Math.abs(x)));
+  const wahlabend = `
+    <h2>Wahlergebnis</h2>
+    <p>Euer Wahlkampf: <strong>${plusMinus(w.wahlkampf)} Punkte</strong> <small>(Umfrage am Ende von Woche ${config.wahlkampf.wochen} minus vor Woche 1, mit Schwankung)</small></p>
+    <table class="wahlergebnis">
+      <thead><tr><th scope="col">Partei</th><th scope="col">Stimmen</th><th scope="col">±</th><th scope="col">Sitze</th></tr></thead>
+      <tbody>${parteien.map((p) => `
+        <tr${p.id === spieler.id ? ' class="eigene"' : ''}><th scope="row">${punkt(p)}${p.name}</th><td>${zahl(w.anteile[p.id])} %</td><td>${plusMinus(w.anteile[p.id] - w.vorher[p.id])}</td><td>${zustand.sitze[p.id] ?? '–'}</td></tr>`).join('')}
+      </tbody>
+    </table>`;
+
   el.innerHTML = `
     <h1>Regierungsbildung</h1>
     ${hinweisHtml('koalition')}
+    ${wahlabend}
     <p>${spieler.name} hat <strong>${eigene} Sitze</strong>. Für eine Mehrheit braucht es <strong>${noetig}</strong>.</p>
     ${bundestagSvg(zustand.sitze, parteien)}
     <h2>Mögliche Mehrheiten</h2>

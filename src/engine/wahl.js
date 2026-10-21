@@ -5,6 +5,7 @@ import { mehrheitMoeglich } from './koalition.js';
 
 // Prozentwerte haben höchstens 3 Nachkommastellen; als ganze Tausendstel gerechnet gibt es keine Rundungsfehler.
 const inTausendstel = (prozent) => Math.round(prozent * 1000);
+const runden3 = (prozent) => inTausendstel(prozent) / 1000;
 
 // Kommt eine Partei mit diesem Anteil in den Bundestag? (Auch für die Anzeige im Wahlkampf.)
 export function ueberHuerde(partei, anteil) {
@@ -23,7 +24,10 @@ export function wahl(zustand) {
   const ergebnis = parteien.filter((p) => sitze[p.id]).map((p) => `${p.name} ${sitze[p.id]}`);
   const eigenerAnteil = zustand.anteile[zustand.spielerParteiId];
   const statistik = { ...zustand.statistik, besteWahl: Math.max(zustand.statistik.besteWahl ?? 0, eigenerAnteil) };
-  const state = { ...zustand, sitze, rngZustand, statistik, phase: 'koalition', abgelehnt: [], koalition: null, kabinett: null };
+  // Vergleich mit der vorigen Wahl der Partie, bei der ersten mit dem Ergebnis 2025 (Startwerte)
+  const vorher = zustand.wahlergebnis?.anteile ?? Object.fromEntries(parteien.map((p) => [p.id, p.startanteil]));
+  const wahlergebnis = { anteile: zustand.anteile, vorher, wahlkampf: runden3(eigenerAnteil - zustand.wahlkampfStart) };
+  const state = { ...zustand, sitze, rngZustand, statistik, wahlergebnis, phase: 'koalition', abgelehnt: [], koalition: null, kabinett: null };
   const ereignisse = [`Bundestagswahl: ${ergebnis.join(', ')}`];
   if (mehrheitMoeglich(state)) return { state, ereignisse };
   return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Mehrheit möglich: Opposition'] };

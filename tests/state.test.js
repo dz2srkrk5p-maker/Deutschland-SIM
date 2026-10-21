@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { neuesSpiel, speichern, laden } from '../src/engine/state.js';
+import { neuesSpiel, speichern, laden, ZUSTAND_VERSION } from '../src/engine/state.js';
 import { zufall } from '../src/engine/rng.js';
 
 test('Anfangszustand enthält Startwerte aus den Daten', () => {
@@ -27,4 +27,12 @@ test('ungültige Eingaben werden abgelehnt', () => {
   expect(() => neuesSpiel('spd', 1.5)).toThrow();
   expect(() => laden('{"version":0}')).toThrow();
   expect(() => laden('kein json')).toThrow();
+});
+
+test('Version 2 (F05): neue Felder gesetzt, Spielstände der Version 1 werden abgelehnt', () => {
+  const z = neuesSpiel('spd', 1);
+  expect(ZUSTAND_VERSION).toBe(2);
+  expect(z.wahlergebnis).toBeNull();
+  expect(z.wahlkampfStart).toBe(16.4);
+  expect(() => laden(JSON.stringify({ ...z, version: 1 }))).toThrow();
 });
