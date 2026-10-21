@@ -64,8 +64,8 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
     <div class="posten">
       <span><span class="punkt" style="background:${farbe}"></span>${titel}</span>
       <span class="betrag">${euro(betrag)}${prozent(stufe, schritt)}</span>
-      <button data-key="${key}" data-dir="-1" ${stufe <= -max ? 'disabled' : ''} aria-label="${titel} senken">−</button>
-      <button data-key="${key}" data-dir="1" ${stufe >= max ? 'disabled' : ''} aria-label="${titel} erhöhen">+</button>
+      <button data-key="${key}" data-dir="-1" ${stufe <= -max ? 'aria-disabled="true"' : ''} aria-label="${titel} senken">−</button>
+      <button data-key="${key}" data-dir="1" ${stufe >= max ? 'aria-disabled="true"' : ''} aria-label="${titel} erhöhen">+</button>
     </div>`;
 
   function zeichne() {
@@ -97,10 +97,13 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
 
     el.querySelectorAll('[data-key]').forEach((knopf) =>
       knopf.addEventListener('click', () => {
+        if (knopf.getAttribute('aria-disabled') === 'true') return;
         const d = Number(knopf.dataset.dir);
         if (knopf.dataset.key === 'steuern') steuerStufe += d;
         else stufen[knopf.dataset.key] = (stufen[knopf.dataset.key] ?? 0) + d;
         zeichne();
+        // Fokus zurück auf denselben Knopf, sonst springt er bei jedem Klick nach oben
+        el.querySelector(`[data-key="${knopf.dataset.key}"][data-dir="${d}"]`).focus();
       }),
     );
     el.querySelector('#beschliessen').addEventListener('click', () => onBeschliessen({ stufen: { ...stufen }, steuerStufe }));

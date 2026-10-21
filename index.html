@@ -18,7 +18,7 @@
       .wert { text-align: right; font-variant-numeric: tabular-nums; }
       .partner { display: grid; grid-template-columns: auto 1fr auto 7.5em; gap: 8px; align-items: center; min-height: 44px; }
       .partner > span:last-child { text-align: right; }
-      .partner.gesperrt { color: #888; }
+      .partner.gesperrt { color: #666; } /* #888 hatte nur 3,5:1 Kontrast auf Weiß */
       .partner input { width: 22px; height: 22px; }
       .kombi { display: grid; grid-template-columns: 1fr auto 7.5em auto; gap: 8px; align-items: center; min-height: 44px; }
       .kombi > span:nth-child(3) { text-align: right; }
@@ -30,6 +30,8 @@
       .fehler { color: #b00; }
       .posten { display: grid; grid-template-columns: 1fr auto 44px 44px; gap: 6px; align-items: center; padding: 2px 0; }
       .posten button { padding: 0; font-size: 1.2em; }
+      /* Grenze erreicht: aria-disabled statt disabled, damit der Fokus auf dem Knopf bleiben kann */
+      .posten button[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
       .betrag { text-align: right; font-variant-numeric: tabular-nums; }
       .bilanz { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-variant-numeric: tabular-nums; }
       .bilanz > span:nth-child(even) { text-align: right; }
@@ -44,11 +46,14 @@
       }
       .rot { color: #b00; font-weight: bold; }
       .gelb { color: #8a5a00; font-weight: bold; }
+      /* nur für Screenreader sichtbar */
+      .nur-screenreader { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
       .hinweis { background: #f3f6fa; border-left: 4px solid #5577aa; padding: 4px 12px 10px; margin: 8px 0 16px; }
     </style>
   </head>
   <body>
     <div id="app"></div>
+    <div id="ansage" aria-live="polite" class="nur-screenreader"></div>
     <script type="module" src="/src/ui/app.js"></script>
   </body>
 </html>

@@ -12,6 +12,7 @@ import { endeScreen } from './screens/ende.js';
 import { spielSichern, spielLaden, spielLoeschen, hinweiseSetzen } from '../storage/speicher.js';
 
 const el = document.querySelector('#app');
+const ansage = document.querySelector('#ansage');
 let zustand = null;
 let protokoll = [];
 
@@ -21,7 +22,14 @@ function zeichne() {
   if (zustand.phase === 'koalition') return koalitionScreen(el, zustand, protokoll, { onVerhandeln: ausfuehren(verhandeln) });
   if (zustand.phase === 'kabinett') return kabinettScreen(el, zustand, protokoll, { onBestaetigen: ausfuehren(bestaetigen) });
   if (zustand.phase === 'regierung') return haushaltScreen(el, zustand, protokoll, { onBeschliessen: ausfuehren(haushaltBeschliessen) });
-  return endeScreen(el, zustand, protokoll, { onNeu: () => (spielLoeschen(), (zustand = null), zeichne()) });
+  return endeScreen(el, zustand, protokoll, { onNeu: () => (spielLoeschen(), (zustand = null), zeichne(), fokusOben()) });
+}
+
+// Nach dem Neuzeichnen ist das fokussierte Element weg (Fokus auf body). Nach einer Aktion daher auf die Überschrift, nicht beim ersten Laden.
+function fokusOben() {
+  const h1 = el.querySelector('h1');
+  h1.tabIndex = -1;
+  h1.focus();
 }
 
 function starten(parteiId) {
@@ -30,11 +38,13 @@ function starten(parteiId) {
   protokoll = [];
   spielSichern(zustand, protokoll);
   zeichne();
+  fokusOben();
 }
 
 function weiterspielen() {
   ({ zustand, protokoll } = spielLaden());
   zeichne();
+  fokusOben();
 }
 
 // Engine-Aktion ausführen, Zustand und Protokoll übernehmen, automatisch sichern, neu zeichnen
@@ -44,6 +54,10 @@ const ausfuehren = (aktion) => (params) => {
   protokoll = [...protokoll, ...ergebnis.ereignisse];
   spielSichern(zustand, protokoll);
   zeichne();
+  fokusOben();
+  // Screenreader: nur den neuesten Eintrag ansagen. Erst leeren, damit auch ein gleicher Text erneut angesagt wird.
+  ansage.textContent = '';
+  if (ergebnis.ereignisse.length) setTimeout(() => (ansage.textContent = ergebnis.ereignisse.at(-1)), 50);
 };
 
 // Hinweise aus-/einblenden (Knöpfe aus hinweis.js und start.js). Ausblenden entfernt nur die Box, damit z. B. Haushaltseingaben bleiben.
@@ -55,6 +69,7 @@ el.addEventListener('click', (e) => {
   // Startbildschirm neu zeichnen, damit dort der Knopf zum Wiedereinblenden erscheint
   if (an || !zustand) zeichne();
   else knopf.closest('.hinweis').remove();
+  fokusOben();
 });
 
 zeichne();
