@@ -16,3 +16,9 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | M9 | Bundesrat | Bildschirm und Mehrheiten | fertig |
 | M10 | Game Over und Balancing | Alle Bedingungen testbar | fertig |
 | M11 | Speichern/Laden in der UI, Spielablauf komplett | Durchlauf von Start bis Ende | fertig |
+
+## Features nach M11 (siehe `docs/auftraege/`)
+
+| Nr | Feature | Stand |
+|----|---------|-------|
+| F01 | Warnung vor Koalitionsbruch im Haushalt | fertig (2026-10-21) |

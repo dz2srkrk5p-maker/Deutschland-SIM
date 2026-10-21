@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { koalitionsbruch, haushaltBeschliessen } from '../src/engine/haushalt.js';
+import { koalitionsbruch, bruchAbstand, vorschau, haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { verhandeln } from '../src/engine/koalition.js';
 import { wahl } from '../src/engine/wahl.js';
 import { neuesSpiel } from '../src/engine/state.js';
@@ -30,6 +30,22 @@ test('Koalitionsbruch: knapp über der Grenze löst aus, genau auf der Grenze ni
   const grenze = config.spielende.koalitionsbruchPunkte;
   expect(koalitionsbruch(mitAnteil(imAmt(), 'gruene', 11.6 - grenze)).state.koalition.partner).toEqual(['union', 'gruene']);
   expect(koalitionsbruch(mitAnteil(imAmt(), 'gruene', 11.6 - grenze - 0.01)).state.koalition.partner).toEqual(['union']);
+});
+
+test('bruchAbstand: dieselben Grenzfälle wie koalitionsbruch (−1,50 bleibt, −1,51 geht)', () => {
+  const grenze = config.spielende.koalitionsbruchPunkte;
+  const gruene = (z, anteile) => bruchAbstand(z, anteile).find((a) => a.id === 'gruene');
+  expect(gruene(mitAnteil(imAmt(), 'gruene', 11.6 - grenze))).toEqual({ id: 'gruene', verlust: grenze, grenze, geht: false });
+  expect(gruene(mitAnteil(imAmt(), 'gruene', 11.6 - grenze - 0.01)).geht).toBe(true);
+  // Plan-Anteile (z. B. aus vorschau) statt zustand.anteile
+  expect(gruene(imAmt(), mitAnteil(imAmt(), 'gruene', 11.6 - grenze - 0.01).anteile).geht).toBe(true);
+});
+
+test('vorschau: Anteile nach fester Wirkung, Summe 100, Kürzung beim Partner vergrößert seinen Verlust', () => {
+  const z = imAmt();
+  const v = vorschau(z, { stufen: { umwelt: -1 } });
+  expect(Object.values(v.anteile).reduce((s, a) => s + a, 0)).toBeCloseTo(100, 6);
+  expect(v.anteile.gruene).toBeCloseTo(z.anteile.gruene + v.wirkung.gruene, 3);
 });
 
 test('Bruch mit verbleibender Mehrheit: weiterregieren, Ministerien an den Spieler', () => {

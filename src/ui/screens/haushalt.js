@@ -1,7 +1,7 @@
 import { parteien } from '../../data/parteien.js';
 import { ministerien } from '../../data/ministerien.js';
 import { config } from '../../data/config.js';
-import { vorschau, mrd } from '../../engine/haushalt.js';
+import { vorschau, mrd, bruchAbstand } from '../../engine/haushalt.js';
 import { protokollHtml } from '../components/protokoll.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
@@ -29,6 +29,25 @@ const hh = config.haushalt;
 const partei = (id) => parteien.find((p) => p.id === id);
 const euro = (tausend) => mrd(tausend).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Mrd.';
 const pp = (w) => (w >= 0 ? '+' : '−') + Math.abs(w).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const farbe = (a) => (a.geht ? 'rot' : a.verlust >= a.grenze * config.spielende.warnAnteil ? 'gelb' : 'ok');
+
+// Je Partner: Verlust seit Regierungsbildung jetzt und nach diesem Haushalt (feste Wirkung). Bei Alleinregierung leer.
+function koalitionHtml(zustand, anteile) {
+  const jetzt = bruchAbstand(zustand);
+  if (!jetzt.length) return '';
+  const nachher = bruchAbstand(zustand, anteile);
+  // drei Stellen, weil die Grenze in Tausendsteln gilt: −1,503 geht, würde mit zwei Stellen aber als −1,50 erscheinen
+  const punkte = (v) => (v > 0 ? '−' : '+') + Math.abs(v).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+  return `
+    <h2>Koalition</h2>
+    ${jetzt.map((a, i) => {
+      const n = nachher[i];
+      return `<p>${partei(a.id).name}: <span class="${farbe(a)}">jetzt ${punkte(a.verlust)}</span> ·
+        <span class="${farbe(n)}">nach diesem Haushalt ${punkte(n.verlust)}</span> von −${a.grenze.toLocaleString('de-DE', { minimumFractionDigits: 2 })} Punkten${n.geht ? ' – <strong class="rot">würde die Koalition verlassen</strong>' : ''}</p>`;
+    }).join('')}
+    <p><small>Ohne die zufällige Schwankung von ±${config.wahlkampf.schwankungMax.toLocaleString('de-DE')} Punkten; das Ergebnis kann davon abweichen.</small></p>`;
+}
+
 const prozent = (stufe, schritt) => (stufe ? ` <small>(${stufe > 0 ? '+' : '−'}${Math.abs(stufe * schritt)} %)</small>` : '');
 
 // Haushalt des laufenden Jahres aufstellen und beschließen.
@@ -63,6 +82,7 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
         <span>Schuldenbremse</span><span class="${b.eingehalten ? 'ok' : 'rot'}">${euro(b.schuldenbremse)} von ${euro(hh.schuldenbremseGrenze)} ${b.eingehalten ? '✓' : '✗ überschritten'}</span>
         ${v.bundesrat ? `<span>Bundesrat (wegen Steueränderung)</span><span class="${v.bundesrat.mehrheit ? 'ok' : 'rot'}">${v.bundesrat.ja} von ${v.bundesrat.noetig} Stimmen ${v.bundesrat.mehrheit ? '✓' : '✗ keine Mehrheit'}</span>` : ''}
       </div>
+      ${koalitionHtml(zustand, v.anteile)}
       <h2>Wirkung auf die Umfragen</h2>
       <p>${wirkung.length ? wirkung.map(([id, w]) => `${partei(id).name} ${pp(w)}`).join(' · ') : 'Keine Änderung gegenüber dem Vorjahr.'}</p>
       <h2>Einnahmen</h2>

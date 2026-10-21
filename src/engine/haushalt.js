@@ -53,7 +53,8 @@ export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
   }
   // Steueränderungen brauchen die Zustimmung des Bundesrats (Art. 105 GG), der übrige Haushalt nicht
   const bundesrat = steuerStufe ? bundesratAbstimmung(koalitionsParteien(zustand)) : null;
-  return { etats, steuern, bilanz: bilanz(etats, steuern), wirkung, bundesrat };
+  // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
+  return { etats, steuern, bilanz: bilanz(etats, steuern), wirkung, bundesrat, anteile: runden(umverteilen(zustand.anteile, wirkung)) };
 }
 
 // Aktion: Haushalt des laufenden Jahres beschließen. Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
@@ -95,12 +96,21 @@ export function haushaltBeschliessen(zustand, params) {
   };
 }
 
+// Verlust jedes Partners seit der Regierungsbildung und die Bruchgrenze, in Prozentpunkten. Gerechnet in Tausendsteln.
+export function bruchAbstand(zustand, anteile = zustand.anteile) {
+  const { partner, startAnteile } = zustand.koalition;
+  const grenze = Math.round(config.spielende.koalitionsbruchPunkte * 1000);
+  return partner.map((id) => {
+    const verlust = Math.round((startAnteile[id] - anteile[id]) * 1000);
+    return { id, verlust: verlust / 1000, grenze: grenze / 1000, geht: verlust > grenze };
+  });
+}
+
 // Partner, deren Umfrage mehr als koalitionsbruchPunkte unter dem Wert bei Regierungsbildung liegt, verlassen die Koalition.
 // Ihre Ministerien gehen an die Spielerpartei. Ohne verbleibende Mehrheit: vorgezogene Neuwahl.
 export function koalitionsbruch(zustand) {
-  const { partner, startAnteile } = zustand.koalition;
-  const grenze = Math.round(config.spielende.koalitionsbruchPunkte * 1000);
-  const gehen = partner.filter((id) => Math.round((startAnteile[id] - zustand.anteile[id]) * 1000) > grenze);
+  const { partner } = zustand.koalition;
+  const gehen = bruchAbstand(zustand).filter((a) => a.geht).map((a) => a.id);
   if (!gehen.length) return { state: zustand, ereignisse: [], neuwahl: false };
 
   const spieler = zustand.spielerParteiId;

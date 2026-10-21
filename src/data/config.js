@@ -51,6 +51,7 @@ export const config = {
   spielende: {
     // Partner verlässt die Koalition, wenn seine Umfrage um mehr als diese Prozentpunkte unter dem Wert bei Regierungsbildung liegt
     koalitionsbruchPunkte: 1.5, // Balancing 2026-10-21 (vorher 2,0)
+    warnAnteil: 0.5, // Haushalt zeigt einen Partner gelb ab diesem Anteil der Bruchgrenze (F01, freigegeben 2026-10-21)
     siegJahreKanzler: 12, // Haushaltsjahre als Kanzler, über Wahlperioden hinweg
   },
 };
