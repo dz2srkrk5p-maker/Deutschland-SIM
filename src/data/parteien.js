@@ -1,0 +1,17 @@
+// Startwerte: Zweitstimmen Bundestagswahl 2025 in Prozent, Quelle:
+// https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/bund-99.html
+// Union = CDU 22,6 + CSU 6,0. Sonstige = Rest auf 100. SSW bewusst weggelassen (freigegeben 2026-10-20).
+// sitze2025: echte Sitze laut derselben Quelle (Union = CDU 164 + CSU 44), nur zum Vergleich in der Anzeige.
+// sitzordnung: Platz im Plenum von links (1) nach rechts, für die Bundestag-Grafik. Spielentscheidung, keine offizielle Sitzordnung.
+// Farben sind Spielfarben, nicht offiziell.
+export const parteien = [
+  { id: 'union', name: 'CDU/CSU', farbe: '#000000', startanteil: 28.6, sitze2025: 208, sitzordnung: 6 },
+  { id: 'afd', name: 'AfD', farbe: '#009EE0', startanteil: 20.8, sitze2025: 152, sitzordnung: 7 },
+  { id: 'spd', name: 'SPD', farbe: '#E3000F', startanteil: 16.4, sitze2025: 120, sitzordnung: 4 },
+  { id: 'gruene', name: 'Grüne', farbe: '#1AA037', startanteil: 11.6, sitze2025: 85, sitzordnung: 3 },
+  { id: 'linke', name: 'Linke', farbe: '#BE3075', startanteil: 8.8, sitze2025: 64, sitzordnung: 1 },
+  { id: 'bsw', name: 'BSW', farbe: '#7D254F', startanteil: 4.981, sitze2025: 0, sitzordnung: 2 },
+  { id: 'fdp', name: 'FDP', farbe: '#FFED00', startanteil: 4.3, sitze2025: 0, sitzordnung: 5 },
+  // Sammelposten, bekommt nie Sitze
+  { id: 'sonstige', name: 'Sonstige', farbe: '#9E9E9E', startanteil: 4.519, sitze2025: 0, sonstige: true },
+];

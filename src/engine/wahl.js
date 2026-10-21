@@ -1,0 +1,30 @@
+import { config } from '../data/config.js';
+import { parteien } from '../data/parteien.js';
+import { sainteLague } from './hoechstzahl.js';
+import { mehrheitMoeglich } from './koalition.js';
+
+// Prozentwerte haben höchstens 3 Nachkommastellen; als ganze Tausendstel gerechnet gibt es keine Rundungsfehler.
+const inTausendstel = (prozent) => Math.round(prozent * 1000);
+
+// Kommt eine Partei mit diesem Anteil in den Bundestag? (Auch für die Anzeige im Wahlkampf.)
+export function ueberHuerde(partei, anteil) {
+  return !partei.sonstige && inTausendstel(anteil) >= inTausendstel(config.sperrklauselProzent);
+}
+
+// Aktion Bundestagswahl: aktuelle Anteile → Sitze, danach Phase Koalition (oder Opposition, wenn keine Mehrheit möglich ist).
+export function wahl(zustand) {
+  const stimmen = {};
+  for (const p of parteien) {
+    if (ueberHuerde(p, zustand.anteile[p.id])) stimmen[p.id] = inTausendstel(zustand.anteile[p.id]);
+  }
+  if (Object.keys(stimmen).length === 0) throw new Error('Keine Partei über der Sperrklausel');
+
+  const { sitze, rngZustand } = sainteLague(stimmen, config.sitzeBundestag, zustand.rngZustand);
+  const ergebnis = parteien.filter((p) => sitze[p.id]).map((p) => `${p.name} ${sitze[p.id]}`);
+  const eigenerAnteil = zustand.anteile[zustand.spielerParteiId];
+  const statistik = { ...zustand.statistik, besteWahl: Math.max(zustand.statistik.besteWahl ?? 0, eigenerAnteil) };
+  const state = { ...zustand, sitze, rngZustand, statistik, phase: 'koalition', abgelehnt: [], koalition: null, kabinett: null };
+  const ereignisse = [`Bundestagswahl: ${ergebnis.join(', ')}`];
+  if (mehrheitMoeglich(state)) return { state, ereignisse };
+  return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Mehrheit möglich: Opposition'] };
+}
