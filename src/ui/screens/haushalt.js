@@ -4,6 +4,7 @@ import { ministerien } from '../../data/ministerien.js';
 import { config } from '../../data/config.js';
 import { vorschau, mrd, bruchAbstand } from '../../engine/haushalt.js';
 import { protokollHtml } from '../components/protokoll.js';
+import { abstimmungHtml } from '../components/abstimmung.js';
 import { verlaufSvg } from '../components/verlauf.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
@@ -57,6 +58,7 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
   const stufen = {};
   let steuerStufe = 0;
   let bundesratOffen = false;
+  let bundestagOffen = false;
   const maxMinister = hh.ministerMaxProzent / hh.ministerSchrittProzent;
   const maxSteuer = hh.steuerMaxProzent / hh.steuerSchrittProzent;
   const verteilung = zustand.kabinett.verteilung;
@@ -83,6 +85,7 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
         <span>Neue Schulden</span><span>${euro(b.neueSchulden)}</span>
         <span>davon Verteidigungsausnahme</span><span>${euro(b.ausnahme)}</span>
         <span>Schuldenbremse</span><span class="${b.eingehalten ? 'ok' : 'rot'}">${euro(b.schuldenbremse)} von ${euro(hh.schuldenbremseGrenze)} ${b.eingehalten ? '✓' : '✗ überschritten'}</span>
+        <span>Bundestag</span><span class="${v.bundestag.angenommen ? 'ok' : 'rot'}">${v.bundestag.ja} Ja, ${v.bundestag.nein} Nein ${v.bundestag.angenommen ? '✓' : '✗ keine Mehrheit'}</span>
         ${v.bundesrat ? `<span>Bundesrat (wegen Steueränderung)</span><span class="${v.bundesrat.mehrheit ? 'ok' : 'rot'}">${v.bundesrat.ja} von ${v.bundesrat.noetig} Stimmen ${v.bundesrat.mehrheit ? '✓' : '✗ keine Mehrheit'}</span>` : ''}
       </div>
       ${koalitionHtml(zustand, v.anteile)}
@@ -94,7 +97,8 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
       ${zeile('steuern', `Steuern (${partei(verteilung.finanzen).name}, Finanzen)`, partei(verteilung.finanzen).farbe, v.steuern, steuerStufe, maxSteuer, hh.steuerSchrittProzent)}
       <h2>Ministerien</h2>
       ${ministerien.map((m) => zeile(m.id, m.kurz, partei(verteilung[m.id]).farbe, v.etats[m.id], stufen[m.id] ?? 0, maxMinister, hh.ministerSchrittProzent)).join('')}
-      <div class="knoepfe"><button id="beschliessen" ${b.eingehalten && v.bundesrat?.mehrheit !== false ? '' : 'disabled'}>Haushalt beschließen</button></div>
+      <div class="knoepfe"><button id="beschliessen" ${b.eingehalten && v.bundestag.angenommen && v.bundesrat?.mehrheit !== false ? '' : 'disabled'}>Haushalt beschließen</button></div>
+      ${abstimmungHtml(v.bundestag, 'Bundestag über den Haushalt', bundestagOffen)}
       ${bundesratHtml(bundesratAbstimmung(koalitionsParteien(zustand)), bundesratOffen)}
       ${protokollHtml(protokoll)}`;
 
@@ -112,6 +116,7 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
     el.querySelector('#beschliessen').addEventListener('click', () => onBeschliessen({ stufen: { ...stufen }, steuerStufe }));
     // aufgeklappt bleiben, wenn der Bildschirm nach einem Klick neu gezeichnet wird
     el.querySelector('.bundesrat').addEventListener('toggle', (e) => (bundesratOffen = e.target.open));
+    el.querySelector('.abstimmung').addEventListener('toggle', (e) => (bundestagOffen = e.target.open));
   }
   zeichne();
 }

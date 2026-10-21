@@ -4,6 +4,7 @@ import { ministerien } from '../data/ministerien.js';
 import { festeAusgaben2026, sonstigeEinnahmen2026 } from '../data/haushalt.js';
 import { umverteilen, schwankung, runden } from './wahlkampf.js';
 import { bundesratAbstimmung } from './bundesrat.js';
+import { abstimmung } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
 import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
@@ -54,7 +55,9 @@ export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
   // Steueränderungen brauchen die Zustimmung des Bundesrats (Art. 105 GG), der übrige Haushalt nicht
   const bundesrat = steuerStufe ? bundesratAbstimmung(koalitionsParteien(zustand)) : null;
   // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
-  return { etats, steuern, bilanz: bilanz(etats, steuern), wirkung, bundesrat, anteile: runden(umverteilen(zustand.anteile, wirkung)) };
+  // Der Haushalt braucht die einfache Mehrheit im Bundestag (F10); mit Koalitionsmehrheit immer erfüllt
+  const bundestag = abstimmung(zustand, 'haushalt');
+  return { etats, steuern, bilanz: bilanz(etats, steuern), wirkung, bundesrat, bundestag, anteile: runden(umverteilen(zustand.anteile, wirkung)) };
 }
 
 // Aktion: Haushalt des laufenden Jahres beschließen. Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
@@ -62,6 +65,7 @@ export function haushaltBeschliessen(zustand, params) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
   const v = vorschau(zustand, params);
   if (!v.bilanz.eingehalten) throw new Error('Schuldenbremse überschritten');
+  if (!v.bundestag.angenommen) throw new Error('Keine Mehrheit im Bundestag für den Haushalt');
   if (v.bundesrat && !v.bundesrat.mehrheit) throw new Error('Keine Mehrheit im Bundesrat für die Steueränderung');
 
   const s = schwankung(umverteilen(zustand.anteile, v.wirkung), zustand.rngZustand);

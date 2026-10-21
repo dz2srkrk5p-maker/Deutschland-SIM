@@ -51,6 +51,14 @@ export const config = {
     wirkungSteuerSenkungProMrd: 0.02,
   },
 
+  // Abstimmungen im Bundestag (F10, freigegeben 2026-10-21). Koalition stimmt geschlossen Ja. Opposition nach Abstand in der
+  // Sitzordnung zur nächsten Koalitionspartei. Angenommen bei mehr Ja als Nein, Enthaltungen zählen nicht
+  // (Art. 42 Abs. 2 GG; Bundestag-Glossar „Mehrheit, einfache“).
+  bundestag: {
+    stimmeNachAbstand: { 1: 'ja', 2: 'enthaltung' },
+    stimmeWeit: 'nein', // Abstand 3 oder mehr
+  },
+
   // Schwierigkeitsanzeige auf dem Startbildschirm (F06, freigegeben 2026-10-21): Stufe ab dieser Siegquote mit der
   // besten Wahlkampf-Strategie im Balancing (seit F08), darunter „fast unmöglich“. Prüft scripts/balancing.js.
   schwierigkeit: { leicht: 0.3, mittel: 0.1, schwer: 0.01 },

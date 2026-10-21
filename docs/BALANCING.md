@@ -85,6 +85,9 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `haushalt.wirkungKuerzungProMrd` | 0.05 | M8 (Zahlen 2026: Quelle in config.js) |
 | `haushalt.wirkungSteuerErhoehungProMrd` | 0.03 | M8 (Zahlen 2026: Quelle in config.js) |
 | `haushalt.wirkungSteuerSenkungProMrd` | 0.02 | M8 (Zahlen 2026: Quelle in config.js) |
+| `bundestag.stimmeNachAbstand.1` | "ja" | F10 (Art. 42 GG) |
+| `bundestag.stimmeNachAbstand.2` | "enthaltung" | F10 (Art. 42 GG) |
+| `bundestag.stimmeWeit` | "nein" | F10 (Art. 42 GG) |
 | `schwierigkeit.leicht` | 0.3 | F06 |
 | `schwierigkeit.mittel` | 0.1 | F06 |
 | `schwierigkeit.schwer` | 0.01 | F06 |

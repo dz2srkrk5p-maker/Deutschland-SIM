@@ -30,3 +30,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | F07 | Partie teilen über den Seed (Spielstand-Version 3) | fertig (2026-10-21) |
 | F08 | Wahlkampf ohne Dauerstrategie: abnehmender Ertrag (Spielstand-Version 4) | fertig (2026-10-21) |
 | F09 | Umfrageverlauf als Linie (Spielstand-Version 5) | fertig (2026-10-21) |
+| F10 | Abstimmungen im Bundestag (Grundlage), Haushalt braucht Mehrheit | fertig (2026-10-21) |

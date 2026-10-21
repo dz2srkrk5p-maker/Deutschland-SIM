@@ -98,6 +98,16 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Beispiele: Union+SPD 24, Union+SPD+Grüne 49, SPD+Grüne+Linke 18 Stimmen.
 - Nicht enthalten (bewusst): Landtagswahlen im Spiel, Vermittlungsausschuss, weitere Gesetze.
 
+## System: Bundestag-Abstimmung (freigegeben 2026-10-21, F10)
+- Datei: `src/engine/bundestag.js` (`abstimmung(zustand, vorlage)` → `{ vorlage, ja, nein, enthaltung, angenommen, fraktionen: [{ id, sitze, stimme }] }`). Zahlen: `config.bundestag`. Anzeige: `src/ui/components/abstimmung.js`.
+- Ohne Zufall, damit das Ergebnis vorher sichtbar ist. Koalitionsfraktionen stimmen geschlossen Ja.
+- Opposition nach Abstand in der Sitzordnung zur nächsten Koalitionspartei: Abstand 1 → Ja, 2 → Enthaltung, ab 3 → Nein.
+- Angenommen bei mehr Ja- als Nein-Stimmen; Enthaltungen zählen nicht; Gleichstand ist abgelehnt (Art. 42 Abs. 2 GG, Bundestag-Glossar „Mehrheit, einfache“, geprüft 2026-10-21).
+- Brandmauer: AfD-Stimmen zählen wie alle anderen (Abstimmung ist keine Koalition). Folgen dafür kommen erst mit einer eigenen Brandmauer-Regel (siehe OFFENE-FRAGEN.md).
+- Haushalt: wird im Bundestag abgestimmt; der Knopf „Haushalt beschließen“ ist ohne Mehrheit gesperrt. Mit Koalitionsmehrheit immer angenommen, wichtig erst mit F11. Der Haushaltsbildschirm zeigt die Zeile „Bundestag: x Ja, y Nein“ und die aufklappbare Liste der Fraktionen.
+- Beispiel mit Sitzen 2025: Union+SPD 566 Ja / 64 Nein; Grüne allein 205 Ja / 361 Nein / 64 Enthaltung (abgelehnt); Union allein 361 Ja (mit AfD) / 149 Nein.
+- Nicht enthalten (bewusst): Ausschüsse, Lesungen, Fraktionsdisziplin-Werte, Abstimmung nach Inhalt der Vorlage (später mit F13 möglich).
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition).
