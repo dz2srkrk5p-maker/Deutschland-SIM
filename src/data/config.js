@@ -47,6 +47,10 @@ export const config = {
     wirkungSteuerSenkungProMrd: 0.02,
   },
 
+  // Schwierigkeitsanzeige auf dem Startbildschirm (F06, freigegeben 2026-10-21): Stufe ab dieser Siegquote im
+  // Balancing (Strategie „Haushalt unverändert“), darunter „fast unmöglich“. Prüft scripts/balancing.js.
+  schwierigkeit: { leicht: 0.3, mittel: 0.1, schwer: 0.01 },
+
   // Spielende, freigegeben 2026-10-21 (M10)
   spielende: {
     // Partner verlässt die Koalition, wenn seine Umfrage um mehr als diese Prozentpunkte unter dem Wert bei Regierungsbildung liegt

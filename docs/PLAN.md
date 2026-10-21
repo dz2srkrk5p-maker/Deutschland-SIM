@@ -26,3 +26,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | F03 | Erklärtexte je Bildschirm | fertig (2026-10-21) |
 | F04 | Bedienbarkeit (Fokus, Screenreader-Ansage, Kontrast) | fertig (2026-10-21), Sprachausgabe vom Nutzer geprüft |
 | F05 | Wahlabend mit Veränderung und Wahlkampfbilanz (Spielstand-Version 2) | fertig (2026-10-21) |
+| F06 | Schwierigkeitsanzeige je Partei | fertig (2026-10-21) |

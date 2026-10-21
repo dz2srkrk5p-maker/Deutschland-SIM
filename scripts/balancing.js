@@ -53,6 +53,8 @@ function partie(parteiId, seed, haushaltZug) {
 const prozent = (n) => `${Math.round((n / PARTIEN) * 100)} %`;
 const spielbar = parteien.filter((p) => !p.sonstige);
 const zeilen = [];
+const abgleich = []; // F06: eingetragene Schwierigkeit gegen gemessene Siegquote
+const stufe = (quote) => Object.entries(config.schwierigkeit).find(([, ab]) => quote >= ab)?.[0] ?? 'fast unmöglich';
 for (const [name, zugFn] of Object.entries(STRATEGIEN)) {
   for (const p of spielbar) {
     let regiert = 0, brueche = 0, siege = 0, jahre = 0;
@@ -63,6 +65,12 @@ for (const [name, zugFn] of Object.entries(STRATEGIEN)) {
       if (z.phase === 'sieg') siege++;
       jahre += z.statistik.jahreKanzler;
     }
+    if (name === 'Haushalt unverändert') {
+      const gemessen = stufe(siege / PARTIEN);
+      const passt = gemessen === p.schwierigkeit;
+      abgleich.push(`| ${p.name} | ${((siege / PARTIEN) * 100).toFixed(1)} % | ${gemessen} | ${p.schwierigkeit} | ${passt ? 'passt' : '**anpassen**'} |`);
+      if (!passt) console.warn(`Schwierigkeit veraltet: ${p.name} eingetragen „${p.schwierigkeit}“, gemessen „${gemessen}“`);
+    }
     zeilen.push(`| ${name} | ${p.name} | ${prozent(regiert)} | ${prozent(brueche)} | ${prozent(siege)} | ${(jahre / PARTIEN).toFixed(1)} |`);
   }
 }
@@ -70,7 +78,7 @@ for (const [name, zugFn] of Object.entries(STRATEGIEN)) {
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
@@ -88,6 +96,13 @@ Erzeugt mit \`npm run balancing\` am ${new Date().toISOString().slice(0, 10)}. $
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |
 |---|---|---|---|---|---|
 ${zeilen.join('\n')}
+
+## Schwierigkeitsanzeige (F06)
+Gemessen mit „Haushalt unverändert“, Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.
+
+| Partei | Siege | gemessen | eingetragen | Abgleich |
+|---|---|---|---|---|
+${abgleich.join('\n')}
 
 ## Alle Konstanten (\`src/data/config.js\`)
 | Name | Wert | Freigegeben in |

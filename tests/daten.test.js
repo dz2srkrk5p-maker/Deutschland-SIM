@@ -1,5 +1,6 @@
 import { test, expect } from 'vitest';
 import { parteien } from '../src/data/parteien.js';
+import { config } from '../src/data/config.js';
 import { laender, bundesratGesamt, bundesratMehrheit } from '../src/data/laender.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { hinweise } from '../src/data/hinweise.js';
@@ -32,4 +33,9 @@ test('jede Phase hat einen Hinweis, Zahlen sind eingesetzt', () => {
     expect(hinweise[schluessel]).not.toMatch(/undefined|NaN|\$\{/);
   }
   expect(hinweise.koalition).toContain('316 Sitze');
+});
+
+test('jede spielbare Partei hat eine gültige Schwierigkeitsstufe (F06)', () => {
+  const gueltig = [...Object.keys(config.schwierigkeit), 'fast unmöglich'];
+  for (const p of parteien.filter((p) => !p.sonstige)) expect(gueltig).toContain(p.schwierigkeit);
 });
