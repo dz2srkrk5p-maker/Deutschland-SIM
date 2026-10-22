@@ -2,11 +2,12 @@ import { hinweisHtml } from '../components/hinweis.js';
 import { parteien } from '../../data/parteien.js';
 import { config } from '../../data/config.js';
 import { bundestagSvg } from '../components/bundestag.js';
-import { mehrheit, chance, moeglichePartner, moeglicheKoalitionen } from '../../engine/koalition.js';
+import { mehrheit, chance, moeglichePartner, moeglicheKoalitionen, minderheitMoeglich, minderheitsKanzlerwahl } from '../../engine/koalition.js';
+import { abstimmungHtml } from '../components/abstimmung.js';
 import { protokollHtml } from '../components/protokoll.js';
 
 // Wahlergebnis und Koalitionsbildung.
-export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
+export function koalitionScreen(el, zustand, protokoll, { onVerhandeln, onMinderheit }) {
   const spieler = parteien.find((p) => p.id === zustand.spielerParteiId);
   const eigene = zustand.sitze[spieler.id] ?? 0;
   const noetig = mehrheit(zustand.sitze);
@@ -51,6 +52,20 @@ export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
       </tbody>
     </table>`;
 
+  // Minderheitsregierung (F11): nur die stärkste Fraktion, Kanzlerwahl im letzten Wahlgang nach der Abstimmungsregel
+  const staerkste = eigene >= Math.max(...Object.values(zustand.sitze));
+  const mk = config.minderheit;
+  const minderheit = `
+    <h2>Minderheitsregierung</h2>
+    ${staerkste ? `
+      <p>${spieler.name} regiert allein ohne eigene Mehrheit und besetzt alle Ministerien. Jeder Haushalt braucht im Bundestag mehr Ja- als Nein-Stimmen; gegenüber einer Minderheitsregierung stimmt die Opposition strenger ab (direkte Nachbarn enthalten sich, alle anderen stimmen mit Nein).
+      Fällt er durch, gilt der Vorjahreshaushalt weiter und ${spieler.name} verliert ${mk.umfrageVerlustHaushaltGescheitert.toLocaleString('de-DE')} Punkte; nach ${mk.fehlschlaegeBisSpielende} gescheiterten Haushalten in einer Wahlperiode ist die Regierung am Ende und das Spiel verloren.</p>
+      ${config.koalition.brandmauer.includes(spieler.id) ? `<p class="rot">Brandmauer: Keine andere Fraktion stimmt für euch. Nur einzelne Abgeordnete einer benachbarten Fraktion weichen sehr selten ab
+      (${(config.bundestag.brandmauerAbweichler * 100).toLocaleString('de-DE')} % je Abgeordnetem). Scheitert die Kanzlerwahl, ist das Spiel vorbei.</p>` : ''}
+      ${abstimmungHtml(minderheitsKanzlerwahl(zustand), 'Kanzlerwahl im letzten Wahlgang', false)}
+      <div class="knoepfe"><button id="minderheit" ${minderheitMoeglich(zustand) ? '' : 'disabled'}>${minderheitsKanzlerwahl(zustand).angenommen ? 'Als Minderheitsregierung antreten' : 'Kanzlerwahl trotzdem versuchen'}</button></div>`
+    : `<p>Nur die stärkste Fraktion kann eine Minderheitsregierung bilden.</p>`}`;
+
   el.innerHTML = `
     <h1>Regierungsbildung</h1>
     ${hinweisHtml('koalition')}
@@ -58,11 +73,12 @@ export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
     <p>${spieler.name} hat <strong>${eigene} Sitze</strong>. Für eine Mehrheit braucht es <strong>${noetig}</strong>.</p>
     ${bundestagSvg(zustand.sitze, parteien)}
     <h2>Mögliche Mehrheiten</h2>
-    <div class="kombiliste">${koalitionen.map(kombi).join('')}</div>
+    <div class="kombiliste">${koalitionen.map(kombi).join('') || '<p>Keine Koalition mit Mehrheit mehr möglich.</p>'}</div>
     <h2>Partner wählen</h2>
     <div class="partnerliste">${andere.map(zeile).join('')}</div>
     <p id="summe"></p>
     <div class="knoepfe"><button id="verhandeln">Verhandeln</button></div>
+    ${minderheit}
     ${protokollHtml(protokoll)}`;
 
   const knopf = el.querySelector('#verhandeln');
@@ -83,5 +99,6 @@ export function koalitionScreen(el, zustand, protokoll, { onVerhandeln }) {
     }),
   );
   knopf.addEventListener('click', () => onVerhandeln({ partner: gewaehlt() }));
+  el.querySelector('#minderheit')?.addEventListener('click', () => onMinderheit());
   aktualisieren();
 }

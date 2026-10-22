@@ -19,7 +19,9 @@ export function endeScreen(el, zustand, protokoll, { onNeu }) {
     ${hinweisHtml('ende')}
     <p>${sieg
       ? `${spieler.name} hat ${s.jahreKanzler} Jahre lang den Kanzler gestellt. Ziel erreicht.`
-      : `${spieler.name} hat keine Mehrheit für eine Regierung. Das Spiel ist vorbei.`}</p>
+      : zustand.koalition?.minderheit && zustand.koalition.fehlschlaege >= config.minderheit.fehlschlaegeBisSpielende
+        ? `Die Minderheitsregierung von ${spieler.name} ist an ${zustand.koalition.fehlschlaege} Haushalten gescheitert. Das Spiel ist vorbei.`
+        : `${spieler.name} hat keine Mehrheit für eine Regierung. Das Spiel ist vorbei.`}</p>
     <h2>Statistik</h2>
     <div class="bilanz">
       <span>Jahre als Kanzler</span><span>${s.jahreKanzler} von ${config.spielende.siegJahreKanzler}</span>

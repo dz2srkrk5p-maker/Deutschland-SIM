@@ -1,6 +1,6 @@
 import { neuesSpiel, seedAusAdresse } from '../engine/state.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
-import { verhandeln } from '../engine/koalition.js';
+import { verhandeln, minderheitAntreten } from '../engine/koalition.js';
 import { startScreen } from './screens/start.js';
 import { wahlkampfScreen } from './screens/wahlkampf.js';
 import { bestaetigen } from '../engine/kabinett.js';
@@ -35,7 +35,7 @@ function zeichne() {
     });
   }
   if (zustand.phase === 'wahlkampf') return wahlkampfScreen(el, zustand, protokoll, { onAktion: ausfuehren(wahlkampfWoche) });
-  if (zustand.phase === 'koalition') return koalitionScreen(el, zustand, protokoll, { onVerhandeln: ausfuehren(verhandeln) });
+  if (zustand.phase === 'koalition') return koalitionScreen(el, zustand, protokoll, { onVerhandeln: ausfuehren(verhandeln), onMinderheit: ausfuehren(minderheitAntreten) });
   if (zustand.phase === 'kabinett') return kabinettScreen(el, zustand, protokoll, { onBestaetigen: ausfuehren(bestaetigen) });
   if (zustand.phase === 'regierung') return haushaltScreen(el, zustand, protokoll, { onBeschliessen: ausfuehren(haushaltBeschliessen) });
   return endeScreen(el, zustand, protokoll, { onNeu: () => (spielLoeschen(), (zustand = null), zeichne(), fokusOben()) });

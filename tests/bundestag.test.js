@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 import { sitzPositionen, fraktionen, bundestagSvg } from '../src/ui/components/bundestag.js';
 import { parteien } from '../src/data/parteien.js';
-import { abstimmung } from '../src/engine/bundestag.js';
+import { abstimmung, abstimmen } from '../src/engine/bundestag.js';
 import { neuesSpiel } from '../src/engine/state.js';
 
 test('so viele Plätze wie Sitze, für viele Größen', () => {
@@ -71,4 +71,44 @@ test('Abstimmung: Brandmauer – AfD-Stimmen zählen, eine Union-Minderheit komm
 test('Abstimmung: Gleichstand Ja und Nein ist abgelehnt', () => {
   const a = abstimmung(regierung('gruene', [], { gruene: 100, union: 100 }), 'haushalt');
   expect([a.ja, a.nein, a.angenommen]).toEqual([100, 100, false]);
+});
+
+// F11: Brandmauer bei Abstimmungen
+test('Brandmauer: für eine AfD-Regierung stimmt keine andere Fraktion (Vorschau)', () => {
+  const a = abstimmung(regierung('afd', []), 'haushalt');
+  expect(stimmen(a)).toEqual({ union: 'nein', afd: 'ja', spd: 'nein', gruene: 'nein', linke: 'nein' });
+  expect([a.ja, a.nein, a.abweichler, a.angenommen]).toEqual([152, 478, 0, false]);
+});
+
+test('abstimmen ohne Brandmauer-Regierung: wie die Vorschau, kein Zufall verbraucht', () => {
+  const z = regierung('union', ['spd']);
+  const a = abstimmen(z, 'haushalt');
+  expect(a).toMatchObject({ ja: 566, nein: 64, angenommen: true, rngZustand: z.rngZustand });
+});
+
+test('abstimmen mit AfD-Regierung: nur Abgeordnete der Nachbarfraktion (Union) weichen ab, selten', () => {
+  let summe = 0;
+  for (let seed = 1; seed <= 1000; seed++) {
+    const z = { ...regierung('afd', []), rngZustand: seed };
+    const a = abstimmen(z, 'haushalt');
+    const andere = a.fraktionen.filter((f) => f.id !== 'union');
+    expect(andere.every((f) => !f.abweichler)).toBe(true);
+    expect(a.ja).toBe(152 + a.abweichler);
+    expect(a.nein).toBe(478 - a.abweichler);
+    summe += a.abweichler;
+  }
+  // erwartet 1000 · 209 · 0,001 ≈ 209
+  expect(summe).toBeGreaterThan(130);
+  expect(summe).toBeLessThan(300);
+  // gleicher Seed, gleiches Ergebnis
+  const z = { ...regierung('afd', []), rngZustand: 7 };
+  expect(abstimmen(z, 'haushalt')).toEqual(abstimmen(z, 'haushalt'));
+});
+
+test('Minderheitsregierung im Amt: Opposition eine Stufe strenger (Abstand 1 Enthaltung, sonst Nein)', () => {
+  const z = regierung('union', []);
+  const a = abstimmung({ ...z, koalition: { ...z.koalition, minderheit: true } }, 'haushalt');
+  // Union (6): AfD (7) Abstand 1 → Enthaltung, SPD (4) Abstand 2 → Nein, Grüne und Linke → Nein
+  expect(stimmen(a)).toEqual({ union: 'ja', afd: 'enthaltung', spd: 'nein', gruene: 'nein', linke: 'nein' });
+  expect([a.ja, a.nein, a.enthaltung, a.angenommen]).toEqual([209, 269, 152, false]);
 });

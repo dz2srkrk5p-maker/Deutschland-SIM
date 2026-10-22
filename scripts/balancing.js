@@ -5,7 +5,7 @@ import { config } from '../src/data/config.js';
 import { parteien } from '../src/data/parteien.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { wahlkampfWoche, ertragFaktor } from '../src/engine/wahlkampf.js';
-import { verhandeln, moeglichePartner, chance, mehrheit } from '../src/engine/koalition.js';
+import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 
@@ -51,13 +51,19 @@ const WAHLKAMPF = {
   }),
 };
 
-function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Plakate']) {
+// Regierungsbildung (F11): Minderheitsregierung nur, wenn keine Mehrheit mehr möglich ist, oder immer, wenn sie möglich ist
+const KOALITION = {
+  'Minderheit nur ohne Mehrheit': (z) => (mehrheitMoeglich(z) ? verhandeln(z, { partner: partnerWaehlen(z) }) : minderheitAntreten(z)),
+  'Minderheit wenn möglich': (z) => (minderheitMoeglich(z) ? minderheitAntreten(z) : verhandeln(z, { partner: partnerWaehlen(z) })),
+};
+
+function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Plakate'], koalitionZug = KOALITION['Minderheit nur ohne Mehrheit']) {
   let z = neuesSpiel(parteiId, seed);
   let bruch = false;
   for (let zug = 0; zug < MAX_ZUEGE; zug++) {
     let r;
     if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, wahlkampfZug(z));
-    else if (z.phase === 'koalition') r = verhandeln(z, { partner: partnerWaehlen(z) });
+    else if (z.phase === 'koalition') r = koalitionZug(z);
     else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
     else if (z.phase === 'regierung') r = haushaltBeschliessen(z, haushaltZug(z));
     else break;
@@ -102,10 +108,34 @@ const wahlkampfZeilen = spielbar.map((p) => {
   return `| ${p.name} | ${quoten.map((q) => (q === beste && q > 0 ? `**${q.toFixed(1)}**` : q.toFixed(1))).join(' | ')} |`;
 });
 
+// F11: Siege und Minderheitsregierungen je Koalitionsstrategie (Wahlkampf abwechselnd, Haushalt unverändert)
+const minderheitZeilen = spielbar.flatMap((p) =>
+  Object.entries(KOALITION).map(([name, kz]) => {
+    let siege = 0, minderheiten = 0, neuwahlen = 0;
+    for (let seed = 1; seed <= PARTIEN; seed++) {
+      let z = neuesSpiel(p.id, seed), war = false;
+      for (let zug = 0; zug < MAX_ZUEGE; zug++) {
+        let r;
+        if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
+        else if (z.phase === 'koalition') r = kz(z);
+        else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
+        else if (z.phase === 'regierung') r = haushaltBeschliessen(z, {});
+        else break;
+        if (r.state.koalition?.minderheit) war = true;
+        if (r.ereignisse.some((e) => e.includes('gescheiterter Haushalt'))) neuwahlen++;
+        z = r.state;
+      }
+      if (z.phase === 'sieg') siege++;
+      if (war) minderheiten++;
+    }
+    return `| ${p.name} | ${name} | ${prozent(minderheiten)} | ${neuwahlen} | ${prozent(siege)} |`;
+  }),
+);
+
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
@@ -130,6 +160,13 @@ Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit d
 | Partei | ${Object.keys(WAHLKAMPF).join(' | ')} |
 |---|${Object.keys(WAHLKAMPF).map(() => '---').join('|')}|
 ${wahlkampfZeilen.join('\n')}
+
+## Minderheitsregierung (F11)
+Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Partien mit mindestens einer Minderheitsregierung. „Gescheitert“: Zahl der Partien, die durch gescheiterte Haushalte einer Minderheitsregierung enden.
+
+| Partei | Regierungsbildung | Minderheit | Gescheitert | Sieg |
+|---|---|---|---|---|
+${minderheitZeilen.join('\n')}
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.

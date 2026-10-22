@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { mehrheit, chance, moeglichePartner, mehrheitMoeglich, verhandeln, moeglicheKoalitionen } from '../src/engine/koalition.js';
+import { mehrheit, chance, moeglichePartner, mehrheitMoeglich, verhandeln, moeglicheKoalitionen, minderheitMoeglich, minderheitAntreten, minderheitsKanzlerwahl, regierungMoeglich } from '../src/engine/koalition.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { wahl } from '../src/engine/wahl.js';
 
@@ -72,7 +72,7 @@ test('Alleinregierung ohne Partner, Kanzler gewählt, direkt Regierung (M7)', ()
   const { state, ereignisse } = verhandeln(z, { partner: [] });
   expect(state.phase).toBe('regierung');
   expect(state.kanzlerParteiId).toBe('union');
-  expect(state.koalition).toEqual({ partner: [], startAnteile: {} });
+  expect(state.koalition).toEqual({ partner: [], startAnteile: {}, minderheit: false, fehlschlaege: 0 });
   expect(ereignisse).toContain('Alleinregierung steht');
 });
 
@@ -122,4 +122,45 @@ test('mögliche Koalitionen: abgelehnte Partner fehlen, eigene Mehrheit zuerst m
   const allein = moeglicheKoalitionen(mitSitzen('union', { union: 400, spd: 100, gruene: 80, afd: 50 }));
   expect(allein.map((k) => k.partner)).toEqual([[], ['spd'], ['gruene']]);
   expect(allein[0].chance).toBe(1);
+});
+
+test('F11: Minderheitsregierung nur für die stärkste Fraktion und nur, wenn die Kanzlerwahl durchgeht', () => {
+  // Startwerte 2025: Union ist stärkste Fraktion, AfD (Abstand 1) stimmt mit Ja: 361 Ja gegen 149 Nein
+  const union = nachWahl('union');
+  expect(minderheitsKanzlerwahl(union)).toMatchObject({ ja: 361, nein: 149, angenommen: true });
+  expect(minderheitMoeglich(union)).toBe(true);
+  expect(minderheitMoeglich(nachWahl('spd'))).toBe(false); // nicht stärkste Fraktion
+  // stärkste Fraktion, aber die Wahl geht nicht durch: Grüne 200 vs. Union 190 + AfD 150 (Abstand 3 und 4 → Nein)
+  expect(minderheitMoeglich(mitSitzen('gruene', { gruene: 200, union: 190, afd: 150 }))).toBe(false);
+});
+
+test('F11: als Minderheit antreten: Regierung, alle Ministerien, gezählt als gebildete Regierung', () => {
+  const { state, ereignisse } = minderheitAntreten(nachWahl('union'));
+  expect(state.phase).toBe('regierung');
+  expect(state.koalition).toEqual({ partner: [], startAnteile: {}, minderheit: true, fehlschlaege: 0 });
+  expect(Object.values(state.kabinett.verteilung).every((id) => id === 'union')).toBe(true);
+  expect(state.statistik.regierungenGebildet).toBe(1);
+  expect(ereignisse[0]).toContain('361 Ja gegen 149 Nein');
+  expect(() => minderheitAntreten(nachWahl('spd'))).toThrow();
+});
+
+test('F11: Spiel endet erst, wenn weder Mehrheit noch Minderheitsregierung möglich ist', () => {
+  // Union nach Absage aller Partner: keine Mehrheit mehr, aber Minderheit möglich → bleibt in der Regierungsbildung
+  const z = { ...nachWahl('union'), abgelehnt: ['spd', 'gruene', 'linke'] };
+  expect(mehrheitMoeglich(z)).toBe(false);
+  expect(regierungMoeglich(z)).toBe(true);
+  expect(regierungMoeglich({ ...nachWahl('spd'), abgelehnt: ['union', 'gruene', 'linke'] })).toBe(false);
+});
+
+test('F11 Brandmauer: AfD als stärkste Fraktion darf die Minderheits-Kanzlerwahl versuchen, scheitert sie: Opposition', () => {
+  const z = mitSitzen('afd', { afd: 250, union: 200, spd: 180 });
+  expect(minderheitsKanzlerwahl(z)).toMatchObject({ ja: 250, nein: 380, angenommen: false });
+  expect(minderheitMoeglich(z)).toBe(true);
+  expect(regierungMoeglich(z)).toBe(true);
+  const { state, ereignisse } = minderheitAntreten(z);
+  expect(state.phase).toBe('opposition');
+  expect(state.rngZustand).not.toBe(z.rngZustand);
+  expect(ereignisse[0]).toContain('gescheitert');
+  // nicht stärkste Fraktion: kein Versuch
+  expect(minderheitMoeglich(mitSitzen('afd', { afd: 150, union: 200 }))).toBe(false);
 });

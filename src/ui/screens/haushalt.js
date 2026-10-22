@@ -75,10 +75,12 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
     const v = vorschau(zustand, { stufen, steuerStufe });
     const b = v.bilanz;
     const wirkung = Object.entries(v.wirkung).filter(([, w]) => w);
+    // nur eine Minderheitsregierung kann im Bundestag scheitern (F11)
+    const durchfallen = !v.bundestag.angenommen && zustand.koalition.minderheit;
     el.innerHTML = `
       <h1>Haushalt</h1>
       ${hinweisHtml('regierung')}
-      <p><strong>Haushaltsjahr ${zustand.haushalt.jahr} von ${config.legislaturJahre}</strong> · Kanzler: ${partei(zustand.kanzlerParteiId).name}</p>
+      <p><strong>Haushaltsjahr ${zustand.haushalt.jahr} von ${config.legislaturJahre}</strong> · Kanzler: ${partei(zustand.kanzlerParteiId).name}${zustand.koalition.minderheit ? ' · <strong>Minderheitsregierung</strong>' : ''}</p>
       <div class="bilanz">
         <span>Einnahmen</span><span>${euro(b.einnahmen)}</span>
         <span>Ausgaben</span><span>${euro(b.ausgaben)}</span>
@@ -97,7 +99,8 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
       ${zeile('steuern', `Steuern (${partei(verteilung.finanzen).name}, Finanzen)`, partei(verteilung.finanzen).farbe, v.steuern, steuerStufe, maxSteuer, hh.steuerSchrittProzent)}
       <h2>Ministerien</h2>
       ${ministerien.map((m) => zeile(m.id, m.kurz, partei(verteilung[m.id]).farbe, v.etats[m.id], stufen[m.id] ?? 0, maxMinister, hh.ministerSchrittProzent)).join('')}
-      <div class="knoepfe"><button id="beschliessen" ${b.eingehalten && v.bundestag.angenommen && v.bundesrat?.mehrheit !== false ? '' : 'disabled'}>Haushalt beschließen</button></div>
+      ${durchfallen ? `<p class="rot">Der Haushalt hat keine Mehrheit. Einbringen heißt: vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} −${config.minderheit.umfrageVerlustHaushaltGescheitert.toLocaleString('de-DE')} Punkte (Fehlschlag ${(zustand.koalition.fehlschlaege ?? 0) + 1} von ${config.minderheit.fehlschlaegeBisSpielende} bis zum Spielende).</p>` : ''}
+      <div class="knoepfe"><button id="beschliessen" ${durchfallen || (b.eingehalten && v.bundesrat?.mehrheit !== false) ? '' : 'disabled'}>${durchfallen ? 'Haushalt trotzdem einbringen' : 'Haushalt beschließen'}</button></div>
       ${abstimmungHtml(v.bundestag, 'Bundestag über den Haushalt', bundestagOffen)}
       ${bundesratHtml(bundesratAbstimmung(koalitionsParteien(zustand)), bundesratOffen)}
       ${protokollHtml(protokoll)}`;

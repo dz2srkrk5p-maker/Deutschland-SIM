@@ -65,7 +65,7 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Den Kanzler stellt immer die Spielerpartei.
 - Kanzlerwahl: bis zu 2 Wahlgänge; jeder Koalitionsabgeordnete weicht je Wahlgang mit 2 % ab; gewählt bei ≥ Mehrheit. Danach Phase `kabinett` (Alleinregierung: direkt `regierung`, siehe Kabinett). Scheitern beide: Neuwahl (Phase `wahlkampf`, Woche 1, aktuelle Umfragewerte, Sperren aufgehoben).
 - Neue Zustandsfelder: `abgelehnt`, `koalition` ({ partner }), `kanzlerParteiId`.
-- Nicht enthalten (bewusst): Inhalte/Koalitionsvertrag, Minderheitsregierung, Kanzler aus anderer Partei, 3. Wahlgang, Koalitionen der Gegner.
+- Nicht enthalten (bewusst): Inhalte/Koalitionsvertrag, Kanzler aus anderer Partei, Koalitionen der Gegner. Minderheitsregierung und Kanzlerwahl im letzten Wahlgang: seit F11.
 
 ## System: Kabinett (freigegeben 2026-10-20, M7)
 - Datei: `src/engine/kabinett.js` (Aktion `bestaetigen`). Sainte-Laguë liegt jetzt in `src/engine/hoechstzahl.js` (für Sitze und Ministerien).
@@ -103,14 +103,27 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Ohne Zufall, damit das Ergebnis vorher sichtbar ist. Koalitionsfraktionen stimmen geschlossen Ja.
 - Opposition nach Abstand in der Sitzordnung zur nächsten Koalitionspartei: Abstand 1 → Ja, 2 → Enthaltung, ab 3 → Nein.
 - Angenommen bei mehr Ja- als Nein-Stimmen; Enthaltungen zählen nicht; Gleichstand ist abgelehnt (Art. 42 Abs. 2 GG, Bundestag-Glossar „Mehrheit, einfache“, geprüft 2026-10-21).
-- Brandmauer: AfD-Stimmen zählen wie alle anderen (Abstimmung ist keine Koalition). Folgen dafür kommen erst mit einer eigenen Brandmauer-Regel (siehe OFFENE-FRAGEN.md).
+- Brandmauer: AfD-Stimmen für Vorlagen anderer zählen wie alle anderen (Abstimmung ist keine Koalition). Für eine Regierung mit AfD stimmt seit F11 keine andere Fraktion (siehe dort).
 - Haushalt: wird im Bundestag abgestimmt; der Knopf „Haushalt beschließen“ ist ohne Mehrheit gesperrt. Mit Koalitionsmehrheit immer angenommen, wichtig erst mit F11. Der Haushaltsbildschirm zeigt die Zeile „Bundestag: x Ja, y Nein“ und die aufklappbare Liste der Fraktionen.
 - Beispiel mit Sitzen 2025: Union+SPD 566 Ja / 64 Nein; Grüne allein 205 Ja / 361 Nein / 64 Enthaltung (abgelehnt); Union allein 361 Ja (mit AfD) / 149 Nein.
 - Nicht enthalten (bewusst): Ausschüsse, Lesungen, Fraktionsdisziplin-Werte, Abstimmung nach Inhalt der Vorlage (später mit F13 möglich).
 
+## System: Minderheitsregierung (F11; Grundregeln freigegeben 2026-10-21, Brandmauer und Balancing 2026-10-22)
+- Dateien: `src/engine/koalition.js` (`minderheitMoeglich`, `minderheitsKanzlerwahl`, Aktion `minderheitAntreten`, `regierungMoeglich`), `src/engine/bundestag.js` (`abstimmen`), `src/engine/haushalt.js`. Zahlen: `config.minderheit`, `config.bundestag`.
+- Wer: nur die stärkste Fraktion (gleich stark zählt mit), jederzeit während der Regierungsbildung. Sie regiert allein und besetzt alle Ministerien.
+- Kanzlerwahl im letzten Wahlgang (Art. 63 Abs. 4 GG) nach der Abstimmungsregel aus F10, normale Stufen (Abstand 1 Ja, 2 Enthaltung, ab 3 Nein); gewählt bei mehr Ja als Nein. Möglich nur, wenn die Vorschau eine Mehrheit zeigt – außer bei der AfD (Brandmauer, unten).
+- Im Amt: Bei jedem Haushalt stimmt die Opposition eine Stufe strenger ab (Abstand 1 → Enthaltung, sonst Nein; freigegeben 2026-10-22). Beispiel Union allein mit Sitzen 2025: 209 Ja / 269 Nein / 152 Enthaltung.
+- Gescheiterter Haushalt: vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter (Schulden wie im Vorjahr), die Kanzlerpartei verliert 0,5 Punkte (danach Schwankung wie üblich), das Jahr zählt als Kanzlerjahr. Nach 2 gescheiterten Haushalten in einer Wahlperiode ist die Regierung am Ende: Phase `opposition`, Spiel verloren (Balancing 2026-10-22, vorher Neuwahl – damit gewann CDU/CSU 100 % der Partien, weil sie als stärkste Fraktion immer wieder als Minderheit antreten konnte).
+- Koalitionsbruch ohne verbleibende Mehrheit: Ist die Spielerpartei stärkste Fraktion, regiert sie als Minderheit weiter; sonst vorgezogene Neuwahl wie bisher.
+- Spielende „Opposition“, wenn weder eine Koalition mit Mehrheit noch eine Minderheitsregierung möglich ist.
+- Brandmauer bei Abstimmungen (freigegeben 2026-10-22): Für eine Regierung mit AfD stimmt keine andere Fraktion. Nur einzelne Abgeordnete einer Nachbarfraktion (Abstand 1, also die Union) weichen mit 0,1 % je Abgeordnetem ab und stimmen Ja (`config.bundestag.brandmauerAbweichler`, Zufall über den Seed, nur in der echten Abstimmung `abstimmen`, nicht in der Vorschau). Die AfD darf als stärkste Fraktion die Kanzlerwahl trotzdem versuchen; scheitert sie, Phase `opposition`.
+- Neue Zustandsfelder: `koalition.minderheit`, `koalition.fehlschlaege` (Spielstand-Version 6).
+- Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
+- Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
-- Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition).
+- Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).
 - Koalitionsbruch: nach jedem beschlossenen Haushalt verlässt ein Partner die Koalition, wenn seine Umfrage um mehr als 1,5 Punkte (Balancing 2026-10-21, vorher 2,0) unter dem Wert bei Regierungsbildung (`koalition.startAnteile`) liegt (gerechnet in Tausendstel: −1,50 bleibt, −1,51 geht). Seine Ministerien und sein Anspruch gehen an die Spielerpartei. Behält die Rest-Koalition ≥ Mehrheit: weiterregieren. Sonst vorgezogene Neuwahl (Wahlkampf Woche 1, aktuelle Umfragen).
 - Sieg: 12 Haushaltsjahre als Kanzler (`statistik.jahreKanzler`, über Wahlperioden hinweg). Phase `sieg`.
 - Reihenfolge, wenn mehreres zugleich eintritt: Sieg vor Koalitionsbruch vor Ende der Wahlperiode.

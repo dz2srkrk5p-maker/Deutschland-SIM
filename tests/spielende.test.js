@@ -57,8 +57,8 @@ test('Bruch mit verbleibender Mehrheit: weiterregieren, Ministerien an den Spiel
 });
 
 test('Bruch ohne Mehrheit: vorgezogene Neuwahl', () => {
-  // SPD 200 + Grüne 80 = 280 < 316, wenn die Union geht
-  const z = mitAnteil(imAmt(), 'union', 26.0);
+  // SPD 200 + Grüne 80 = 280 < 316, wenn die Union geht; SPD ist nicht stärkste Fraktion (seit F11 sonst Minderheit)
+  const z = mitAnteil(imAmt({ spd: 200, union: 210, gruene: 80, afd: 140 }), 'union', 26.0);
   expect(koalitionsbruch(z).neuwahl).toBe(true);
   const { state, ereignisse } = haushaltBeschliessen(z, {});
   expect(state.phase).toBe('wahlkampf');
@@ -96,4 +96,46 @@ test('Statistik zählt Regierungen, Kanzlerjahre und beste Wahl', () => {
   const nachJahr = haushaltBeschliessen(regiert, {}).state;
   expect(nachJahr.statistik.jahreKanzler).toBe(1);
   expect(wahl(neuesSpiel('spd', 1)).state.statistik.besteWahl).toBe(16.4);
+});
+
+test('F11: Bruch ohne Mehrheit als stärkste Fraktion: weiter als Minderheitsregierung', () => {
+  // SPD 200 = Union 200: gleich stark zählt als stärkste Fraktion
+  const { state, neuwahl, ereignisse } = koalitionsbruch(mitAnteil(imAmt(), 'union', 26.0));
+  expect(neuwahl).toBe(false);
+  expect(state.koalition.minderheit).toBe(true);
+  expect(state.koalition.partner).toEqual(['gruene']);
+  expect(ereignisse.at(-1)).toContain('Minderheitsregierung');
+});
+
+// Minderheitsregierung der Grünen mit Sitzen 2025: Haushalt fällt durch (205 Ja, 361 Nein)
+const minderheit = () => {
+  const verteilung = Object.fromEntries(ministerien.map((m) => [m.id, 'gruene']));
+  return {
+    ...neuesSpiel('gruene', 1),
+    phase: 'regierung',
+    sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
+    koalition: { partner: [], startAnteile: {}, minderheit: true, fehlschlaege: 0 },
+    kanzlerParteiId: 'gruene',
+    kabinett: { anspruch: { gruene: 16 }, verteilung },
+  };
+};
+
+test('F11: gescheiterter Haushalt: Vorjahr gilt weiter, Jahr zählt, Kanzlerpartei verliert, zweiter Fehlschlag = Spielende', () => {
+  const z = minderheit();
+  const { state, ereignisse } = haushaltBeschliessen(z, { stufen: { umwelt: 2 } });
+  expect(ereignisse[0]).toContain('gescheitert');
+  expect(state.haushalt.etats).toEqual(z.haushalt.etats); // die gewünschte Erhöhung gilt nicht
+  expect(state.haushalt.jahr).toBe(2);
+  expect(state.statistik.jahreKanzler).toBe(1);
+  expect(state.koalition.fehlschlaege).toBe(1);
+  // feste Wirkung −0,5, danach Schwankung höchstens ±0,3 (plus Rückrechnung): klar unter dem Startwert
+  expect(state.anteile.gruene).toBeLessThan(z.anteile.gruene - config.minderheit.umfrageVerlustHaushaltGescheitert + 0.4);
+  const zweite = haushaltBeschliessen(state, {});
+  expect(zweite.state.phase).toBe('opposition');
+  expect(zweite.ereignisse.at(-1)).toContain('Minderheitsregierung ist am Ende');
+});
+
+test('F11: Mehrheitsregierung kann nicht an der Abstimmung scheitern (sonst Fehler statt vorläufiger Haushalt)', () => {
+  const z = { ...minderheit(), koalition: { partner: [], startAnteile: {}, minderheit: false, fehlschlaege: 0 } };
+  expect(() => haushaltBeschliessen(z, {})).toThrow('Keine Mehrheit im Bundestag');
 });

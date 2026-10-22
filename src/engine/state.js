@@ -2,7 +2,8 @@ import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 5; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09)
+export const ZUSTAND_VERSION = 6; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+// 6: koalition.minderheit und koalition.fehlschlaege (F11)
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -24,7 +25,8 @@ export function neuesSpiel(spielerParteiId, seed) {
     verlauf: [{ schritt: 0, anteil: partei.startanteil }],
     sitze: null, // erst nach der Wahl gesetzt: { parteiId: Sitze }
     abgelehnt: [], // Parteien, die in dieser Wahlperiode eine Koalition abgelehnt haben
-    koalition: null, // { partner: [parteiId] } nach erfolgreicher Verhandlung
+    // { partner: [parteiId], startAnteile, minderheit, fehlschlaege } nach Regierungsbildung; minderheit ohne eigene Mehrheit
+    koalition: null,
     kanzlerParteiId: null,
     kabinett: null, // { anspruch: { parteiId: Anzahl }, verteilung: { ministeriumId: parteiId } | null }
     // Haushalt in tausend Euro; gilt über Wahlperioden hinweg weiter, nur das Jahr beginnt neu

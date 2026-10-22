@@ -4,7 +4,7 @@ import { ministerien } from '../data/ministerien.js';
 import { festeAusgaben2026, sonstigeEinnahmen2026 } from '../data/haushalt.js';
 import { umverteilen, schwankung, runden } from './wahlkampf.js';
 import { bundesratAbstimmung } from './bundesrat.js';
-import { abstimmung } from './bundestag.js';
+import { abstimmung, abstimmen } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
 import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
@@ -64,32 +64,46 @@ export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
 export function haushaltBeschliessen(zustand, params) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
   const v = vorschau(zustand, params);
-  if (!v.bilanz.eingehalten) throw new Error('Schuldenbremse überschritten');
-  if (!v.bundestag.angenommen) throw new Error('Keine Mehrheit im Bundestag für den Haushalt');
-  if (v.bundesrat && !v.bundesrat.mehrheit) throw new Error('Keine Mehrheit im Bundesrat für die Steueränderung');
+  // echte Abstimmung: gleich der Vorschau, außer bei einer Brandmauer-Regierung (Abweichler per Zufall, F11)
+  const bundestag = abstimmen(zustand, 'haushalt');
+  // Minderheitsregierung (F11): fällt der Haushalt im Bundestag durch, gilt der Vorjahreshaushalt weiter
+  const gescheitert = !bundestag.angenommen;
+  if (gescheitert && !zustand.koalition.minderheit) throw new Error('Keine Mehrheit im Bundestag für den Haushalt');
+  if (!gescheitert && !v.bilanz.eingehalten) throw new Error('Schuldenbremse überschritten');
+  if (!gescheitert && v.bundesrat && !v.bundesrat.mehrheit) throw new Error('Keine Mehrheit im Bundesrat für die Steueränderung');
 
-  const s = schwankung(umverteilen(zustand.anteile, v.wirkung), zustand.rngZustand);
   const jahr = zustand.haushalt.jahr;
+  const alt = zustand.haushalt;
+  const wirkung = gescheitert ? { [zustand.kanzlerParteiId]: -config.minderheit.umfrageVerlustHaushaltGescheitert } : v.wirkung;
+  const gilt = gescheitert ? { etats: alt.etats, steuern: alt.steuern, neueSchulden: bilanz(alt.etats, alt.steuern).neueSchulden } : { etats: v.etats, steuern: v.steuern, neueSchulden: v.bilanz.neueSchulden };
+  const s = schwankung(umverteilen(zustand.anteile, wirkung), bundestag.rngZustand);
   const haushalt = {
     jahr: jahr + 1,
-    etats: v.etats,
-    steuern: v.steuern,
-    neueSchuldenSeitStart: zustand.haushalt.neueSchuldenSeitStart + v.bilanz.neueSchulden,
+    etats: gilt.etats,
+    steuern: gilt.steuern,
+    neueSchuldenSeitStart: alt.neueSchuldenSeitStart + gilt.neueSchulden,
   };
   const name = (id) => parteien.find((p) => p.id === id).name;
-  const wirkungText = Object.entries(v.wirkung)
-    .map(([id, w]) => `${name(id)} ${w >= 0 ? '+' : '−'}${Math.abs(w).toLocaleString('de-DE', { maximumFractionDigits: 2 })}`)
+  const zahl = (x) => x.toLocaleString('de-DE', { maximumFractionDigits: 2 });
+  const wirkungText = Object.entries(wirkung)
+    .map(([id, w]) => `${name(id)} ${w >= 0 ? '+' : '−'}${zahl(Math.abs(w))}`)
     .join(', ');
   const ereignisse = [
-    `Haushalt Jahr ${jahr} beschlossen: neue Schulden ${mrd(v.bilanz.neueSchulden).toLocaleString('de-DE', { maximumFractionDigits: 2 })} Mrd.` +
-      (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
+    (gescheitert
+      ? `Haushalt Jahr ${jahr} im Bundestag gescheitert (${bundestag.ja} Ja, ${bundestag.nein} Nein): vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter, neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`
+      : `Haushalt Jahr ${jahr} beschlossen: neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`) + (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
   ];
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
-  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, statistik });
+  const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
+  const koalition = { ...zustand.koalition, fehlschlaege };
+  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, statistik, koalition });
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {
     return { state: { ...state, phase: 'sieg' }, ereignisse: [...ereignisse, `Sieg: ${statistik.jahreKanzler} Jahre als Kanzler`] };
+  }
+  if (fehlschlaege >= config.minderheit.fehlschlaegeBisSpielende) {
+    return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, `${fehlschlaege}. gescheiterter Haushalt in dieser Wahlperiode: Die Minderheitsregierung ist am Ende, Opposition`] };
   }
   const bruch = koalitionsbruch(state);
   if (bruch.neuwahl) return { state: zurueckInDenWahlkampf(bruch.state), ereignisse: [...ereignisse, ...bruch.ereignisse] };
@@ -111,7 +125,8 @@ export function bruchAbstand(zustand, anteile = zustand.anteile) {
 }
 
 // Partner, deren Umfrage mehr als koalitionsbruchPunkte unter dem Wert bei Regierungsbildung liegt, verlassen die Koalition.
-// Ihre Ministerien gehen an die Spielerpartei. Ohne verbleibende Mehrheit: vorgezogene Neuwahl.
+// Ihre Ministerien gehen an die Spielerpartei. Ohne verbleibende Mehrheit: als Minderheit weiter, wenn die Spielerpartei
+// die stärkste Fraktion ist (F11), sonst vorgezogene Neuwahl.
 export function koalitionsbruch(zustand) {
   const { partner } = zustand.koalition;
   const gehen = bruchAbstand(zustand).filter((a) => a.geht).map((a) => a.id);
@@ -129,5 +144,10 @@ export function koalitionsbruch(zustand) {
   const ereignisse = gehen.map((id) => `Koalitionsbruch: ${parteien.find((p) => p.id === id).name} verlässt die Koalition`);
   const sitze = [spieler, ...bleiben].reduce((s, id) => s + zustand.sitze[id], 0);
   if (sitze >= mehrheit(zustand.sitze)) return { state, ereignisse: [...ereignisse, `Regierung behält die Mehrheit (${sitze} Sitze)`], neuwahl: false };
+  const staerkste = zustand.sitze[spieler] >= Math.max(...Object.values(zustand.sitze));
+  if (staerkste) {
+    const minderheit = { ...state, koalition: { ...state.koalition, minderheit: true } };
+    return { state: minderheit, ereignisse: [...ereignisse, `Keine Mehrheit mehr (${sitze} Sitze): weiter als Minderheitsregierung`], neuwahl: false };
+  }
   return { state, ereignisse: [...ereignisse, `Keine Mehrheit mehr (${sitze} Sitze): vorgezogene Neuwahl`], neuwahl: true };
 }

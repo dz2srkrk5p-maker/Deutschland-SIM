@@ -57,6 +57,20 @@ export const config = {
   bundestag: {
     stimmeNachAbstand: { 1: 'ja', 2: 'enthaltung' },
     stimmeWeit: 'nein', // Abstand 3 oder mehr
+    // Brandmauer bei Abstimmungen (F11, freigegeben 2026-10-22): Für eine Regierung mit AfD stimmt keine Fraktion; nur
+    // einzelne Abgeordnete einer Nachbarfraktion (Abstand 1) weichen mit dieser Wahrscheinlichkeit je Abgeordnetem ab (0,1 %).
+    brandmauerAbweichler: 0.001,
+    // Abstimmungen einer Minderheitsregierung im Amt (F11, freigegeben 2026-10-22): Opposition eine Stufe strenger,
+    // Abstand 1 → Enthaltung, sonst stimmeWeit. Gilt nicht für die Kanzlerwahl.
+    stimmeNachAbstandMinderheit: { 1: 'enthaltung' },
+  },
+
+  // Minderheitsregierung (F11, freigegeben 2026-10-21): Scheitert ihr Haushalt im Bundestag, gilt der Vorjahreshaushalt
+  // weiter (vorläufige Haushaltsführung), die Kanzlerpartei verliert Umfragepunkte; nach so vielen Fehlschlägen je
+  // Wahlperiode ist die Regierung am Ende und das Spiel verloren (Opposition; Balancing 2026-10-22, vorher Neuwahl).
+  minderheit: {
+    umfrageVerlustHaushaltGescheitert: 0.5,
+    fehlschlaegeBisSpielende: 2,
   },
 
   // Schwierigkeitsanzeige auf dem Startbildschirm (F06, freigegeben 2026-10-21): Stufe ab dieser Siegquote mit der

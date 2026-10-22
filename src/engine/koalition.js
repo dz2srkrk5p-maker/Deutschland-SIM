@@ -4,6 +4,7 @@ import { ministerien } from '../data/ministerien.js';
 import { zufall } from './rng.js';
 import { ansprueche } from './kabinett.js';
 import { zurueckInDenWahlkampf } from './state.js';
+import { abstimmung, abstimmen } from './bundestag.js';
 
 const ko = config.koalition;
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -52,6 +53,56 @@ export function moeglicheKoalitionen(zustand) {
     liste.push({ partner, sitze, chance: partner.reduce((c, id) => c * chance(spieler, id, zustand.sitze), 1) });
   }
   return liste.sort((a, b) => b.chance - a.chance || b.sitze - a.sitze);
+}
+
+// Minderheitsregierung (F11): Kanzlerwahl im letzten Wahlgang (Art. 63 Abs. 4 GG), Stimmen nach der Abstimmungsregel (F10),
+// die Spielerpartei regiert allein. Vorschau ohne Zufall.
+export function minderheitsKanzlerwahl(zustand) {
+  return abstimmung({ ...zustand, koalition: { partner: [] } }, 'kanzlerwahl');
+}
+
+// Nur die stärkste Fraktion (gleich stark zählt mit), und nur, wenn die Kanzlerwahl durchginge. Ausnahme Brandmauer-Partei:
+// Sie darf es versuchen, obwohl die Vorschau keine Mehrheit zeigt (Hoffnung auf Abweichler, F11).
+export function minderheitMoeglich(zustand) {
+  const spieler = zustand.spielerParteiId;
+  const eigene = zustand.sitze[spieler] ?? 0;
+  const staerkste = eigene > 0 && eigene >= Math.max(...Object.values(zustand.sitze));
+  return staerkste && (ko.brandmauer.includes(spieler) || minderheitsKanzlerwahl(zustand).angenommen);
+}
+
+// Spiel geht weiter, solange eine Koalition mit Mehrheit oder eine Minderheitsregierung möglich ist
+export const regierungMoeglich = (zustand) => mehrheitMoeglich(zustand) || minderheitMoeglich(zustand);
+
+// Aktion: als Minderheitsregierung antreten (jederzeit während der Regierungsbildung, wenn möglich)
+export function minderheitAntreten(zustand) {
+  if (zustand.phase !== 'koalition') throw new Error('Keine Koalitionsverhandlung');
+  if (!minderheitMoeglich(zustand)) throw new Error('Minderheitsregierung nicht möglich');
+  const spieler = zustand.spielerParteiId;
+  const wahl = abstimmen({ ...zustand, koalition: { partner: [] } }, 'kanzlerwahl');
+  const abweichlerText = wahl.abweichler ? `, davon ${wahl.abweichler} Abweichler` : '';
+  const ergebnis = `${wahl.ja} Ja gegen ${wahl.nein} Nein (${wahl.enthaltung} Enthaltungen${abweichlerText})`;
+  if (!wahl.angenommen) {
+    // Versuch der Brandmauer-Partei gescheitert: keine Regierung möglich, Spielende (F11)
+    return {
+      state: { ...zustand, rngZustand: wahl.rngZustand, phase: 'opposition' },
+      ereignisse: [`Kanzlerwahl im letzten Wahlgang gescheitert: ${ergebnis}`, 'Keine Regierung möglich: Opposition'],
+    };
+  }
+  const statistik = { ...zustand.statistik, regierungenGebildet: zustand.statistik.regierungenGebildet + 1 };
+  const verteilung = Object.fromEntries(ministerien.map((m) => [m.id, spieler]));
+  const state = {
+    ...zustand,
+    rngZustand: wahl.rngZustand,
+    phase: 'regierung',
+    kanzlerParteiId: spieler,
+    statistik,
+    koalition: { partner: [], startAnteile: {}, minderheit: true, fehlschlaege: 0 },
+    kabinett: { anspruch: { [spieler]: ministerien.length }, verteilung },
+  };
+  return {
+    state,
+    ereignisse: [`Kanzlerwahl im letzten Wahlgang: gewählt mit ${ergebnis}`,`Minderheitsregierung ${partei(spieler).name}, Kabinett vereidigt`],
+  };
 }
 
 // Kanzlerwahl: jeder Koalitionsabgeordnete weicht mit fester Wahrscheinlichkeit ab.
@@ -109,15 +160,15 @@ export function verhandeln(zustand, { partner }) {
 
   if (absagen.length) {
     const state = { ...zustand, rngZustand, abgelehnt: [...zustand.abgelehnt, ...absagen] };
-    if (mehrheitMoeglich(state)) return { state, ereignisse };
-    return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Mehrheit mehr möglich: Opposition'] };
+    if (regierungMoeglich(state)) return { state, ereignisse };
+    return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Regierung mehr möglich: Opposition'] };
   }
 
   const namen = [zustand.spielerParteiId, ...reihenfolge].map((id) => partei(id).name);
   const name = partner.length ? `Koalition aus ${namen.join(', ')}` : 'Alleinregierung';
   // startAnteile: Umfragewerte der Partner bei Regierungsbildung, Maßstab für den Koalitionsbruch (M10)
   const startAnteile = Object.fromEntries(reihenfolge.map((id) => [id, zustand.anteile[id]]));
-  const mitKoalition = { ...zustand, rngZustand, koalition: { partner: reihenfolge, startAnteile } };
+  const mitKoalition = { ...zustand, rngZustand, koalition: { partner: reihenfolge, startAnteile, minderheit: false, fehlschlaege: 0 } };
   const wahl = kanzlerwahl(mitKoalition, sitzSumme(zustand.sitze, beteiligte));
   return { state: wahl.state, ereignisse: [...ereignisse, `${name} steht`, ...wahl.ereignisse] };
 }

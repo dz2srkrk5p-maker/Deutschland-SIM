@@ -1,6 +1,6 @@
 # Balancing-Bericht
 
-Erzeugt mit `npm run balancing` am 2026-10-21. 200 Partien je Partei und Strategie (Seeds 1–200).
+Erzeugt mit `npm run balancing` am 2026-10-22. 200 Partien je Partei und Strategie (Seeds 1–200).
 
 ## Strategien der Simulation
 - Wahlkampf: jede Woche Plakate und Werbung (Hauptergebnisse); weitere Wahlkampf-Strategien siehe eigener Abschnitt.
@@ -12,16 +12,16 @@ Erzeugt mit `npm run balancing` am 2026-10-21. 200 Partien je Partei und Strateg
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |
 |---|---|---|---|---|---|
-| Haushalt unverändert | CDU/CSU | 60 % | 0 % | 27 % | 5.0 |
+| Haushalt unverändert | CDU/CSU | 100 % | 0 % | 28 % | 6.5 |
 | Haushalt unverändert | AfD | 0 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | SPD | 36 % | 0 % | 6 % | 2.2 |
 | Haushalt unverändert | Grüne | 9 % | 0 % | 1 % | 0.4 |
 | Haushalt unverändert | Linke | 1 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | BSW | 0 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | FDP | 2 % | 0 % | 0 % | 0.1 |
-| Partner kürzen | CDU/CSU | 60 % | 24 % | 33 % | 5.4 |
+| Partner kürzen | CDU/CSU | 100 % | 24 % | 34 % | 6.6 |
 | Partner kürzen | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Partner kürzen | SPD | 36 % | 35 % | 6 % | 2.2 |
+| Partner kürzen | SPD | 36 % | 35 % | 7 % | 2.2 |
 | Partner kürzen | Grüne | 9 % | 4 % | 0 % | 0.4 |
 | Partner kürzen | Linke | 1 % | 1 % | 0 % | 0.0 |
 | Partner kürzen | BSW | 0 % | 0 % | 0 % | 0.0 |
@@ -32,7 +32,7 @@ Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit d
 
 | Partei | immer Plakate | immer Kundgebung | immer Angriff (Stärkster) | abwechselnd | klug |
 |---|---|---|---|---|---|
-| CDU/CSU | 27.0 | 37.5 | 32.0 | **48.5** | 42.5 |
+| CDU/CSU | 28.0 | 42.5 | 32.0 | 57.5 | **62.5** |
 | AfD | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
 | SPD | 5.5 | 9.5 | 11.5 | **26.5** | 17.5 |
 | Grüne | 0.5 | 0.0 | 2.5 | **6.5** | 3.5 |
@@ -40,12 +40,32 @@ Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit d
 | BSW | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
 | FDP | 0.0 | 0.0 | 0.0 | **1.0** | 0.5 |
 
+## Minderheitsregierung (F11)
+Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Partien mit mindestens einer Minderheitsregierung. „Gescheitert“: Zahl der Partien, die durch gescheiterte Haushalte einer Minderheitsregierung enden.
+
+| Partei | Regierungsbildung | Minderheit | Gescheitert | Sieg |
+|---|---|---|---|---|
+| CDU/CSU | Minderheit nur ohne Mehrheit | 52 % | 85 | 57 % |
+| CDU/CSU | Minderheit wenn möglich | 100 % | 200 | 0 % |
+| AfD | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
+| AfD | Minderheit wenn möglich | 0 % | 0 | 0 % |
+| SPD | Minderheit nur ohne Mehrheit | 13 % | 26 | 27 % |
+| SPD | Minderheit wenn möglich | 39 % | 78 | 1 % |
+| Grüne | Minderheit nur ohne Mehrheit | 3 % | 5 | 7 % |
+| Grüne | Minderheit wenn möglich | 8 % | 16 | 1 % |
+| Linke | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
+| Linke | Minderheit wenn möglich | 0 % | 0 | 0 % |
+| BSW | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
+| BSW | Minderheit wenn möglich | 0 % | 0 | 0 % |
+| FDP | Minderheit nur ohne Mehrheit | 0 % | 0 | 1 % |
+| FDP | Minderheit wenn möglich | 0 % | 0 | 1 % |
+
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
 
 | Partei | Siege | gemessen | eingetragen | Abgleich |
 |---|---|---|---|---|
-| CDU/CSU | 48.5 % | leicht | leicht | passt |
+| CDU/CSU | 62.5 % | leicht | leicht | passt |
 | AfD | 0.0 % | fast unmöglich | fast unmöglich | passt |
 | SPD | 26.5 % | mittel | mittel | passt |
 | Grüne | 6.5 % | schwer | schwer | passt |
@@ -88,6 +108,10 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `bundestag.stimmeNachAbstand.1` | "ja" | F10 (Art. 42 GG) |
 | `bundestag.stimmeNachAbstand.2` | "enthaltung" | F10 (Art. 42 GG) |
 | `bundestag.stimmeWeit` | "nein" | F10 (Art. 42 GG) |
+| `bundestag.brandmauerAbweichler` | 0.001 | F10 (Art. 42 GG) |
+| `bundestag.stimmeNachAbstandMinderheit.1` | "enthaltung" | F10 (Art. 42 GG) |
+| `minderheit.umfrageVerlustHaushaltGescheitert` | 0.5 | F11 |
+| `minderheit.fehlschlaegeBisSpielende` | 2 | F11 |
 | `schwierigkeit.leicht` | 0.3 | F06 |
 | `schwierigkeit.mittel` | 0.1 | F06 |
 | `schwierigkeit.schwer` | 0.01 | F06 |

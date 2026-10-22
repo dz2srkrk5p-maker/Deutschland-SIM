@@ -1,7 +1,7 @@
 import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
 import { sainteLague } from './hoechstzahl.js';
-import { mehrheitMoeglich } from './koalition.js';
+import { regierungMoeglich } from './koalition.js';
 
 // Prozentwerte haben höchstens 3 Nachkommastellen; als ganze Tausendstel gerechnet gibt es keine Rundungsfehler.
 const inTausendstel = (prozent) => Math.round(prozent * 1000);
@@ -29,6 +29,6 @@ export function wahl(zustand) {
   const wahlergebnis = { anteile: zustand.anteile, vorher, wahlkampf: runden3(eigenerAnteil - zustand.wahlkampfStart) };
   const state = { ...zustand, sitze, rngZustand, statistik, wahlergebnis, phase: 'koalition', abgelehnt: [], koalition: null, kabinett: null };
   const ereignisse = [`Bundestagswahl: ${ergebnis.join(', ')}`];
-  if (mehrheitMoeglich(state)) return { state, ereignisse };
-  return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Mehrheit möglich: Opposition'] };
+  if (regierungMoeglich(state)) return { state, ereignisse };
+  return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Regierung möglich: Opposition'] };
 }

@@ -1,13 +1,15 @@
 import { test, expect } from 'vitest';
 import { neuesSpiel, speichern, laden } from '../src/engine/state.js';
 import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
-import { verhandeln, moeglichePartner, mehrheit } from '../src/engine/koalition.js';
+import { verhandeln, moeglichePartner, mehrheit, mehrheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 
 // Einfacher Spieler: Plakate, Partner nach Größe bis zur Mehrheit, Kabinettsvorschlag, Haushalt unverändert
 function zug(z) {
   if (z.phase === 'wahlkampf') return wahlkampfWoche(z, { aktion: 'plakate' });
+  // ohne mögliche Mehrheit bleibt seit F11 die Minderheitsregierung
+  if (z.phase === 'koalition' && !mehrheitMoeglich(z)) return minderheitAntreten(z);
   if (z.phase === 'koalition') {
     const partner = [];
     let sitze = z.sitze[z.spielerParteiId];

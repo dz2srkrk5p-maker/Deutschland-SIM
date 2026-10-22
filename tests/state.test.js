@@ -59,7 +59,7 @@ test('Seed aus der Adresse: gültige ganze Zahl, sonst null', () => {
 
 test('Verlauf (F09): ein Eintrag je Aktion, Wahl markiert, Haushalt zählt mit, Version 4 abgelehnt', () => {
   let z = neuesSpiel('union', 3);
-  expect(ZUSTAND_VERSION).toBe(5);
+  expect(ZUSTAND_VERSION).toBeGreaterThanOrEqual(5);
   expect(z.verlauf).toEqual([{ schritt: 0, anteil: 28.6 }]);
   expect(() => laden(JSON.stringify({ ...z, version: 4 }))).toThrow();
   for (let woche = 1; woche <= config.wahlkampf.wochen; woche++) {
