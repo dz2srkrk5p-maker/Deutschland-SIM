@@ -90,8 +90,8 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | SPD | 24.0 % | mittel | mittel | passt |
 | Grüne | 7.5 % | schwer | schwer | passt |
 | Linke | 0.5 % | fast unmöglich | fast unmöglich | passt |
-| BSW | 1.0 % | schwer | fast unmöglich | **anpassen** |
-| FDP | 0.5 % | fast unmöglich | schwer | **anpassen** |
+| BSW | 1.0 % | schwer | schwer | passt |
+| FDP | 0.5 % | fast unmöglich | fast unmöglich | passt |
 
 ## Alle Konstanten (`src/data/config.js`)
 | Name | Wert | Freigegeben in |
