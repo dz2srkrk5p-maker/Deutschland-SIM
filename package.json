@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
-    "balancing": "node scripts/balancing.js"
+    "balancing": "node scripts/balancing.js",
+    "graph": "node scripts/obsidian-graph.js"
   },
   "devDependencies": {
     "vite": "^8.3.4",
