@@ -7,7 +7,7 @@ Erzeugt mit `npm run balancing` am 2026-10-22. 200 Partien je Partei und Strateg
 - Koalition: Partner nach Zustimmungschance absteigend, bis die Mehrheit reicht; nach Absagen erneut.
 - Kabinett: der vorausgefüllte Vorschlag.
 - Haushalt: siehe Spalte „Strategie“. Keine Steueränderungen.
-- Spiel endet bei Sieg, Opposition oder nach 2000 Zügen.
+- Spiel endet bei Sieg, Opposition oder nach 8000 Zügen.
 
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |
@@ -79,6 +79,7 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `sitzeBundestag` | 630 | M1/M3 (Quelle in config.js) |
 | `sperrklauselProzent` | 5 | M1/M3 (Quelle in config.js) |
 | `legislaturJahre` | 4 | M1/M3 (Quelle in config.js) |
+| `regierung.quartaleJeJahr` | 4 | F12 |
 | `wahlkampf.wochen` | 8 | M5 |
 | `wahlkampf.plakateGewinn` | 0.4 | M5 |
 | `wahlkampf.kundgebungMin` | -0.5 | M5 |

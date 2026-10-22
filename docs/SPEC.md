@@ -121,6 +121,14 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Regierungsjahr in Quartalen (F12, freigegeben automatisch nach Empfehlung 2026-10-22)
+- Dateien: `src/engine/regierung.js` (Aktion `quartalBeenden`, `haushaltsQuartal`), `src/ui/screens/regierung.js`. Zahl: `config.regierung.quartaleJeJahr` = 4.
+- Ein Haushaltsjahr hat 4 Quartale. In Quartal 1–3 zeigt der Regierungsbildschirm Jahr, Quartal, Regierung, Umfrage und Verlauf, Knopf „Nächstes Quartal“ bzw. „Weiter zum Haushalt“. Im 4. Quartal wird der Haushalt beschlossen (`haushaltBeschliessen` wirft sonst), danach beginnt das nächste Jahr mit Quartal 1.
+- Die Zeit allein ändert nichts: kein Zufall, keine Umfrageänderung. Sieg, Koalitionsbruch, Spielende der Minderheitsregierung und Ende der Wahlperiode hängen weiter am Haushalt.
+- Grundlage für Reformen (F13) und Ereignisse (F14), die in den Quartalen stattfinden.
+- Neues Zustandsfeld: `quartal` (Spielstand-Version 7); bei Wahlkampf und nach jedem Haushalt 1.
+- Nicht enthalten (bewusst): Monate, Wirkung der Zeit auf Umfragen.
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).

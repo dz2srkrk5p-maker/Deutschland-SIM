@@ -5,6 +5,13 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { laender, andereParteien, bundesratGesamt, bundesratMehrheit } from '../src/data/laender.js';
 import { parteien } from '../src/data/parteien.js';
 import { ministerien } from '../src/data/ministerien.js';
+import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+// F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
+const beschliessen = (z, p) => {
+  while (!haushaltsQuartal(z)) z = quartalBeenden(z).state;
+  return haushaltBeschliessen(z, p);
+};
+
 
 test('69 Stimmen, Mehrheit 35', () => {
   expect(bundesratGesamt).toBe(69);
@@ -44,16 +51,16 @@ const imAmt = (partner) => ({
 test('Steueränderung ohne Bundesratsmehrheit wird abgelehnt', () => {
   const z = imAmt(['spd']);
   expect(vorschau(z, { steuerStufe: 1 }).bundesrat.mehrheit).toBe(false);
-  expect(() => haushaltBeschliessen(z, { steuerStufe: 1 })).toThrow(/Bundesrat/);
+  expect(() => beschliessen(z, { steuerStufe: 1 })).toThrow(/Bundesrat/);
 });
 
 test('Steueränderung mit Bundesratsmehrheit geht durch', () => {
   const z = imAmt(['spd', 'gruene']);
-  expect(haushaltBeschliessen(z, { steuerStufe: 1 }).state.haushalt.jahr).toBe(2);
+  expect(beschliessen(z, { steuerStufe: 1 }).state.haushalt.jahr).toBe(2);
 });
 
 test('Haushalt ohne Steueränderung braucht den Bundesrat nicht', () => {
   const z = imAmt(['spd']);
   expect(vorschau(z, { stufen: { arbeit: -1 } }).bundesrat).toBeNull();
-  expect(() => haushaltBeschliessen(z, { stufen: { arbeit: -1 } })).not.toThrow();
+  expect(() => beschliessen(z, { stufen: { arbeit: -1 } })).not.toThrow();
 });

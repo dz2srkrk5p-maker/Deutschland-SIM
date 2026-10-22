@@ -7,6 +7,10 @@ export const config = {
   // Legislaturperiode in Jahren, freigegeben 2026-10-20
   legislaturJahre: 4,
 
+  // Regierungsjahr in Runden (F12, freigegeben automatisch nach Empfehlung 2026-10-22): je Jahr so viele Quartale,
+  // der Haushalt wird im letzten beschlossen.
+  regierung: { quartaleJeJahr: 4 },
+
   // Wahlkampf, alle Werte in Prozentpunkten, freigegeben 2026-10-20 (M5)
   wahlkampf: {
     wochen: 8, // eine Aktion pro Woche, danach automatisch Wahl

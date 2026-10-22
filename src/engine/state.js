@@ -2,8 +2,8 @@ import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 6; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
-// 6: koalition.minderheit und koalition.fehlschlaege (F11)
+export const ZUSTAND_VERSION = 7; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+// 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12)
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -32,6 +32,7 @@ export function neuesSpiel(spielerParteiId, seed) {
     // Haushalt in tausend Euro; gilt über Wahlperioden hinweg weiter, nur das Jahr beginnt neu
     haushalt: { jahr: 1, etats: { ...etats2026 }, steuern: steuern2026, neueSchuldenSeitStart: 0 },
     // für Sieg und Endbildschirm; besteWahl = bester Stimmanteil der Spielerpartei bei einer Wahl
+    quartal: 1, // Quartal im laufenden Regierungsjahr (F12); Haushalt im letzten
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
@@ -60,6 +61,7 @@ export function zurueckInDenWahlkampf(zustand) {
     kanzlerParteiId: null,
     kabinett: null,
     haushalt: { ...zustand.haushalt, jahr: 1 },
+    quartal: 1,
   };
 }
 

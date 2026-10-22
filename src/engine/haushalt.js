@@ -63,6 +63,7 @@ export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
 // Aktion: Haushalt des laufenden Jahres beschließen. Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
 export function haushaltBeschliessen(zustand, params) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
+  if (zustand.quartal !== config.regierung.quartaleJeJahr) throw new Error('Der Haushalt kommt erst im letzten Quartal');
   const v = vorschau(zustand, params);
   // echte Abstimmung: gleich der Vorschau, außer bei einer Brandmauer-Regierung (Abweichler per Zufall, F11)
   const bundestag = abstimmen(zustand, 'haushalt');
@@ -96,7 +97,7 @@ export function haushaltBeschliessen(zustand, params) {
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, statistik, koalition });
+  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, statistik, koalition, quartal: 1 });
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

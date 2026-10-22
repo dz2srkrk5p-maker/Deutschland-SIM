@@ -4,6 +4,13 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { etats2026, steuern2026 } from '../src/data/haushalt.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { config } from '../src/data/config.js';
+import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+// F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
+const beschliessen = (z, p) => {
+  while (!haushaltsQuartal(z)) z = quartalBeenden(z).state;
+  return haushaltBeschliessen(z, p);
+};
+
 
 const hh = config.haushalt;
 const summe = (o) => Object.values(o).reduce((s, x) => s + x, 0);
@@ -47,7 +54,7 @@ test('Schrittgrenzen: ±4 Stufen (±20 %) und ±5 Steuerstufen erlaubt, mehr nic
 test('Mehrausgaben ohne Gegenfinanzierung brechen die Schuldenbremse', () => {
   const z = imAmt();
   expect(vorschau(z, { stufen: { bildung: 1 } }).bilanz.eingehalten).toBe(false);
-  expect(() => haushaltBeschliessen(z, { stufen: { bildung: 1 } })).toThrow();
+  expect(() => beschliessen(z, { stufen: { bildung: 1 } })).toThrow();
 });
 
 test('Mehr Verteidigung über der Freigrenze zählt nicht zur Schuldenbremse', () => {
@@ -66,7 +73,7 @@ test('Wirkung trifft die Partei, die das Ministerium hält', () => {
 });
 
 test('Beschluss: Haushalt gilt weiter, Jahr zählt hoch, Schulden werden mitgezählt', () => {
-  const { state } = haushaltBeschliessen(imAmt(), { stufen: { arbeit: -1 } });
+  const { state } = beschliessen(imAmt(), { stufen: { arbeit: -1 } });
   expect(state.haushalt.jahr).toBe(2);
   expect(state.haushalt.etats.arbeit).toBe(Math.round(etats2026.arbeit * 0.95));
   expect(state.haushalt.neueSchuldenSeitStart).toBe(97970138 - (etats2026.arbeit - Math.round(etats2026.arbeit * 0.95)));
@@ -77,14 +84,14 @@ test('Beschluss: Haushalt gilt weiter, Jahr zählt hoch, Schulden werden mitgez�
 
 test('gleicher Seed ergibt gleiche Umfragen', () => {
   const p = { stufen: { arbeit: -2, verteidigung: 2 } }; // ohne Steuern: SPD+Union hat keine Bundesratsmehrheit (M9)
-  expect(haushaltBeschliessen(imAmt(7), p).state.anteile).toEqual(haushaltBeschliessen(imAmt(7), p).state.anteile);
+  expect(beschliessen(imAmt(7), p).state.anteile).toEqual(beschliessen(imAmt(7), p).state.anteile);
 });
 
 test('nach Jahr 4 beginnt der Wahlkampf, der Haushalt bleibt', () => {
   let z = imAmt();
   for (let jahr = 1; jahr <= config.legislaturJahre; jahr++) {
     expect(z.phase).toBe('regierung');
-    z = haushaltBeschliessen(z, { stufen: { arbeit: -1 } }).state;
+    z = beschliessen(z, { stufen: { arbeit: -1 } }).state;
   }
   expect(z.phase).toBe('wahlkampf');
   expect(z.wahlkampfWoche).toBe(1);
@@ -94,5 +101,5 @@ test('nach Jahr 4 beginnt der Wahlkampf, der Haushalt bleibt', () => {
 });
 
 test('ohne Regierung kein Haushalt', () => {
-  expect(() => haushaltBeschliessen({ ...imAmt(), phase: 'wahlkampf' }, {})).toThrow();
+  expect(() => beschliessen({ ...imAmt(), phase: 'wahlkampf' }, {})).toThrow();
 });

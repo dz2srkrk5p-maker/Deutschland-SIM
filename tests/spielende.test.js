@@ -5,6 +5,13 @@ import { wahl } from '../src/engine/wahl.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { config } from '../src/data/config.js';
+import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+// F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
+const beschliessen = (z, p) => {
+  while (!haushaltsQuartal(z)) z = quartalBeenden(z).state;
+  return haushaltBeschliessen(z, p);
+};
+
 
 // Regierung SPD (Kanzler) + Union + Grüne; Union hält Inneres, Grüne Umwelt, SPD den Rest
 const imAmt = (sitze = { spd: 200, union: 200, gruene: 80, afd: 150 }) => {
@@ -60,7 +67,7 @@ test('Bruch ohne Mehrheit: vorgezogene Neuwahl', () => {
   // SPD 200 + Grüne 80 = 280 < 316, wenn die Union geht; SPD ist nicht stärkste Fraktion (seit F11 sonst Minderheit)
   const z = mitAnteil(imAmt({ spd: 200, union: 210, gruene: 80, afd: 140 }), 'union', 26.0);
   expect(koalitionsbruch(z).neuwahl).toBe(true);
-  const { state, ereignisse } = haushaltBeschliessen(z, {});
+  const { state, ereignisse } = beschliessen(z, {});
   expect(state.phase).toBe('wahlkampf');
   expect(state.koalition).toBeNull();
   expect(ereignisse.some((e) => e.includes('vorgezogene Neuwahl'))).toBe(true);
@@ -68,13 +75,13 @@ test('Bruch ohne Mehrheit: vorgezogene Neuwahl', () => {
 
 test('Sieg nach 12 Jahren als Kanzler, nicht nach 11', () => {
   const z = (jahre) => ({ ...imAmt(), statistik: { jahreKanzler: jahre, regierungenGebildet: 3, besteWahl: 20 } });
-  expect(haushaltBeschliessen(z(config.spielende.siegJahreKanzler - 2), {}).state.phase).toBe('regierung');
-  expect(haushaltBeschliessen(z(config.spielende.siegJahreKanzler - 1), {}).state.phase).toBe('sieg');
+  expect(beschliessen(z(config.spielende.siegJahreKanzler - 2), {}).state.phase).toBe('regierung');
+  expect(beschliessen(z(config.spielende.siegJahreKanzler - 1), {}).state.phase).toBe('sieg');
 });
 
 test('Sieg geht vor Koalitionsbruch im selben Jahr', () => {
   const z = { ...mitAnteil(imAmt(), 'union', 20.0), statistik: { jahreKanzler: 11, regierungenGebildet: 3, besteWahl: 20 } };
-  expect(haushaltBeschliessen(z, {}).state.phase).toBe('sieg');
+  expect(beschliessen(z, {}).state.phase).toBe('sieg');
 });
 
 test('Opposition: knapp ohne mögliche Mehrheit ja, knapp mit Mehrheit nein', () => {
@@ -93,7 +100,7 @@ test('Statistik zählt Regierungen, Kanzlerjahre und beste Wahl', () => {
   const z = { ...neuesSpiel('union', 1), phase: 'koalition', sitze: { union: 400, spd: 230 } };
   const regiert = verhandeln(z, { partner: [] }).state;
   expect(regiert.statistik.regierungenGebildet).toBe(1);
-  const nachJahr = haushaltBeschliessen(regiert, {}).state;
+  const nachJahr = beschliessen(regiert, {}).state;
   expect(nachJahr.statistik.jahreKanzler).toBe(1);
   expect(wahl(neuesSpiel('spd', 1)).state.statistik.besteWahl).toBe(16.4);
 });
@@ -122,7 +129,7 @@ const minderheit = () => {
 
 test('F11: gescheiterter Haushalt: Vorjahr gilt weiter, Jahr zählt, Kanzlerpartei verliert, zweiter Fehlschlag = Spielende', () => {
   const z = minderheit();
-  const { state, ereignisse } = haushaltBeschliessen(z, { stufen: { umwelt: 2 } });
+  const { state, ereignisse } = beschliessen(z, { stufen: { umwelt: 2 } });
   expect(ereignisse[0]).toContain('gescheitert');
   expect(state.haushalt.etats).toEqual(z.haushalt.etats); // die gewünschte Erhöhung gilt nicht
   expect(state.haushalt.jahr).toBe(2);
@@ -130,12 +137,12 @@ test('F11: gescheiterter Haushalt: Vorjahr gilt weiter, Jahr zählt, Kanzlerpart
   expect(state.koalition.fehlschlaege).toBe(1);
   // feste Wirkung −0,5, danach Schwankung höchstens ±0,3 (plus Rückrechnung): klar unter dem Startwert
   expect(state.anteile.gruene).toBeLessThan(z.anteile.gruene - config.minderheit.umfrageVerlustHaushaltGescheitert + 0.4);
-  const zweite = haushaltBeschliessen(state, {});
+  const zweite = beschliessen(state, {});
   expect(zweite.state.phase).toBe('opposition');
   expect(zweite.ereignisse.at(-1)).toContain('Minderheitsregierung ist am Ende');
 });
 
 test('F11: Mehrheitsregierung kann nicht an der Abstimmung scheitern (sonst Fehler statt vorläufiger Haushalt)', () => {
   const z = { ...minderheit(), koalition: { partner: [], startAnteile: {}, minderheit: false, fehlschlaege: 0 } };
-  expect(() => haushaltBeschliessen(z, {})).toThrow('Keine Mehrheit im Bundestag');
+  expect(() => beschliessen(z, {})).toThrow('Keine Mehrheit im Bundestag');
 });

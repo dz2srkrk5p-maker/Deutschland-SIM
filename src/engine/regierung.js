@@ -1,0 +1,17 @@
+import { config } from '../data/config.js';
+
+const letztes = config.regierung.quartaleJeJahr;
+
+// Regierungsjahr in Quartalen (F12). Im letzten Quartal wird der Haushalt beschlossen (haushaltBeschliessen),
+// danach beginnt das nächste Jahr mit Quartal 1.
+export const haushaltsQuartal = (zustand) => zustand.quartal === letztes;
+
+// Aktion: Quartal beenden, weiter zum nächsten. Nicht im Haushaltsquartal, dort endet das Jahr mit dem Haushalt.
+export function quartalBeenden(zustand) {
+  if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
+  if (haushaltsQuartal(zustand)) throw new Error('Im letzten Quartal wird der Haushalt beschlossen');
+  return {
+    state: { ...zustand, quartal: zustand.quartal + 1 },
+    ereignisse: [`Haushaltsjahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal} vorbei`],
+  };
+}

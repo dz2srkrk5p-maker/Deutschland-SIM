@@ -10,6 +10,7 @@ export const hinweise = {
   wahlkampf: `Bis zur Wahl hast du ${config.wahlkampf.wochen} Wochen, jede Woche eine Aktion. Unter ${zahl(config.sperrklauselProzent)} % kommt eine Partei nicht in den Bundestag. Danach brauchst du mit Partnern mindestens ${mehrheit} Sitze.`,
   koalition: `Wähle Partner, bis ihr zusammen mindestens ${mehrheit} Sitze habt. Wer absagt, ist bis zur nächsten Wahl gesperrt. Je weiter weg eine Partei in der Sitzordnung ist, desto eher sagt sie ab. Als stärkste Fraktion kannst du auch allein ohne Mehrheit regieren – riskant.`,
   kabinett: 'Verteile die Ministerien. Jede Koalitionspartei bekommt so viele, wie ihr nach Sitzen zustehen. Wer ein Ministerium hält, gewinnt oder verliert später Umfragepunkte durch dessen Etat.',
+  quartal: `Ein Regierungsjahr hat ${config.regierung.quartaleJeJahr} Quartale. Im letzten stellst du den Haushalt auf.`,
   regierung: `Stelle den Haushalt für dieses Jahr auf, ohne die Schuldenbremse zu brechen. Kürzungen schaden der Partei, die das Ministerium hält. Fällt ein Partner mehr als ${zahl(config.spielende.koalitionsbruchPunkte)} Punkte unter seinen Wert bei Regierungsbildung, verlässt er die Koalition.`,
   ende: 'Die Partie ist vorbei. Mit „Neues Spiel“ beginnst du von vorn, mit derselben oder einer anderen Partei.',
 };

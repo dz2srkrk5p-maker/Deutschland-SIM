@@ -8,9 +8,10 @@ import { wahlkampfWoche, ertragFaktor } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
+import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 
 const PARTIEN = 200;
-const MAX_ZUEGE = 2000; // Schutz gegen Endlosschleifen
+const MAX_ZUEGE = 8000; // Schutz gegen Endlosschleifen
 
 // Partner nach Chance absteigend wählen, bis die Mehrheit reicht
 function partnerWaehlen(z) {
@@ -65,7 +66,8 @@ function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Pla
     if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, wahlkampfZug(z));
     else if (z.phase === 'koalition') r = koalitionZug(z);
     else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
-    else if (z.phase === 'regierung') r = haushaltBeschliessen(z, haushaltZug(z));
+    else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
+        else if (z.phase === 'regierung') r = haushaltBeschliessen(z, haushaltZug(z));
     else break;
     if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
     z = r.state;
@@ -119,6 +121,7 @@ const minderheitZeilen = spielbar.flatMap((p) =>
         if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
         else if (z.phase === 'koalition') r = kz(z);
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
+        else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
         else if (z.phase === 'regierung') r = haushaltBeschliessen(z, {});
         else break;
         if (r.state.koalition?.minderheit) war = true;
@@ -135,7 +138,7 @@ const minderheitZeilen = spielbar.flatMap((p) =>
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
