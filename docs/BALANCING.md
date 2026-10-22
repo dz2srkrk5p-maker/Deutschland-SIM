@@ -107,6 +107,10 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `reformen.verlustJeQuartal` | 0.1 | F13 |
 | `reformen.gewinnJeDruckpunkt` | 0.01 | F13 |
 | `ereignisse.chanceJeQuartal` | 0.3 | F14 |
+| `ticker.anzahl` | 3 | F15 |
+| `ticker.trendSchritte` | 3 | F15 |
+| `ticker.trendPunkte` | 0.5 | F15 |
+| `ticker.huerdeAbstand` | 0.5 | F15 |
 | `wahlkampf.wochen` | 8 | M5 |
 | `wahlkampf.plakateGewinn` | 0.4 | M5 |
 | `wahlkampf.kundgebungMin` | -0.5 | M5 |

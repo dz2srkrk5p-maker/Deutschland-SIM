@@ -9,6 +9,7 @@ import { verlaufSvg } from '../components/verlauf.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
 import { andereParteien } from '../../data/laender.js';
+import { tickerHtml } from '../components/ticker.js';
 
 const parteiInfo = (id) => partei(id) ?? andereParteien[id];
 
@@ -80,6 +81,7 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
     el.innerHTML = `
       <h1>Haushalt</h1>
       ${hinweisHtml('regierung')}
+    ${tickerHtml(zustand)}
       <p><strong>Haushaltsjahr ${zustand.haushalt.jahr} von ${config.legislaturJahre}</strong> · Kanzler: ${partei(zustand.kanzlerParteiId).name}${zustand.koalition.minderheit ? ' · <strong>Minderheitsregierung</strong>' : ''}</p>
       <div class="bilanz">
         <span>Einnahmen</span><span>${euro(b.einnahmen)}</span>

@@ -5,6 +5,7 @@ import { ueberHuerde } from '../../engine/wahl.js';
 import { ertragFaktor } from '../../engine/wahlkampf.js';
 import { protokollHtml } from '../components/protokoll.js';
 import { verlaufSvg } from '../components/verlauf.js';
+import { tickerHtml } from '../components/ticker.js';
 
 const SKALA = 40; // Prozent, die einer vollen Balkenbreite entsprechen
 const prozent = (a) => a.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
@@ -23,6 +24,7 @@ export function wahlkampfScreen(el, zustand, protokoll, { onAktion }) {
   el.innerHTML = `
     <h1>Wahlkampf: ${spieler.name}</h1>
     ${hinweisHtml('wahlkampf')}
+    ${tickerHtml(zustand)}
     <p><strong>Woche ${zustand.wahlkampfWoche} von ${config.wahlkampf.wochen}</strong></p>
 
     <h2>Umfrage</h2>

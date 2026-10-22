@@ -10,6 +10,7 @@ import { ministerien } from '../../data/ministerien.js';
 import { reformVorschau, sperrgrund } from '../../engine/reformen.js';
 import { mrd } from '../../engine/haushalt.js';
 import { offenesEreignis, folgen } from '../../engine/ereignisse.js';
+import { tickerHtml } from '../components/ticker.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const prozent = (a) => a.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
@@ -63,6 +64,7 @@ export function regierungScreen(el, zustand, protokoll, { onWeiter, onReform, on
   el.innerHTML = `
     <h1>Regierung</h1>
     ${hinweisHtml('quartal')}
+    ${tickerHtml(zustand)}
     <p><strong>Haushaltsjahr ${zustand.haushalt.jahr} von ${config.legislaturJahre}, Quartal ${zustand.quartal} von ${config.regierung.quartaleJeJahr}</strong></p>
     <div class="bilanz">
       <span>Regierung</span><span>${regierung}${zustand.koalition.minderheit ? ' (Minderheit)' : ''}</span>

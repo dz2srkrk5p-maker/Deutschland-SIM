@@ -161,6 +161,13 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Endbildschirm (`src/ui/screens/ende.js`): Sieg oder Opposition, Statistik, letzter Bundestag, „Neues Spiel“.
 - Balancing-Bericht: `npm run balancing` (`scripts/balancing.js`) schreibt `docs/BALANCING.md`. Werte werden nur nach Entscheidung des Nutzers geändert.
 
+## Oberfläche: Nachrichtenticker (F15, freigegeben automatisch nach Empfehlung 2026-10-22)
+- Dateien: `src/engine/schlagzeilen.js` (`schlagzeilen(zustand)`), `src/ui/components/ticker.js`; im Wahlkampf-, Regierungs- und Haushaltsbildschirm unter dem Hinweis. Zahlen: `config.ticker`.
+- Reine Anzeige ohne Spielwirkung. Die Schlagzeilen werden aus dem aktuellen Spielstand abgeleitet (kein eigenes Zustandsfeld, kein Zufall, keine neue Spielstand-Version): gleicher Zustand, gleiche Schlagzeilen.
+- In dieser Reihenfolge, höchstens 3, keine doppelten: Partner ab der Warnstufe des Koalitionsbruchs (F01); Probleme ab Druck 70, höchster zuerst (F13); Minderheitsregierung (F11); Umfragetrend der eigenen Partei über die letzten 3 Verlaufsschritte ab ±0,5 Punkten; Parteien mit höchstens 0,5 Punkten Abstand zur Sperrklausel.
+- Feste Liste, keine Laufschrift, keine Live-Region (die Ansage aus F04 bleibt), keine erfundenen Zeitungsnamen, eigene Formulierungen.
+- Nicht enthalten (bewusst): Zeitungsseite, Interviews, Presse als Spielsystem, Schlagzeilen-Varianten per Zufall, Meldungen aus dem Protokoll.
+
 ## Speichern und Laden (M11)
 - Datei: `src/storage/speicher.js` (`spielSichern`, `spielLaden`, `spielLoeschen`), nutzt `speichern`/`laden` aus `src/engine/state.js`.
 - Ein Spielstand im Browser (`localStorage`, Schlüssel `desim-zustand` und `desim-protokoll`).

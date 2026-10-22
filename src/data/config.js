@@ -24,6 +24,14 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Nachrichtenticker (F15, freigegeben automatisch nach Empfehlung 2026-10-22): reine Anzeige, Schwellen für Schlagzeilen
+  ticker: {
+    anzahl: 3, // höchstens so viele Schlagzeilen
+    trendSchritte: 3, // Umfragetrend über so viele Verlaufsschritte
+    trendPunkte: 0.5, // ab dieser Änderung in Punkten eine Schlagzeile
+    huerdeAbstand: 0.5, // Partei mit so wenig Abstand zur Sperrklausel (Punkte) gilt als „zittert“
+  },
+
   // Wahlkampf, alle Werte in Prozentpunkten, freigegeben 2026-10-20 (M5)
   wahlkampf: {
     wochen: 8, // eine Aktion pro Woche, danach automatisch Wahl
