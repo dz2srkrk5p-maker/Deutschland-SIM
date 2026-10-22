@@ -1,24 +1,44 @@
+import './stil.css';
 import { neuesSpiel, seedAusAdresse } from '../engine/state.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
 import { verhandeln, minderheitAntreten } from '../engine/koalition.js';
-import { startScreen } from './screens/start.js';
-import { wahlkampfScreen } from './screens/wahlkampf.js';
 import { bestaetigen } from '../engine/kabinett.js';
-import { koalitionScreen } from './screens/koalition.js';
-import { kabinettScreen } from './screens/kabinett.js';
 import { haushaltBeschliessen } from '../engine/haushalt.js';
-import { haushaltScreen } from './screens/haushalt.js';
-import { endeScreen } from './screens/ende.js';
-import { regierungScreen } from './screens/regierung.js';
 import { quartalBeenden, haushaltsQuartal } from '../engine/regierung.js';
 import { reformEinbringen } from '../engine/reformen.js';
 import { ereignisEntscheiden } from '../engine/ereignisse.js';
-import { spielSichern, spielLaden, spielLoeschen, hinweiseSetzen } from '../storage/speicher.js';
+import { spielSichern, spielLaden, spielLoeschen, hinweiseSetzen, hinweiseAn } from '../storage/speicher.js';
+import { shellHtml } from './shell.js';
+import { badge, meldungHtml } from './components/basis.js';
+import { teilenBinden } from './components/teilen.js';
+import { startScreen } from './screens/start.js';
+import { wahlkampfScreen } from './screens/wahlkampf.js';
+import { wahlabendScreen } from './screens/wahlabend.js';
+import { koalitionScreen } from './screens/koalition.js';
+import { kabinettScreen } from './screens/kabinett.js';
+import { lageScreen } from './screens/lage.js';
+import { reformenScreen } from './screens/reformen.js';
+import { haushaltScreen } from './screens/haushalt.js';
+import { parlamentScreen } from './screens/parlament.js';
+import { chronikScreen } from './screens/chronik.js';
+import { endeScreen } from './screens/ende.js';
 
 const el = document.querySelector('#app');
 const ansage = document.querySelector('#ansage');
 let zustand = null;
 let protokoll = [];
+// Zustand der Oberfläche (nicht gespeichert, nicht im Spielstand): Bereich, Unterbereiche, Rückmeldung, Haushaltsentwurf
+const ui = {
+  bereich: 'lage',
+  problem: null,
+  parlament: 'bundestag',
+  chronik: 'verlauf',
+  seite: 0,
+  chronikOffen: false, // Chronik im geführten Ablauf und am Ende (über Spielmenü bzw. Knopf)
+  wahlabendGesehen: false,
+  meldung: null,
+  entwurf: { jahr: null, stufen: {}, steuerStufe: 0, tab: 'ueberblick' },
+};
 // Geteilter Link ?seed=… (F07): einmal lesen, dann aus der Adresse entfernen, damit Neuladen nicht erneut startet
 let link = null;
 if (new URLSearchParams(location.search).has('seed')) {
@@ -27,9 +47,12 @@ if (new URLSearchParams(location.search).has('seed')) {
   history.replaceState(null, '', location.pathname);
 }
 
+const neu = () => (ui.bereich = 'lage', ui.problem = null, ui.chronikOffen = false, ui.meldung = null);
+
 function zeichne() {
   if (!zustand) {
-    return startScreen(el, {
+    el.innerHTML = shellHtml(null);
+    return startScreen(ansicht(), {
       gespeichert: spielLaden()?.zustand ?? null,
       link,
       onStart: starten,
@@ -38,22 +61,87 @@ function zeichne() {
       onLinkNein: () => ((link = null), weiterspielen()),
     });
   }
-  if (zustand.phase === 'wahlkampf') return wahlkampfScreen(el, zustand, protokoll, { onAktion: ausfuehren(wahlkampfWoche) });
-  if (zustand.phase === 'koalition') return koalitionScreen(el, zustand, protokoll, { onVerhandeln: ausfuehren(verhandeln), onMinderheit: ausfuehren(minderheitAntreten) });
-  if (zustand.phase === 'kabinett') return kabinettScreen(el, zustand, protokoll, { onBestaetigen: ausfuehren(bestaetigen) });
-  // offenes Ereignis (F14) auch vor dem Haushalt im Regierungsbildschirm beantworten
-  if (zustand.phase === 'regierung' && (zustand.offenesEreignis || !haushaltsQuartal(zustand))) {
-    return regierungScreen(el, zustand, protokoll, { onWeiter: ausfuehren(quartalBeenden), onReform: ausfuehren(reformEinbringen), onEreignis: ausfuehren(ereignisEntscheiden) });
+  const regiert = zustand.phase === 'regierung';
+  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', haushalt: haushaltsQuartal(zustand) ? badge('fällig', 'gelb') : '' } : {};
+  el.innerHTML = shellHtml(zustand, { aktiv: regiert ? ui.bereich : null, badges });
+  el.querySelector('#meldung').innerHTML = meldungHtml(ui.meldung);
+  menueBinden();
+  const a = ansicht();
+  const chronik = (onZurueck) => chronikScreen(a, zustand, protokoll, {
+    tab: ui.chronik, seite: ui.seite, onZurueck,
+    onTab: (t) => ((ui.chronik = t), (ui.seite = 0), zeichne(), fokusAuf(`[data-tab="${t}"]`)),
+    onSeite: (s) => ((ui.seite = s), zeichne(), fokusOben()),
+  });
+  if (ui.chronikOffen && !regiert) return chronik(() => ((ui.chronikOffen = false), zeichne(), fokusOben()));
+
+  if (zustand.phase === 'wahlkampf') return wahlkampfScreen(a, zustand, { onAktion: ausfuehren(wahlkampfWoche) });
+  if (zustand.phase === 'koalition' && !ui.wahlabendGesehen) {
+    return wahlabendScreen(a, zustand, { onWeiter: () => ((ui.wahlabendGesehen = true), (ui.meldung = null), zeichne(), fokusOben()) });
   }
-  if (zustand.phase === 'regierung') return haushaltScreen(el, zustand, protokoll, { onBeschliessen: ausfuehren(haushaltBeschliessen) });
-  return endeScreen(el, zustand, protokoll, { onNeu: () => (spielLoeschen(), (zustand = null), zeichne(), fokusOben()) });
+  if (zustand.phase === 'koalition') {
+    return koalitionScreen(a, zustand, {
+      onVerhandeln: ausfuehren(verhandeln),
+      onMinderheit: ausfuehren(minderheitAntreten),
+      onWahlabend: () => ((ui.wahlabendGesehen = false), zeichne(), fokusOben()),
+    });
+  }
+  if (zustand.phase === 'kabinett') return kabinettScreen(a, zustand, { onBestaetigen: ausfuehren(bestaetigen) });
+  if (!regiert) return endeScreen(a, zustand, { onNeu: neuesSpielStarten, onChronik: () => ((ui.chronikOffen = true), zeichne(), fokusOben()) });
+
+  if (ui.bereich === 'lage') {
+    // „Zum Haushalt“ führt immer auf den Überblick mit dem Knopf zum Einbringen
+    const onBereich = (b) => (b === 'haushalt' && (ui.entwurf.tab = 'ueberblick'), wechseln(b));
+    return lageScreen(a, zustand, { onWeiter: ausfuehren(quartalBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onBereich });
+  }
+  if (ui.bereich === 'reformen') {
+    return reformenScreen(a, zustand, { problem: ui.problem, onReform: ausfuehren(reformEinbringen), onProblem: (p) => ((ui.problem = p), zeichne(), fokusOben()) });
+  }
+  if (ui.bereich === 'haushalt') return haushaltScreen(a, zustand, { entwurf: ui.entwurf, onBeschliessen: ausfuehren(haushaltBeschliessen) });
+  if (ui.bereich === 'parlament') return parlamentScreen(a, zustand, { tab: ui.parlament, onTab: (t) => ((ui.parlament = t), zeichne(), fokusAuf(`[data-tab="${t}"]`)) });
+  return chronik(null);
 }
 
-// Nach dem Neuzeichnen ist das fokussierte Element weg (Fokus auf body). Nach einer Aktion daher auf die Überschrift, nicht beim ersten Laden.
+const ansicht = () => el.querySelector('#ansicht');
+const fokusAuf = (selektor) => el.querySelector(selektor)?.focus();
+// Nach dem Neuzeichnen ist das fokussierte Element weg. Nach einer Aktion daher auf die Überschrift, nicht beim ersten Laden.
 function fokusOben() {
-  const h1 = el.querySelector('h1');
+  const h1 = el.querySelector('#ansicht h1');
+  if (!h1) return;
   h1.tabIndex = -1;
   h1.focus();
+}
+
+function wechseln(bereich) {
+  ui.bereich = bereich;
+  ui.problem = null; // Reformen beginnen über die Navigation immer mit der Problemliste
+  ui.meldung = null;
+  zeichne();
+  fokusOben();
+}
+
+function menueBinden() {
+  const menue = el.querySelector('#menue');
+  if (!menue) return;
+  const bestaetigen = el.querySelector('#neu-bestaetigen');
+  el.querySelector('#menue-auf').addEventListener('click', () => menue.showModal());
+  teilenBinden(menue, zustand, 'menue-teilen');
+  el.querySelectorAll('[data-menue]').forEach((k) => k.addEventListener('click', () => {
+    const was = k.dataset.menue;
+    if (was === 'zu') return menue.close();
+    if (was === 'chronik') return ((ui.chronikOffen = true), zeichne(), fokusOben());
+    if (was === 'hinweise') return (hinweiseSetzen(!hinweiseAn()), zeichne(), fokusOben());
+    if (was === 'neu') return (menue.close(), bestaetigen.showModal());
+    if (was === 'neu-nein') return bestaetigen.close();
+    if (was === 'neu-ja') return neuesSpielStarten();
+  }));
+}
+
+function neuesSpielStarten() {
+  spielLoeschen();
+  zustand = null;
+  neu();
+  zeichne();
+  fokusOben();
 }
 
 function starten(parteiId) {
@@ -61,6 +149,7 @@ function starten(parteiId) {
   zustand = neuesSpiel(parteiId, link ? link.seed : Math.floor(Math.random() * 2 ** 31));
   link = null;
   protokoll = [];
+  neu();
   spielSichern(zustand, protokoll);
   zeichne();
   fokusOben();
@@ -68,16 +157,35 @@ function starten(parteiId) {
 
 function weiterspielen() {
   ({ zustand, protokoll } = spielLaden());
+  neu();
+  // nach dem Laden mitten in der Regierungsbildung erst das Wahlergebnis zeigen
+  ui.wahlabendGesehen = false;
   zeichne();
   fokusOben();
 }
 
-// Engine-Aktion ausführen, Zustand und Protokoll übernehmen, automatisch sichern, neu zeichnen
+// Engine-Aktion ausführen, Zustand und Protokoll übernehmen, automatisch sichern, neu zeichnen.
+// Wirft die Engine (ungültige Aktion), bleibt der Zustand unverändert und der Grund erscheint als Meldung.
 const ausfuehren = (aktion) => (params) => {
-  const ergebnis = aktion(zustand, params);
+  let ergebnis;
+  try {
+    ergebnis = aktion(zustand, params);
+  } catch (fehler) {
+    ui.meldung = { texte: [fehler.message], fehler: true };
+    zeichne();
+    fokusOben();
+    return;
+  }
+  const vorher = zustand.phase;
   zustand = ergebnis.state;
   protokoll = [...protokoll, ...ergebnis.ereignisse];
   spielSichern(zustand, protokoll);
+  if (zustand.phase !== vorher) {
+    neu();
+    if (zustand.phase === 'koalition') ui.wahlabendGesehen = false;
+  }
+  if (aktion === haushaltBeschliessen) Object.assign(ui.entwurf, { stufen: {}, steuerStufe: 0, tab: 'ueberblick' });
+  ui.meldung = { texte: ergebnis.ereignisse, fehler: false };
   zeichne();
   fokusOben();
   // Screenreader: nur den neuesten Eintrag ansagen. Erst leeren, damit auch ein gleicher Text erneut angesagt wird.
@@ -85,13 +193,15 @@ const ausfuehren = (aktion) => (params) => {
   if (ergebnis.ereignisse.length) setTimeout(() => (ansage.textContent = ergebnis.ereignisse.at(-1)), 50);
 };
 
-// Hinweise aus-/einblenden (Knöpfe aus hinweis.js und start.js). Ausblenden entfernt nur die Box, damit z. B. Haushaltseingaben bleiben.
+// Klicks, die überall vorkommen: Hauptnavigation und Hinweise aus-/einblenden
 el.addEventListener('click', (e) => {
+  const bereich = e.target.closest('[data-bereich]');
+  if (bereich) return wechseln(bereich.dataset.bereich);
   const knopf = e.target.closest('[data-hinweise]');
   if (!knopf) return;
   const an = knopf.dataset.hinweise === 'an';
   hinweiseSetzen(an);
-  // Startbildschirm neu zeichnen, damit dort der Knopf zum Wiedereinblenden erscheint
+  // Startbildschirm neu zeichnen, damit dort der Knopf zum Wiedereinblenden erscheint; sonst nur die Box entfernen (Eingaben bleiben)
   if (an || !zustand) zeichne();
   else knopf.closest('.hinweis').remove();
   fokusOben();

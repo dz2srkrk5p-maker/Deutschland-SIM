@@ -36,3 +36,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | F13 | Probleme und Reformpfade, Reformkosten im Haushalt (Spielstand-Version 8) | fertig (2026-10-22) |
 | F14 | Ereignisse in der Regierungszeit (Spielstand-Version 9) | fertig (2026-10-22) |
 | F15 | Nachrichtenticker aus dem Spielstand | fertig (2026-10-22) |
+| UI | Umbau der Oberfläche: App-Shell, Navigation, Design-System, Dark Mode | fertig (2026-10-22) |

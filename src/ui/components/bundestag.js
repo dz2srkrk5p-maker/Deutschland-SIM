@@ -56,12 +56,12 @@ export function bundestagSvg(sitze, parteien) {
 
   const beschreibung = liste.map((p) => `${p.name} ${p.sitze}`).join(', ');
   return `
-    <svg viewBox="0 0 200 104" role="img" aria-label="Bundestag, ${gesamt} Sitze: ${beschreibung}" style="width:100%;max-width:640px;display:block">
+    <svg class="sitze" viewBox="0 0 200 104" role="img" aria-label="Bundestag, ${gesamt} Sitze: ${beschreibung}" style="width:100%;max-width:640px;display:block">
       ${gruppen.join('')}
       <text x="100" y="86" text-anchor="middle" font-size="12" font-weight="bold">${gesamt}</text>
       <text x="100" y="98" text-anchor="middle" font-size="6">Mehrheit ab ${mehrheit(sitze)}</text>
     </svg>
     <ul style="list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:0.5em 1.2em">
-      ${liste.map((p) => `<li><span style="display:inline-block;width:0.8em;height:0.8em;border-radius:50%;background:${p.farbe};border:1px solid #888"></span> ${p.name} ${p.sitze}</li>`).join('')}
+      ${liste.map((p) => `<li><span style="display:inline-block;width:0.8em;height:0.8em;border-radius:50%;background:${p.farbe};border:1px solid var(--text-2)"></span> ${p.name} ${p.sitze}</li>`).join('')}
     </ul>`;
 }
