@@ -11,6 +11,7 @@ import { haushaltScreen } from './screens/haushalt.js';
 import { endeScreen } from './screens/ende.js';
 import { regierungScreen } from './screens/regierung.js';
 import { quartalBeenden, haushaltsQuartal } from '../engine/regierung.js';
+import { reformEinbringen } from '../engine/reformen.js';
 import { spielSichern, spielLaden, spielLoeschen, hinweiseSetzen } from '../storage/speicher.js';
 
 const el = document.querySelector('#app');
@@ -39,7 +40,7 @@ function zeichne() {
   if (zustand.phase === 'wahlkampf') return wahlkampfScreen(el, zustand, protokoll, { onAktion: ausfuehren(wahlkampfWoche) });
   if (zustand.phase === 'koalition') return koalitionScreen(el, zustand, protokoll, { onVerhandeln: ausfuehren(verhandeln), onMinderheit: ausfuehren(minderheitAntreten) });
   if (zustand.phase === 'kabinett') return kabinettScreen(el, zustand, protokoll, { onBestaetigen: ausfuehren(bestaetigen) });
-  if (zustand.phase === 'regierung' && !haushaltsQuartal(zustand)) return regierungScreen(el, zustand, protokoll, { onWeiter: ausfuehren(quartalBeenden) });
+  if (zustand.phase === 'regierung' && !haushaltsQuartal(zustand)) return regierungScreen(el, zustand, protokoll, { onWeiter: ausfuehren(quartalBeenden), onReform: ausfuehren(reformEinbringen) });
   if (zustand.phase === 'regierung') return haushaltScreen(el, zustand, protokoll, { onBeschliessen: ausfuehren(haushaltBeschliessen) });
   return endeScreen(el, zustand, protokoll, { onNeu: () => (spielLoeschen(), (zustand = null), zeichne(), fokusOben()) });
 }

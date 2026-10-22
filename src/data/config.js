@@ -11,6 +11,15 @@ export const config = {
   // der Haushalt wird im letzten beschlossen.
   regierung: { quartaleJeJahr: 4 },
 
+  // Probleme und Reformen (F13, freigegeben automatisch nach Empfehlung 2026-10-22). Druck 0–100, Werte in Punkten.
+  reformen: {
+    druckAnstiegJeQuartal: 1, // jedes Problem, bei jedem beendeten Quartal (nicht im Haushaltsquartal)
+    druckMax: 100,
+    druckSchwelle: 70, // ab hier schadet das Problem der Kanzlerpartei
+    verlustJeQuartal: 0.1, // Umfrageverlust der Kanzlerpartei je Problem über der Schwelle, je beendetem Quartal
+    gewinnJeDruckpunkt: 0.01, // Umfragegewinn der Partei des zuständigen Ministeriums je gesenktem Druckpunkt
+  },
+
   // Wahlkampf, alle Werte in Prozentpunkten, freigegeben 2026-10-20 (M5)
   wahlkampf: {
     wochen: 8, // eine Aktion pro Woche, danach automatisch Wahl

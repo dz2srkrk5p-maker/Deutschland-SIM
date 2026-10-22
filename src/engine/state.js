@@ -1,9 +1,11 @@
 import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
+import { probleme } from '../data/probleme.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 7; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
-// 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12)
+export const ZUSTAND_VERSION = 8; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+// 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
+// 8: probleme, reformen, reformImQuartal (F13)
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -33,6 +35,10 @@ export function neuesSpiel(spielerParteiId, seed) {
     haushalt: { jahr: 1, etats: { ...etats2026 }, steuern: steuern2026, neueSchuldenSeitStart: 0 },
     // für Sieg und Endbildschirm; besteWahl = bester Stimmanteil der Spielerpartei bei einer Wahl
     quartal: 1, // Quartal im laufenden Regierungsjahr (F12); Haushalt im letzten
+    // Problemdruck 0–100 je Problem und beschlossene Reformen (F13); gelten über Wahlperioden hinweg weiter
+    probleme: Object.fromEntries(probleme.map((p) => [p.id, p.startDruck])),
+    reformen: [],
+    reformImQuartal: false, // in diesem Quartal schon eine Reform eingebracht
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
@@ -62,6 +68,7 @@ export function zurueckInDenWahlkampf(zustand) {
     kabinett: null,
     haushalt: { ...zustand.haushalt, jahr: 1 },
     quartal: 1,
+    reformImQuartal: false,
   };
 }
 

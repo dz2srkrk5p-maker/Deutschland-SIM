@@ -84,6 +84,7 @@ export function haushaltScreen(el, zustand, protokoll, { onBeschliessen }) {
       <div class="bilanz">
         <span>Einnahmen</span><span>${euro(b.einnahmen)}</span>
         <span>Ausgaben</span><span>${euro(b.ausgaben)}</span>
+        ${b.reformen ? `<span>davon laufende Reformen</span><span>${euro(b.reformen)}</span>` : ''}
         <span>Neue Schulden</span><span>${euro(b.neueSchulden)}</span>
         <span>davon Verteidigungsausnahme</span><span>${euro(b.ausnahme)}</span>
         <span>Schuldenbremse</span><span class="${b.eingehalten ? 'ok' : 'rot'}">${euro(b.schuldenbremse)} von ${euro(hh.schuldenbremseGrenze)} ${b.eingehalten ? '✓' : '✗ überschritten'}</span>

@@ -33,3 +33,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | F10 | Abstimmungen im Bundestag (Grundlage), Haushalt braucht Mehrheit | fertig (2026-10-21) |
 | F11 | Minderheitsregierung, Brandmauer bei Abstimmungen (Spielstand-Version 6) | fertig (2026-10-22) |
 | F12 | Regierungsjahr in Quartalen, Haushalt im 4. Quartal (Spielstand-Version 7) | fertig (2026-10-22) |
+| F13 | Probleme und Reformpfade, Reformkosten im Haushalt (Spielstand-Version 8) | fertig (2026-10-22) |

@@ -9,6 +9,10 @@ import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minde
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { reformEinbringen, reformVorschau, sperrgrund } from '../src/engine/reformen.js';
+import { reformen } from '../src/data/probleme.js';
+import { vorschau } from '../src/engine/haushalt.js';
+import { ministerien } from '../src/data/ministerien.js';
 
 const PARTIEN = 200;
 const MAX_ZUEGE = 8000; // Schutz gegen Endlosschleifen
@@ -135,10 +139,58 @@ const minderheitZeilen = spielbar.flatMap((p) =>
   }),
 );
 
+// F13: Reformen. „mit Reformen“: je Quartal die erste Reform mit Mehrheit in der Vorschau; im Haushalt so lange Etats
+// um je eine Stufe kürzen (Partner-Ministerien zuerst, dann eigene, größte Etats zuerst), bis die Schuldenbremse hält.
+function ausgleichen(z) {
+  const stufen = {};
+  const reihenfolge = [...ministerien]
+    .sort((a, b) => (z.kabinett.verteilung[a.id] === z.spielerParteiId) - (z.kabinett.verteilung[b.id] === z.spielerParteiId) || z.haushalt.etats[b.id] - z.haushalt.etats[a.id])
+    .map((m) => m.id);
+  const max = config.haushalt.ministerMaxProzent / config.haushalt.ministerSchrittProzent;
+  for (let runde = 1; runde <= max && !vorschau(z, { stufen }).bilanz.eingehalten; runde++) {
+    for (const id of reihenfolge) {
+      if (vorschau(z, { stufen }).bilanz.eingehalten) break;
+      stufen[id] = -runde;
+    }
+  }
+  return { stufen };
+}
+const REFORM = {
+  'keine Reformen': (z) => (haushaltsQuartal(z) ? haushaltBeschliessen(z, {}) : quartalBeenden(z)),
+  'mit Reformen': (z) => {
+    if (haushaltsQuartal(z)) return haushaltBeschliessen(z, ausgleichen(z));
+    const r = reformen.find((r) => !sperrgrund(z, r.id) && reformVorschau(z, r.id).abstimmung.angenommen);
+    return r ? reformEinbringen(z, { reformId: r.id }) : quartalBeenden(z);
+  },
+};
+const reformZeilen = spielbar.flatMap((p) =>
+  Object.entries(REFORM).map(([name, rz]) => {
+    let siege = 0, anzahl = 0, druck = 0, brueche = 0;
+    for (let seed = 1; seed <= PARTIEN; seed++) {
+      let z = neuesSpiel(p.id, seed), bruch = false;
+      for (let zug = 0; zug < MAX_ZUEGE; zug++) {
+        let r;
+        if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
+        else if (z.phase === 'koalition') r = KOALITION['Minderheit nur ohne Mehrheit'](z);
+        else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
+        else if (z.phase === 'regierung') r = rz(z);
+        else break;
+        if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
+        z = r.state;
+      }
+      if (z.phase === 'sieg') siege++;
+      if (bruch) brueche++;
+      anzahl += z.reformen.length;
+      druck += Object.values(z.probleme).reduce((s, d) => s + d, 0) / Object.keys(z.probleme).length;
+    }
+    return `| ${p.name} | ${name} | ${prozent(siege)} | ${prozent(brueche)} | ${(anzahl / PARTIEN).toFixed(1)} | ${(druck / PARTIEN).toFixed(0)} |`;
+  }),
+);
+
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', reformen: 'F13' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
@@ -170,6 +222,13 @@ Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Parti
 | Partei | Regierungsbildung | Minderheit | Gescheitert | Sieg |
 |---|---|---|---|---|
 ${minderheitZeilen.join('\n')}
+
+## Reformen (F13)
+Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit. „mit Reformen“: je Quartal die erste Reform mit Mehrheit, im Haushalt Etats kürzen (Partner zuerst), bis die Schuldenbremse hält. Druck: Durchschnitt der Probleme am Partieende.
+
+| Partei | Strategie | Sieg | Koalitionsbruch | Ø Reformen | Ø Druck am Ende |
+|---|---|---|---|---|---|
+${reformZeilen.join('\n')}
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.

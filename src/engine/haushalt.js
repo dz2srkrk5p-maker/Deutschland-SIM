@@ -8,20 +8,21 @@ import { abstimmung, abstimmen } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
 import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
+import { reformKosten } from './reformen.js';
 
 const hh = config.haushalt;
 const festeSumme = Object.values(festeAusgaben2026).reduce((s, x) => s + x, 0);
 const MRD = 1e6; // tausend Euro je Mrd.
 export const mrd = (tausend) => tausend / MRD;
 
-// Einnahmen, Ausgaben und Schuldenbremse für einen Haushalt (Beträge in tausend Euro)
-export function bilanz(etats, steuern) {
-  const ausgaben = Object.values(etats).reduce((s, x) => s + x, 0) + festeSumme;
+// Einnahmen, Ausgaben und Schuldenbremse für einen Haushalt (Beträge in tausend Euro). reformen: laufende Reformkosten (F13)
+export function bilanz(etats, steuern, reformen = 0) {
+  const ausgaben = Object.values(etats).reduce((s, x) => s + x, 0) + festeSumme + reformen;
   const einnahmen = steuern + sonstigeEinnahmen2026;
   const neueSchulden = ausgaben - einnahmen;
   const ausnahme = Math.max(0, etats.verteidigung - hh.verteidigungsFreigrenze);
   const schuldenbremse = Math.max(0, neueSchulden - ausnahme);
-  return { ausgaben, einnahmen, neueSchulden, ausnahme, schuldenbremse, eingehalten: schuldenbremse <= hh.schuldenbremseGrenze };
+  return { ausgaben, reformen, einnahmen, neueSchulden, ausnahme, schuldenbremse, eingehalten: schuldenbremse <= hh.schuldenbremseGrenze };
 }
 
 const stufeOk = (stufe, max) => Number.isInteger(stufe) && Math.abs(stufe) <= max;
@@ -57,7 +58,7 @@ export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
   // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
   // Der Haushalt braucht die einfache Mehrheit im Bundestag (F10); mit Koalitionsmehrheit immer erfüllt
   const bundestag = abstimmung(zustand, 'haushalt');
-  return { etats, steuern, bilanz: bilanz(etats, steuern), wirkung, bundesrat, bundestag, anteile: runden(umverteilen(zustand.anteile, wirkung)) };
+  return { etats, steuern, bilanz: bilanz(etats, steuern, reformKosten(zustand)), wirkung, bundesrat, bundestag, anteile: runden(umverteilen(zustand.anteile, wirkung)) };
 }
 
 // Aktion: Haushalt des laufenden Jahres beschließen. Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
@@ -76,7 +77,7 @@ export function haushaltBeschliessen(zustand, params) {
   const jahr = zustand.haushalt.jahr;
   const alt = zustand.haushalt;
   const wirkung = gescheitert ? { [zustand.kanzlerParteiId]: -config.minderheit.umfrageVerlustHaushaltGescheitert } : v.wirkung;
-  const gilt = gescheitert ? { etats: alt.etats, steuern: alt.steuern, neueSchulden: bilanz(alt.etats, alt.steuern).neueSchulden } : { etats: v.etats, steuern: v.steuern, neueSchulden: v.bilanz.neueSchulden };
+  const gilt = gescheitert ? { etats: alt.etats, steuern: alt.steuern, neueSchulden: bilanz(alt.etats, alt.steuern, reformKosten(zustand)).neueSchulden } : { etats: v.etats, steuern: v.steuern, neueSchulden: v.bilanz.neueSchulden };
   const s = schwankung(umverteilen(zustand.anteile, wirkung), bundestag.rngZustand);
   const haushalt = {
     jahr: jahr + 1,

@@ -49,6 +49,13 @@
         .land > span:nth-child(2) small { display: none; }
       }
       .rot { color: #b00; font-weight: bold; }
+      .problem { border-top: 1px solid #ddd; padding: 8px 0; }
+      .problemkopf { display: flex; justify-content: space-between; gap: 8px; font-weight: bold; }
+      .problemkopf > span:last-child { white-space: nowrap; }
+      .problem > .balken { display: block; margin: 4px 0 8px; }
+      .reform { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; padding: 4px 0 4px 12px; }
+      .reform .abstimmung { grid-column: 1 / -1; margin: 0; }
+      .reform.gesperrt { color: #666; }
       .gelb { color: #8a5a00; font-weight: bold; }
       /* nur für Screenreader sichtbar */
       .nur-screenreader { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

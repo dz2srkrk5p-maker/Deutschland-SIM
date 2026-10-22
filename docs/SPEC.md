@@ -129,6 +129,18 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Neues Zustandsfeld: `quartal` (Spielstand-Version 7); bei Wahlkampf und nach jedem Haushalt 1.
 - Nicht enthalten (bewusst): Monate, Wirkung der Zeit auf Umfragen.
 
+## System: Probleme und Reformen (F13, freigegeben automatisch nach Empfehlung 2026-10-22)
+- Dateien: `src/data/probleme.js` (Probleme, Reformen), `src/engine/reformen.js` (Aktion `reformEinbringen`, `reformVorschau`, `sperrgrund`, `reformKosten`, `druckSteigt`), Anzeige im Regierungsbildschirm (`src/ui/screens/regierung.js`). Zahlen: `config.reformen`.
+- Probleme (reale Baustellen, Werte sind Spielwerte ohne Quelle): Mieten und Wohnraum (Bauen, Start-Druck 60), Pflege (Gesundheit, 55), Bahn und Schiene (Verkehr, 50). Druck 0–100.
+- Druck steigt bei jedem beendeten Quartal um 1 (höchstens 100), also 3 je Haushaltsjahr. Ab Druck 70 kostet jedes Problem die Kanzlerpartei 0,1 Punkte je beendetem Quartal (über `umverteilen`, ohne Schwankung).
+- Je Problem 2 Reformen in Stufen (Stufe 2 erst nach Stufe 1): Wohnen 2,0 / 1,0 Mrd., Pflege 3,0 / 1,5 Mrd., Schiene 4,0 / 2,0 Mrd. je Jahr; Druck −20 / −15.
+- Einbringen: höchstens eine Reform je Quartal, nicht im Haushaltsquartal. Der Bundestag stimmt nach F10/F11 ab (Minderheitsregierung strenger, Brandmauer mit Abweichlern). Angenommen: Druck sinkt sofort, die Partei des zuständigen Ministeriums gewinnt 0,01 Punkte je gesenktem Druckpunkt, die Kosten zählen ab dem nächsten Haushalt dauerhaft als Ausgaben und zur Schuldenbremse. Abgelehnt: nichts passiert, das Quartal ist verbraucht.
+- Weil der Haushalt 2026 genau an der Schuldenbremse liegt, muss jede Reform im Haushalt durch Kürzungen (oder Steuern mit Bundesrat) ausgeglichen werden – Kürzungen schaden der Ministeriumspartei, bei Partnern bis zum Koalitionsbruch.
+- Probleme und beschlossene Reformen gelten über Wahlperioden hinweg.
+- Neue Zustandsfelder: `probleme`, `reformen`, `reformImQuartal` (Spielstand-Version 8).
+- Balancing (`docs/BALANCING.md`, Abschnitt Reformen): CDU/CSU mit Reformen 62 % Siege statt 53 %, Druck am Ende 55 statt 81.
+- Nicht enthalten (bewusst): Stellschrauben innerhalb einer Reform, Wahl der Gegenfinanzierung, Bundesrat bei Reformen, Zustimmung der Partner, verzögerte Wirkung, Gerichte, Verbände.
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).
