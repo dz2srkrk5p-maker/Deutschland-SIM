@@ -7,22 +7,23 @@ Erzeugt mit `npm run balancing` am 2026-10-22. 200 Partien je Partei und Strateg
 - Koalition: Partner nach Zustimmungschance absteigend, bis die Mehrheit reicht; nach Absagen erneut.
 - Kabinett: der vorausgefüllte Vorschlag.
 - Haushalt: siehe Spalte „Strategie“. Keine Steueränderungen.
+- Ereignisse (F14): immer die erste Möglichkeit.
 - Spiel endet bei Sieg, Opposition oder nach 8000 Zügen.
 
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |
 |---|---|---|---|---|---|
-| Haushalt unverändert | CDU/CSU | 100 % | 0 % | 25 % | 6.4 |
+| Haushalt unverändert | CDU/CSU | 100 % | 0 % | 31 % | 6.7 |
 | Haushalt unverändert | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Haushalt unverändert | SPD | 36 % | 0 % | 6 % | 2.2 |
-| Haushalt unverändert | Grüne | 9 % | 0 % | 0 % | 0.4 |
+| Haushalt unverändert | SPD | 36 % | 0 % | 5 % | 2.3 |
+| Haushalt unverändert | Grüne | 9 % | 0 % | 1 % | 0.4 |
 | Haushalt unverändert | Linke | 1 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | BSW | 0 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | FDP | 2 % | 0 % | 0 % | 0.1 |
-| Partner kürzen | CDU/CSU | 100 % | 21 % | 28 % | 6.5 |
+| Partner kürzen | CDU/CSU | 100 % | 33 % | 36 % | 6.8 |
 | Partner kürzen | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Partner kürzen | SPD | 36 % | 34 % | 3 % | 2.1 |
-| Partner kürzen | Grüne | 9 % | 4 % | 0 % | 0.4 |
+| Partner kürzen | SPD | 36 % | 35 % | 5 % | 2.3 |
+| Partner kürzen | Grüne | 9 % | 5 % | 0 % | 0.4 |
 | Partner kürzen | Linke | 1 % | 1 % | 0 % | 0.0 |
 | Partner kürzen | BSW | 0 % | 0 % | 0 % | 0.0 |
 | Partner kürzen | FDP | 2 % | 2 % | 0 % | 0.0 |
@@ -32,64 +33,64 @@ Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit d
 
 | Partei | immer Plakate | immer Kundgebung | immer Angriff (Stärkster) | abwechselnd | klug |
 |---|---|---|---|---|---|
-| CDU/CSU | 25.0 | 32.0 | 29.5 | 53.0 | **60.5** |
+| CDU/CSU | 31.0 | 36.0 | 30.5 | 57.5 | **64.5** |
 | AfD | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
-| SPD | 5.5 | 6.5 | 7.0 | **24.0** | 16.0 |
-| Grüne | 0.0 | 0.0 | 1.5 | **7.5** | 3.0 |
-| Linke | 0.0 | 0.0 | 0.0 | **0.5** | 0.0 |
-| BSW | 0.0 | 0.0 | 0.0 | **1.0** | 0.5 |
-| FDP | 0.0 | 0.0 | 0.0 | **0.5** | **0.5** |
+| SPD | 5.0 | 8.5 | 11.0 | **26.5** | 18.0 |
+| Grüne | 0.5 | 0.0 | 0.5 | **8.0** | 4.0 |
+| Linke | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| BSW | 0.0 | 0.0 | 0.0 | **1.0** | 0.0 |
+| FDP | 0.0 | 0.0 | 0.0 | 0.0 | **0.5** |
 
 ## Minderheitsregierung (F11)
 Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Partien mit mindestens einer Minderheitsregierung. „Gescheitert“: Zahl der Partien, die durch gescheiterte Haushalte einer Minderheitsregierung enden.
 
 | Partei | Regierungsbildung | Minderheit | Gescheitert | Sieg |
 |---|---|---|---|---|
-| CDU/CSU | Minderheit nur ohne Mehrheit | 51 % | 94 | 53 % |
+| CDU/CSU | Minderheit nur ohne Mehrheit | 52 % | 85 | 57 % |
 | CDU/CSU | Minderheit wenn möglich | 100 % | 200 | 0 % |
 | AfD | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
 | AfD | Minderheit wenn möglich | 0 % | 0 | 0 % |
-| SPD | Minderheit nur ohne Mehrheit | 13 % | 26 | 24 % |
-| SPD | Minderheit wenn möglich | 33 % | 66 | 4 % |
-| Grüne | Minderheit nur ohne Mehrheit | 2 % | 4 | 8 % |
-| Grüne | Minderheit wenn möglich | 5 % | 10 | 5 % |
-| Linke | Minderheit nur ohne Mehrheit | 0 % | 0 | 1 % |
-| Linke | Minderheit wenn möglich | 0 % | 0 | 1 % |
+| SPD | Minderheit nur ohne Mehrheit | 14 % | 28 | 27 % |
+| SPD | Minderheit wenn möglich | 40 % | 79 | 1 % |
+| Grüne | Minderheit nur ohne Mehrheit | 3 % | 5 | 8 % |
+| Grüne | Minderheit wenn möglich | 6 % | 11 | 5 % |
+| Linke | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
+| Linke | Minderheit wenn möglich | 0 % | 0 | 0 % |
 | BSW | Minderheit nur ohne Mehrheit | 0 % | 0 | 1 % |
 | BSW | Minderheit wenn möglich | 0 % | 0 | 1 % |
-| FDP | Minderheit nur ohne Mehrheit | 0 % | 0 | 1 % |
-| FDP | Minderheit wenn möglich | 0 % | 0 | 1 % |
+| FDP | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
+| FDP | Minderheit wenn möglich | 0 % | 0 | 0 % |
 
 ## Reformen (F13)
 Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit. „mit Reformen“: je Quartal die erste Reform mit Mehrheit, im Haushalt Etats kürzen (Partner zuerst), bis die Schuldenbremse hält. Druck: Durchschnitt der Probleme am Partieende.
 
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø Reformen | Ø Druck am Ende |
 |---|---|---|---|---|---|
-| CDU/CSU | keine Reformen | 53 % | 0 % | 0.0 | 81 |
-| CDU/CSU | mit Reformen | 62 % | 2 % | 4.5 | 55 |
+| CDU/CSU | keine Reformen | 57 % | 0 % | 0.0 | 75 |
+| CDU/CSU | mit Reformen | 62 % | 11 % | 4.5 | 50 |
 | AfD | keine Reformen | 0 % | 0 % | 0.0 | 55 |
 | AfD | mit Reformen | 0 % | 0 % | 0.0 | 55 |
-| SPD | keine Reformen | 24 % | 0 % | 0.0 | 68 |
-| SPD | mit Reformen | 23 % | 4 % | 2.8 | 51 |
+| SPD | keine Reformen | 27 % | 0 % | 0.0 | 65 |
+| SPD | mit Reformen | 24 % | 9 % | 2.8 | 49 |
 | Grüne | keine Reformen | 8 % | 0 % | 0.0 | 59 |
-| Grüne | mit Reformen | 8 % | 1 % | 1.0 | 53 |
-| Linke | keine Reformen | 1 % | 0 % | 0.0 | 56 |
-| Linke | mit Reformen | 1 % | 0 % | 0.1 | 55 |
+| Grüne | mit Reformen | 8 % | 5 % | 1.0 | 52 |
+| Linke | keine Reformen | 0 % | 0 % | 0.0 | 55 |
+| Linke | mit Reformen | 0 % | 1 % | 0.1 | 54 |
 | BSW | keine Reformen | 1 % | 0 % | 0.0 | 56 |
-| BSW | mit Reformen | 0 % | 0 % | 0.2 | 54 |
-| FDP | keine Reformen | 1 % | 0 % | 0.0 | 56 |
-| FDP | mit Reformen | 1 % | 0 % | 0.2 | 55 |
+| BSW | mit Reformen | 2 % | 1 % | 0.2 | 55 |
+| FDP | keine Reformen | 0 % | 0 % | 0.0 | 55 |
+| FDP | mit Reformen | 1 % | 1 % | 0.2 | 54 |
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
 
 | Partei | Siege | gemessen | eingetragen | Abgleich |
 |---|---|---|---|---|
-| CDU/CSU | 60.5 % | leicht | leicht | passt |
+| CDU/CSU | 64.5 % | leicht | leicht | passt |
 | AfD | 0.0 % | fast unmöglich | fast unmöglich | passt |
-| SPD | 24.0 % | mittel | mittel | passt |
-| Grüne | 7.5 % | schwer | schwer | passt |
-| Linke | 0.5 % | fast unmöglich | fast unmöglich | passt |
+| SPD | 26.5 % | mittel | mittel | passt |
+| Grüne | 8.0 % | schwer | schwer | passt |
+| Linke | 0.0 % | fast unmöglich | fast unmöglich | passt |
 | BSW | 1.0 % | schwer | schwer | passt |
 | FDP | 0.5 % | fast unmöglich | fast unmöglich | passt |
 
@@ -105,6 +106,7 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `reformen.druckSchwelle` | 70 | F13 |
 | `reformen.verlustJeQuartal` | 0.1 | F13 |
 | `reformen.gewinnJeDruckpunkt` | 0.01 | F13 |
+| `ereignisse.chanceJeQuartal` | 0.3 | F14 |
 | `wahlkampf.wochen` | 8 | M5 |
 | `wahlkampf.plakateGewinn` | 0.4 | M5 |
 | `wahlkampf.kundgebungMin` | -0.5 | M5 |

@@ -6,9 +6,11 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { config } from '../src/data/config.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 // F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
 const beschliessen = (z, p) => {
-  while (!haushaltsQuartal(z)) z = quartalBeenden(z).state;
+  // F14: offene Ereignisse mit der ersten Möglichkeit beantworten
+  while (!haushaltsQuartal(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : quartalBeenden(z)).state;
   return haushaltBeschliessen(z, p);
 };
 

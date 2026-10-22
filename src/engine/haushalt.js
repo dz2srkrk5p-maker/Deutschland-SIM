@@ -65,6 +65,7 @@ export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
 export function haushaltBeschliessen(zustand, params) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
   if (zustand.quartal !== config.regierung.quartaleJeJahr) throw new Error('Der Haushalt kommt erst im letzten Quartal');
+  if (zustand.offenesEreignis) throw new Error('Erst auf das Ereignis reagieren');
   const v = vorschau(zustand, params);
   // echte Abstimmung: gleich der Vorschau, außer bei einer Brandmauer-Regierung (Abweichler per Zufall, F11)
   const bundestag = abstimmen(zustand, 'haushalt');

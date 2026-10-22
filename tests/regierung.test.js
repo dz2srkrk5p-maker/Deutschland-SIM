@@ -5,6 +5,7 @@ import { wahl } from '../src/engine/wahl.js';
 import { minderheitAntreten } from '../src/engine/koalition.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 
 // Union regiert mit den Startwerten 2025 als Minderheit: einfachster Weg in die Phase regierung
 const imAmt = () => minderheitAntreten(wahl(neuesSpiel('union', 1)).state).state;
@@ -17,9 +18,8 @@ test('F12: Regierung beginnt in Quartal 1, Haushalt erst im letzten Quartal', ()
   for (let i = 1; i < q; i++) {
     const r = quartalBeenden(z);
     expect(r.ereignisse[0]).toContain(`Quartal ${i} vorbei`);
-    expect(r.state.rngZustand).toBe(z.rngZustand); // Zeit allein verbraucht keinen Zufall
-    expect(r.state.anteile).toEqual(z.anteile); // und ändert keine Umfragen
-    z = r.state;
+    expect(r.state.anteile).toEqual(z.anteile); // Zeit allein ändert keine Umfragen (Druck unter der Schwelle)
+    z = r.state.offenesEreignis ? ereignisEntscheiden(r.state, { wahl: 0 }).state : r.state; // F14
   }
   expect(haushaltsQuartal(z)).toBe(true);
   expect(() => quartalBeenden(z)).toThrow();

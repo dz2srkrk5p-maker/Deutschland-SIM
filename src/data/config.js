@@ -20,6 +20,10 @@ export const config = {
     gewinnJeDruckpunkt: 0.01, // Umfragegewinn der Partei des zuständigen Ministeriums je gesenktem Druckpunkt
   },
 
+  // Ereignisse (F14, freigegeben automatisch nach Empfehlung 2026-10-22): Chance je beendetem Quartal, höchstens eines;
+  // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
+  ereignisse: { chanceJeQuartal: 0.3 },
+
   // Wahlkampf, alle Werte in Prozentpunkten, freigegeben 2026-10-20 (M5)
   wahlkampf: {
     wochen: 8, // eine Aktion pro Woche, danach automatisch Wahl

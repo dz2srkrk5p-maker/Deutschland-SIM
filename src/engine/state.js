@@ -3,9 +3,9 @@ import { etats2026, steuern2026 } from '../data/haushalt.js';
 import { probleme } from '../data/probleme.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 8; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 9; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
-// 8: probleme, reformen, reformImQuartal (F13)
+// 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14)
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -39,6 +39,8 @@ export function neuesSpiel(spielerParteiId, seed) {
     probleme: Object.fromEntries(probleme.map((p) => [p.id, p.startDruck])),
     reformen: [],
     reformImQuartal: false, // in diesem Quartal schon eine Reform eingebracht
+    offenesEreignis: null, // Ereignis, auf das der Spieler noch reagieren muss (F14)
+    ereignisseWahlperiode: [], // schon dagewesene Ereignisse dieser Wahlperiode
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
@@ -69,6 +71,7 @@ export function zurueckInDenWahlkampf(zustand) {
     haushalt: { ...zustand.haushalt, jahr: 1 },
     quartal: 1,
     reformImQuartal: false,
+    ereignisseWahlperiode: [],
   };
 }
 

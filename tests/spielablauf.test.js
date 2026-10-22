@@ -5,6 +5,7 @@ import { verhandeln, moeglichePartner, mehrheit, mehrheitMoeglich, minderheitAnt
 import { vorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 
 // Einfacher Spieler: Plakate, Partner nach Größe bis zur Mehrheit, Kabinettsvorschlag, Haushalt unverändert
 function zug(z) {
@@ -22,6 +23,7 @@ function zug(z) {
     return verhandeln(z, { partner });
   }
   if (z.phase === 'kabinett') return bestaetigen(z, { verteilung: vorschlag(z) });
+  if (z.offenesEreignis) return ereignisEntscheiden(z, { wahl: 0 });
   if (!haushaltsQuartal(z)) return quartalBeenden(z);
   return haushaltBeschliessen(z, {});
 }

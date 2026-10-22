@@ -43,6 +43,7 @@ export function reformVorschau(zustand, id) {
 export function reformEinbringen(zustand, { reformId }) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
   if (zustand.quartal === config.regierung.quartaleJeJahr) throw new Error('Im Haushaltsquartal keine Reformen');
+  if (zustand.offenesEreignis) throw new Error('Erst auf das Ereignis reagieren');
   const grund = sperrgrund(zustand, reformId);
   if (grund) throw new Error(`Reform nicht möglich: ${grund}`);
   const v = reformVorschau(zustand, reformId);

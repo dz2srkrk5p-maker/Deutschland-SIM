@@ -141,6 +141,16 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, Abschnitt Reformen): CDU/CSU mit Reformen 62 % Siege statt 53 %, Druck am Ende 55 statt 81.
 - Nicht enthalten (bewusst): Stellschrauben innerhalb einer Reform, Wahl der Gegenfinanzierung, Bundesrat bei Reformen, Zustimmung der Partner, verzögerte Wirkung, Gerichte, Verbände.
 
+## System: Ereignisse (F14, freigegeben automatisch nach Empfehlung 2026-10-22)
+- Dateien: `src/data/ereignisse.js` (8 Ereignisse mit Text, Bedingung, 2–3 Möglichkeiten und Folgen), `src/engine/ereignisse.js` (`ereignisZiehen`, Aktion `ereignisEntscheiden`, `folgen`), Karte im Regierungsbildschirm. Zahl: `config.ereignisse.chanceJeQuartal` = 0,3.
+- Bei jedem beendeten Quartal (nach dem Druckanstieg) mit 30 % Chance ein Ereignis, gezogen über den Seed-Zufall aus denen, deren Bedingung erfüllt ist und die in dieser Wahlperiode noch nicht kamen. Höchstens eines je Quartal.
+- Solange ein Ereignis offen ist, gehen weder Quartalswechsel noch Reform noch Haushalt; ein Ereignis beim Wechsel ins Haushaltsquartal wird vor dem Haushalt beantwortet.
+- Folgen ohne Zufall: Umfragepunkte für die Kanzlerpartei, für jeden Partner oder für die Partei, die ein bestimmtes Ministerium hält (über `umverteilen`), und Druckänderungen bei Problemen (F13, begrenzt auf 0–100). Jede Möglichkeit zeigt ihre Folgen vor dem Klick.
+- Eigene Texte, keine echten Personen, keine Ereignisse gegen einzelne reale Parteien. Werte sind Spielwerte (0,05–0,3 Punkte, 2–8 Druckpunkte).
+- Neue Zustandsfelder: `offenesEreignis`, `ereignisseWahlperiode` (zurückgesetzt im Wahlkampf), Spielstand-Version 9.
+- Balancing: Strategie „immer die erste Möglichkeit“; CDU/CSU 31–65 % Siege je Wahlkampf-Strategie, keine Änderung der Schwierigkeitsstufen.
+- Nicht enthalten (bewusst): Ketten-Ereignisse, Krisen über mehrere Quartale, Affären mit Personen, Ereignisse im Wahlkampf, einmalige Kosten im Haushalt.
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).

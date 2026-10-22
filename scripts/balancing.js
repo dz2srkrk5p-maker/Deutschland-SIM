@@ -11,6 +11,7 @@ import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 import { reformEinbringen, reformVorschau, sperrgrund } from '../src/engine/reformen.js';
 import { reformen } from '../src/data/probleme.js';
+import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 import { vorschau } from '../src/engine/haushalt.js';
 import { ministerien } from '../src/data/ministerien.js';
 
@@ -70,7 +71,8 @@ function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Pla
     if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, wahlkampfZug(z));
     else if (z.phase === 'koalition') r = koalitionZug(z);
     else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
-    else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
+    else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
+        else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
         else if (z.phase === 'regierung') r = haushaltBeschliessen(z, haushaltZug(z));
     else break;
     if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
@@ -125,6 +127,7 @@ const minderheitZeilen = spielbar.flatMap((p) =>
         if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
         else if (z.phase === 'koalition') r = kz(z);
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
+        else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
         else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
         else if (z.phase === 'regierung') r = haushaltBeschliessen(z, {});
         else break;
@@ -173,6 +176,7 @@ const reformZeilen = spielbar.flatMap((p) =>
         if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
         else if (z.phase === 'koalition') r = KOALITION['Minderheit nur ohne Mehrheit'](z);
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
+        else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
         else if (z.phase === 'regierung') r = rz(z);
         else break;
         if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
@@ -190,7 +194,7 @@ const reformZeilen = spielbar.flatMap((p) =>
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', reformen: 'F13' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', reformen: 'F13', ereignisse: 'F14' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
@@ -202,6 +206,7 @@ Erzeugt mit \`npm run balancing\` am ${new Date().toISOString().slice(0, 10)}. $
 - Koalition: Partner nach Zustimmungschance absteigend, bis die Mehrheit reicht; nach Absagen erneut.
 - Kabinett: der vorausgefüllte Vorschlag.
 - Haushalt: siehe Spalte „Strategie“. Keine Steueränderungen.
+- Ereignisse (F14): immer die erste Möglichkeit.
 - Spiel endet bei Sieg, Opposition oder nach ${MAX_ZUEGE} Zügen.
 
 ## Ergebnisse
