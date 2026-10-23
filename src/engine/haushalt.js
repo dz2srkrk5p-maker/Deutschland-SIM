@@ -1,7 +1,8 @@
 import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
 import { ministerien } from '../data/ministerien.js';
-import { festeAusgaben2026, sonstigeEinnahmen2026 } from '../data/haushalt.js';
+import { festeAusgaben2026 } from '../data/haushalt.js';
+import { startSchulden, startBip, kennzahlen } from '../data/kennzahlen.js';
 import { umverteilen, schwankung, runden } from './wahlkampf.js';
 import { bundesratAbstimmung } from './bundesrat.js';
 import { abstimmung, abstimmen } from './bundestag.js';
@@ -9,33 +10,43 @@ import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
 import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
 import { reformKosten } from './reformen.js';
+import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
+import { jahresSchritt, gruppenSchritt, lageUmfrage } from './wirtschaft.js';
 
 const hh = config.haushalt;
-const festeSumme = Object.values(festeAusgaben2026).reduce((s, x) => s + x, 0);
+const festeOhneZinsen = Object.values(festeAusgaben2026).reduce((s, x) => s + x, 0) - festeAusgaben2026.bundesschuld;
 const MRD = 1e6; // tausend Euro je Mrd.
 export const mrd = (tausend) => tausend / MRD;
 
-// Einnahmen, Ausgaben und Schuldenbremse für einen Haushalt (Beträge in tausend Euro). reformen: laufende Reformkosten (F13)
-export function bilanz(etats, steuern, reformen = 0) {
-  const ausgaben = Object.values(etats).reduce((s, x) => s + x, 0) + festeSumme + reformen;
-  const einnahmen = steuern + sonstigeEinnahmen2026;
+// Zinsausgaben (Epl. 32 Bundesschuld) wachsen mit dem Schuldenstand des Staates (System 2)
+export const zinsen = (zustand) => Math.round((festeAusgaben2026.bundesschuld * zustand.land.schulden) / startSchulden);
+
+// Grenze der Schuldenbremse: wächst mit dem nominalen BIP, plus Konjunkturkomponente (mehr Kredit in schwachen Jahren)
+const startWachstum = kennzahlen.find((k) => k.id === 'wachstum').start;
+export const schuldenbremseGrenze = (zustand) =>
+  Math.round(hh.schuldenbremseGrenze * (zustand.land.bip / startBip) + hh.konjunkturJePunkt * (startWachstum - zustand.land.wachstum));
+
+// Einnahmen, Ausgaben und Schuldenbremse für einen Haushalt (Beträge in tausend Euro).
+// einnahmen: Einnahmen des Kernhaushalts; reformen: laufende Reformkosten; zinsAusgaben: Bundesschuld; grenze: Schuldenbremse
+export function bilanz(etats, einnahmen, reformen = 0, zinsAusgaben = festeAusgaben2026.bundesschuld, grenze = hh.schuldenbremseGrenze) {
+  const ausgaben = Object.values(etats).reduce((s, x) => s + x, 0) + festeOhneZinsen + zinsAusgaben + reformen;
   const neueSchulden = ausgaben - einnahmen;
   const ausnahme = Math.max(0, etats.verteidigung - hh.verteidigungsFreigrenze);
   const schuldenbremse = Math.max(0, neueSchulden - ausnahme);
-  return { ausgaben, reformen, einnahmen, neueSchulden, ausnahme, schuldenbremse, eingehalten: schuldenbremse <= hh.schuldenbremseGrenze };
+  return { ausgaben, reformen, zinsen: zinsAusgaben, einnahmen, neueSchulden, ausnahme, schuldenbremse, grenze, eingehalten: schuldenbremse <= grenze };
 }
 
 const stufeOk = (stufe, max) => Number.isInteger(stufe) && Math.abs(stufe) <= max;
 
-// Haushalt nach den gewählten Stufen und seine Wirkung auf die Umfragen (vor der Schwankung).
-// stufen: { ministeriumId: ganzzahlige Stufe } (fehlend = 0), steuerStufe: ganzzahlig
-export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
+// Haushalt nach dem Entwurf und seine Wirkung auf die Umfragen (vor der Schwankung) und auf Kennzahlen.
+// stufen: { ministeriumId: ganzzahlige Stufe }; einnahmen: { artId: Stufenänderung }; ausgestaltung: { schalterId: an/aus }
+export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung = {} } = {}) {
   const maxMinister = hh.ministerMaxProzent / hh.ministerSchrittProzent;
-  const maxSteuer = hh.steuerMaxProzent / hh.steuerSchrittProzent;
   for (const [id, stufe] of Object.entries(stufen)) {
     if (!(id in zustand.haushalt.etats) || !stufeOk(stufe, maxMinister)) throw new Error(`Ungültige Stufe für ${id}: ${stufe}`);
   }
-  if (!stufeOk(steuerStufe, maxSteuer)) throw new Error(`Ungültige Steuerstufe: ${steuerStufe}`);
+  const entwurf = { einnahmen, ausgestaltung };
+  entwurfPruefen(zustand, entwurf);
 
   const verteilung = zustand.kabinett.verteilung;
   const wirkung = {};
@@ -48,21 +59,65 @@ export function vorschau(zustand, { stufen = {}, steuerStufe = 0 }) {
     const delta = mrd(etats[m.id] - alt);
     if (delta) dazu(verteilung[m.id], delta * (delta > 0 ? hh.wirkungMehrausgabeProMrd : hh.wirkungKuerzungProMrd));
   }
-  const steuern = Math.round(zustand.haushalt.steuern * (1 + (steuerStufe * hh.steuerSchrittProzent) / 100));
-  const steuerDelta = mrd(steuern - zustand.haushalt.steuern);
-  if (steuerDelta) {
-    dazu(verteilung.finanzen, -steuerDelta * (steuerDelta > 0 ? hh.wirkungSteuerErhoehungProMrd : hh.wirkungSteuerSenkungProMrd));
+  const einnahmenNeu = aufstellung(zustand, entwurf);
+  // Mehr- oder Mindereinnahmen wirken auf die Partei mit dem Finanzministerium
+  const einnahmenDelta = mrd(einnahmenNeu.kern - aufstellung(zustand).kern);
+  if (Math.abs(einnahmenDelta) > 1e-9) {
+    dazu(verteilung.finanzen, -einnahmenDelta * (einnahmenDelta > 0 ? hh.wirkungSteuerErhoehungProMrd : hh.wirkungSteuerSenkungProMrd));
   }
-  // Steueränderungen brauchen die Zustimmung des Bundesrats (Art. 105 GG), der übrige Haushalt nicht
-  const bundesrat = steuerStufe ? bundesratAbstimmung(koalitionsParteien(zustand)) : null;
-  // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
+  const ew = entwurfWirkung(zustand, entwurf);
+  // Änderungen an Gemeinschafts-, Länder- und Gemeindesteuern brauchen den Bundesrat (Art. 105 GG)
+  const bundesrat = ew.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand)) : null;
   // Der Haushalt braucht die einfache Mehrheit im Bundestag (F10); mit Koalitionsmehrheit immer erfüllt
   const bundestag = abstimmung(zustand, 'haushalt');
-  return { etats, steuern, bilanz: bilanz(etats, steuern, reformKosten(zustand)), wirkung, bundesrat, bundestag, anteile: runden(umverteilen(zustand.anteile, wirkung)) };
+  return {
+    etats, einnahmen: einnahmenNeu, bilanz: bilanz(etats, einnahmenNeu.kern, reformKosten(zustand), zinsen(zustand), schuldenbremseGrenze(zustand)),
+    wirkung, kennzahlWirkung: ew.wirkung, verfassung: ew.verfassung, bundesrat, bundestag,
+    // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
+    anteile: runden(umverteilen(zustand.anteile, wirkung)),
+  };
 }
 
-// Aktion: Haushalt des laufenden Jahres beschließen. Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
-export function haushaltBeschliessen(zustand, params) {
+// Mehrjahresprognose ohne Zufall (System 2): der Entwurf gilt ab diesem Jahr, danach bleibt alles unverändert.
+// Für den Szenariovergleich „beschlossener Plan“ (entwurf = {}) gegen „Entwurf“. Ändert nichts am Spielstand.
+export function prognose(zustand, entwurf = {}, jahre = 5) {
+  let z = zustand;
+  let e = entwurf;
+  const zeilen = [];
+  for (let i = 0; i < jahre; i++) {
+    const v = vorschau(z, e);
+    const w = jahresSchritt(z.land, v.kennzahlWirkung, mrd(v.bilanz.neueSchulden), 0, false);
+    zeilen.push({ jahr: i + 1, einnahmen: v.bilanz.einnahmen, ausgaben: v.bilanz.ausgaben, saldo: -v.bilanz.neueSchulden,
+      schuldenbremse: v.bilanz.schuldenbremse, grenze: v.bilanz.grenze, eingehalten: v.bilanz.eingehalten,
+      wachstum: w.land.wachstum, schuldenquote: w.land.schuldenquote });
+    z = { ...z, land: w.land, haushalt: { ...z.haushalt, etats: v.etats, einnahmen: einnahmenUebernehmen(z, e) } };
+    e = {};
+  }
+  return zeilen;
+}
+
+// Kürzungsvorschlag, damit die Schuldenbremse hält: Etats je eine Stufe kürzen, Partner-Ministerien zuerst, große Etats
+// zuerst, bis es reicht. Ändert nur stufen, die Einnahmen des Entwurfs bleiben. Gibt null zurück, wenn es nicht reicht.
+export function kuerzungsVorschlag(zustand, entwurf = {}) {
+  const stufen = { ...(entwurf.stufen ?? {}) };
+  const eigen = (m) => zustand.kabinett.verteilung[m] === zustand.spielerParteiId;
+  const reihenfolge = ministerien.map((m) => m.id).sort((a, b) => eigen(a) - eigen(b) || zustand.haushalt.etats[b] - zustand.haushalt.etats[a]);
+  const max = hh.ministerMaxProzent / hh.ministerSchrittProzent;
+  const haelt = () => vorschau(zustand, { ...entwurf, stufen }).bilanz.eingehalten;
+  for (let runde = 1; runde <= max; runde++) {
+    for (const id of reihenfolge) {
+      if (haelt()) return { ...entwurf, stufen };
+      if ((stufen[id] ?? 0) > -runde) stufen[id] = -runde;
+    }
+  }
+  return haelt() ? { ...entwurf, stufen } : null;
+}
+
+const zahl = (x, n = 2) => x.toLocaleString('de-DE', { maximumFractionDigits: n });
+
+// Aktion: Haushalt des laufenden Jahres beschließen. Danach entwickelt sich die Wirtschaft ein Jahr weiter (System 2).
+// Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
+export function haushaltBeschliessen(zustand, params = {}) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
   if (zustand.quartal !== config.regierung.quartaleJeJahr) throw new Error('Der Haushalt kommt erst im letzten Quartal');
   if (zustand.offenesEreignis) throw new Error('Erst auf das Ereignis reagieren');
@@ -77,29 +132,32 @@ export function haushaltBeschliessen(zustand, params) {
 
   const jahr = zustand.haushalt.jahr;
   const alt = zustand.haushalt;
-  const wirkung = gescheitert ? { [zustand.kanzlerParteiId]: -config.minderheit.umfrageVerlustHaushaltGescheitert } : v.wirkung;
-  const gilt = gescheitert ? { etats: alt.etats, steuern: alt.steuern, neueSchulden: bilanz(alt.etats, alt.steuern, reformKosten(zustand)).neueSchulden } : { etats: v.etats, steuern: v.steuern, neueSchulden: v.bilanz.neueSchulden };
-  const s = schwankung(umverteilen(zustand.anteile, wirkung), bundestag.rngZustand);
-  const haushalt = {
-    jahr: jahr + 1,
-    etats: gilt.etats,
-    steuern: gilt.steuern,
-    neueSchuldenSeitStart: alt.neueSchuldenSeitStart + gilt.neueSchulden,
-  };
+  const wirkung = gescheitert ? { [zustand.kanzlerParteiId]: -config.minderheit.umfrageVerlustHaushaltGescheitert } : { ...v.wirkung };
+  const gilt = gescheitert
+    ? { etats: alt.etats, einnahmen: alt.einnahmen, neueSchulden: bilanz(alt.etats, aufstellung(zustand).kern, reformKosten(zustand), zinsen(zustand)).neueSchulden }
+    : { etats: v.etats, einnahmen: einnahmenUebernehmen(zustand, params), neueSchulden: v.bilanz.neueSchulden };
+
+  // Wirtschaft: ein Jahr weiter mit den Wirkungen des Haushalts; die Lage wirkt auf die Kanzlerpartei
+  const kw = gescheitert ? entwurfWirkung(zustand, {}).wirkung : v.kennzahlWirkung;
+  const w = jahresSchritt(zustand.land, kw, mrd(gilt.neueSchulden), bundestag.rngZustand);
+  const gruppen = gruppenSchritt(zustand.gruppen, kw.gruppen);
+  const lage = lageUmfrage(zustand.land, w.land, gruppen);
+  if (lage) wirkung[zustand.kanzlerParteiId] = (wirkung[zustand.kanzlerParteiId] ?? 0) + lage;
+
+  const s = schwankung(umverteilen(zustand.anteile, wirkung), w.rngZustand);
+  const haushalt = { jahr: jahr + 1, etats: gilt.etats, einnahmen: gilt.einnahmen, neueSchuldenSeitStart: alt.neueSchuldenSeitStart + gilt.neueSchulden };
   const name = (id) => parteien.find((p) => p.id === id).name;
-  const zahl = (x) => x.toLocaleString('de-DE', { maximumFractionDigits: 2 });
-  const wirkungText = Object.entries(wirkung)
-    .map(([id, w]) => `${name(id)} ${w >= 0 ? '+' : '−'}${zahl(Math.abs(w))}`)
-    .join(', ');
+  const wirkungText = Object.entries(wirkung).map(([id, x]) => `${name(id)} ${x >= 0 ? '+' : '−'}${zahl(Math.abs(x))}`).join(', ');
   const ereignisse = [
     (gescheitert
       ? `Haushalt Jahr ${jahr} im Bundestag gescheitert (${bundestag.ja} Ja, ${bundestag.nein} Nein): vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter, neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`
       : `Haushalt Jahr ${jahr} beschlossen: neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`) + (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
+    `Wirtschaft: Wachstum ${zahl(w.land.wachstum, 1)} %, Inflation ${zahl(w.land.inflation, 1)} %, Arbeitslosigkeit ${zahl(w.land.arbeitslosigkeit, 1)} %, Schuldenquote ${zahl(w.land.schuldenquote, 1)} %`,
   ];
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, statistik, koalition, quartal: 1 });
+  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1 });
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

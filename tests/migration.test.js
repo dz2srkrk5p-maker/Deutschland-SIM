@@ -5,7 +5,8 @@ import { config } from '../src/data/config.js';
 // Spielstand der Version 9 (vor der Erweiterung „drei Systeme“) nachbauen: ohne die neuen Felder
 function version9() {
   const { land, gruppen, kapital, ...rest } = neuesSpiel('spd', 4);
-  return { ...rest, version: 9 };
+  const { einnahmen, ...haushalt } = rest.haushalt;
+  return { ...rest, haushalt: { ...haushalt, steuern: 387210000 * 1.02 }, version: 9 };
 }
 
 test('Migration: Version 9 wird auf die aktuelle Version gehoben, alte Felder bleiben unverändert', () => {
@@ -17,6 +18,10 @@ test('Migration: Version 9 wird auf die aktuelle Version gehoben, alte Felder bl
   expect(z.land).toMatchObject({ wachstum: 0.2, inflation: 2.2, arbeitslosigkeit: 6.3, schuldenquote: 63.5 });
   expect(Object.values(z.gruppen).every((g) => g === 50)).toBe(true);
   expect(z.kapital).toBe(config.kapital.start);
+  // Version 11: die alte Steuersumme (+2 %) wird als Faktor auf alle Steuerarten übertragen
+  expect(z.haushalt.steuern).toBeUndefined();
+  expect(z.haushalt.einnahmen).toEqual({ stufen: {}, ausgestaltung: [], altFaktor: 1.02 });
+  expect(z.land.preise).toBe(1);
   // migrierter Stand übersteht erneutes Speichern und Laden
   expect(laden(speichern(z))).toEqual(z);
 });

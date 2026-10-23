@@ -15,6 +15,23 @@ export const config = {
   // für Reformwege und Problemlösungen, wächst je beendetem Quartal nach. Spielwerte.
   kapital: { start: 50, max: 100, jeQuartal: 8 },
 
+  // Wirtschaftsdynamik je Haushaltsjahr (System 2, freigegeben automatisch nach Empfehlung 2026-10-23). Spielwerte.
+  wirtschaft: {
+    potenzialWachstum: 0.8, // % je Jahr, dahin kehrt das Wachstum ohne Eingriffe zurück
+    zielInflation: 2.0,
+    natArbeitslosigkeit: 5.5,
+    giniBasis: 30,
+    traegheit: 0.5, // Anteil des Vorjahreswerts bei Wachstum und Inflation
+    rueckkehr: 0.2, // Anteil, um den Arbeitslosigkeit und Gini je Jahr zur Basis zurückgehen
+    okun: 0.4, // Arbeitslosenquote sinkt um so viel je Prozentpunkt Wachstum über dem Potenzial
+    schwankungWachstum: 0.5, // zufällig ± je Jahr
+    schwankungInflation: 0.3,
+    uebrigesDefizitBip: 0.6, // Defizit von Ländern, Gemeinden, Sozialversicherung in % des BIP (zählt zur Schuldenquote)
+    gruppenRueckkehr: 0.15, // Gruppenzustimmung kehrt je Jahr um diesen Anteil zu 50 zurück
+    // Wirkung der Lage auf die Umfrage der Kanzlerpartei je Haushaltsjahr (Punkte)
+    umfrage: { wachstum: 0.15, arbeitslosigkeit: 0.3, inflationUeber: 3, inflation: 0.15, gruppen: 0.06 },
+  },
+
   // Probleme und Reformen (F13, freigegeben automatisch nach Empfehlung 2026-10-22). Druck 0–100, Werte in Punkten.
   reformen: {
     druckAnstiegJeQuartal: 1, // jedes Problem, bei jedem beendeten Quartal (nicht im Haushaltsquartal)
@@ -65,13 +82,15 @@ export const config = {
   haushalt: {
     ministerSchrittProzent: 5,
     ministerMaxProzent: 20, // je Jahr gegenüber Vorjahr
-    steuerSchrittProzent: 1,
-    steuerMaxProzent: 5,
     // Für die Schuldenbremse zählende Kreditaufnahme 2026: 40,39 Mrd. = Obergrenze (Haushaltsausschuss, hib 622/2025)
     schuldenbremseGrenze: 40390000,
     // Verteidigungsausgaben über dieser Freigrenze zählen nicht zur Schuldenbremse. Kalibriert, damit der echte
     // Haushalt 2026 genau an der Grenze liegt (echt: 1 % BIP plus weitere Sicherheitsausgaben, hier zusammengefasst).
     verteidigungsFreigrenze: 25107174,
+    // System 2 (freigegeben automatisch nach Empfehlung 2026-10-23): Die Grenze wächst mit dem nominalen BIP; die
+    // Konjunkturkomponente erlaubt je Prozentpunkt Wachstum unter dem Startwert 2025 (0,2 %) so viel mehr Kredit (Spielwert,
+    // Größenordnung: konjunkturbedingte Bundeseinnahmen rund 1 % je Prozentpunkt). Im Start steckt sie in den 40,39 Mrd.
+    konjunkturJePunkt: 4000000,
     // Wirkung auf die Umfrage der Partei, die das Ministerium hält, in Prozentpunkten je Mrd. Euro
     wirkungMehrausgabeProMrd: 0.02,
     wirkungKuerzungProMrd: 0.05, // Balancing 2026-10-21 (vorher 0,03): Kürzungen bei Partnern sollen die Koalition gefährden

@@ -3,7 +3,7 @@ import { neuesSpiel, speichern, laden } from '../src/engine/state.js';
 import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, mehrheit, mehrheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag, bestaetigen } from '../src/engine/kabinett.js';
-import { haushaltBeschliessen } from '../src/engine/haushalt.js';
+import { haushaltBeschliessen, kuerzungsVorschlag } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 
@@ -25,7 +25,8 @@ function zug(z) {
   if (z.phase === 'kabinett') return bestaetigen(z, { verteilung: vorschlag(z) });
   if (z.offenesEreignis) return ereignisEntscheiden(z, { wahl: 0 });
   if (!haushaltsQuartal(z)) return quartalBeenden(z);
-  return haushaltBeschliessen(z, {});
+  // unverändert, sonst so wenig kürzen, dass die Schuldenbremse hält (System 2)
+  return haushaltBeschliessen(z, kuerzungsVorschlag(z) ?? {});
 }
 
 function durchlauf(parteiId, seed) {

@@ -52,13 +52,15 @@ const imAmt = (partner) => ({
 
 test('Steueränderung ohne Bundesratsmehrheit wird abgelehnt', () => {
   const z = imAmt(['spd']);
-  expect(vorschau(z, { steuerStufe: 1 }).bundesrat.mehrheit).toBe(false);
-  expect(() => beschliessen(z, { steuerStufe: 1 })).toThrow(/Bundesrat/);
+  expect(vorschau(z, { einnahmen: { einkommensteuer: 1 } }).bundesrat.mehrheit).toBe(false);
+  expect(() => beschliessen(z, { einnahmen: { einkommensteuer: 1 } })).toThrow(/Bundesrat/);
+  // Bundessteuern (Energie- und Verbrauchsteuern) brauchen den Bundesrat nicht
+  expect(vorschau(z, { einnahmen: { energie: 1 } }).bundesrat).toBeNull();
 });
 
 test('Steueränderung mit Bundesratsmehrheit geht durch', () => {
   const z = imAmt(['spd', 'gruene']);
-  expect(beschliessen(z, { steuerStufe: 1 }).state.haushalt.jahr).toBe(2);
+  expect(beschliessen(z, { einnahmen: { einkommensteuer: 1 } }).state.haushalt.jahr).toBe(2);
 });
 
 test('Haushalt ohne Steueränderung braucht den Bundesrat nicht', () => {

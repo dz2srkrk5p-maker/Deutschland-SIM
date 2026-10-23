@@ -37,7 +37,7 @@ const ui = {
   chronikOffen: false, // Chronik im geführten Ablauf und am Ende (über Spielmenü bzw. Knopf)
   wahlabendGesehen: false,
   meldung: null,
-  entwurf: { jahr: null, stufen: {}, steuerStufe: 0, tab: 'ueberblick' },
+  entwurf: { jahr: null, stufen: {}, einnahmen: {}, ausgestaltung: {}, tab: 'ueberblick' },
 };
 // Geteilter Link ?seed=… (F07): einmal lesen, dann aus der Adresse entfernen, damit Neuladen nicht erneut startet
 let link = null;
@@ -184,7 +184,7 @@ const ausfuehren = (aktion) => (params) => {
     neu();
     if (zustand.phase === 'koalition') ui.wahlabendGesehen = false;
   }
-  if (aktion === haushaltBeschliessen) Object.assign(ui.entwurf, { stufen: {}, steuerStufe: 0, tab: 'ueberblick' });
+  if (aktion === haushaltBeschliessen) Object.assign(ui.entwurf, { stufen: {}, einnahmen: {}, ausgestaltung: {}, tab: 'ueberblick' });
   ui.meldung = { texte: ergebnis.ereignisse, fehler: false };
   zeichne();
   fokusOben();

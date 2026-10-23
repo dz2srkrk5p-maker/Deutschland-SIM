@@ -7,12 +7,11 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { wahlkampfWoche, ertragFaktor } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
-import { haushaltBeschliessen } from '../src/engine/haushalt.js';
+import { haushaltBeschliessen, kuerzungsVorschlag } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 import { reformEinbringen, reformVorschau, sperrgrund } from '../src/engine/reformen.js';
 import { reformen } from '../src/data/probleme.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
-import { vorschau } from '../src/engine/haushalt.js';
 import { ministerien } from '../src/data/ministerien.js';
 
 const PARTIEN = 200;
@@ -73,7 +72,7 @@ function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Pla
     else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
     else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
         else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
-        else if (z.phase === 'regierung') r = haushaltBeschliessen(z, haushaltZug(z));
+        else if (z.phase === 'regierung') r = beschliessen(z, haushaltZug(z));
     else break;
     if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
     z = r.state;
@@ -129,7 +128,7 @@ const minderheitZeilen = spielbar.flatMap((p) =>
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
         else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
         else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
-        else if (z.phase === 'regierung') r = haushaltBeschliessen(z, {});
+        else if (z.phase === 'regierung') r = beschliessen(z, {});
         else break;
         if (r.state.koalition?.minderheit) war = true;
         if (r.ereignisse.some((e) => e.includes('gescheiterter Haushalt'))) neuwahlen++;
@@ -142,26 +141,16 @@ const minderheitZeilen = spielbar.flatMap((p) =>
   }),
 );
 
-// F13: Reformen. „mit Reformen“: je Quartal die erste Reform mit Mehrheit in der Vorschau; im Haushalt so lange Etats
-// um je eine Stufe kürzen (Partner-Ministerien zuerst, dann eigene, größte Etats zuerst), bis die Schuldenbremse hält.
-function ausgleichen(z) {
-  const stufen = {};
-  const reihenfolge = [...ministerien]
-    .sort((a, b) => (z.kabinett.verteilung[a.id] === z.spielerParteiId) - (z.kabinett.verteilung[b.id] === z.spielerParteiId) || z.haushalt.etats[b.id] - z.haushalt.etats[a.id])
-    .map((m) => m.id);
-  const max = config.haushalt.ministerMaxProzent / config.haushalt.ministerSchrittProzent;
-  for (let runde = 1; runde <= max && !vorschau(z, { stufen }).bilanz.eingehalten; runde++) {
-    for (const id of reihenfolge) {
-      if (vorschau(z, { stufen }).bilanz.eingehalten) break;
-      stufen[id] = -runde;
-    }
-  }
-  return { stufen };
+// F13: Reformen. „mit Reformen“: je Quartal die erste Reform mit Mehrheit in der Vorschau.
+// Haushalt wie geplant; reißt er die Schuldenbremse (System 2), so wenig wie nötig kürzen (Partner zuerst)
+function beschliessen(z, p) {
+  return haushaltBeschliessen(z, kuerzungsVorschlag(z, p) ?? p);
 }
+
 const REFORM = {
-  'keine Reformen': (z) => (haushaltsQuartal(z) ? haushaltBeschliessen(z, {}) : quartalBeenden(z)),
+  'keine Reformen': (z) => (haushaltsQuartal(z) ? beschliessen(z, {}) : quartalBeenden(z)),
   'mit Reformen': (z) => {
-    if (haushaltsQuartal(z)) return haushaltBeschliessen(z, ausgleichen(z));
+    if (haushaltsQuartal(z)) return beschliessen(z, {});
     const r = reformen.find((r) => !sperrgrund(z, r.id) && reformVorschau(z, r.id).abstimmung.angenommen);
     return r ? reformEinbringen(z, { reformId: r.id }) : quartalBeenden(z);
   },
@@ -194,7 +183,7 @@ const reformZeilen = spielbar.flatMap((p) =>
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', reformen: 'F13', ereignisse: 'F14', ticker: 'F15' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', reformen: 'F13', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht

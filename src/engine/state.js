@@ -5,13 +5,15 @@ import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen
 import { config } from '../data/config.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 10; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 11; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
-// 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital
+// 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise
 
 // Neue Felder ab Version 10, auch für die Migration alter Spielstände
-const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip });
+const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip, preise: 1 });
+// Einnahmen (System 2): Stufen je Einnahmeart, aktive Ausgestaltungen; altFaktor überträgt Steueränderungen alter Spielstände
+const einnahmenStart = (altFaktor = 1) => ({ stufen: {}, ausgestaltung: [], altFaktor });
 const gruppenStart = () => Object.fromEntries(gruppen.map((g) => [g.id, 50]));
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
@@ -39,7 +41,7 @@ export function neuesSpiel(spielerParteiId, seed) {
     kanzlerParteiId: null,
     kabinett: null, // { anspruch: { parteiId: Anzahl }, verteilung: { ministeriumId: parteiId } | null }
     // Haushalt in tausend Euro; gilt über Wahlperioden hinweg weiter, nur das Jahr beginnt neu
-    haushalt: { jahr: 1, etats: { ...etats2026 }, steuern: steuern2026, neueSchuldenSeitStart: 0 },
+    haushalt: { jahr: 1, etats: { ...etats2026 }, einnahmen: einnahmenStart(), neueSchuldenSeitStart: 0 },
     // für Sieg und Endbildschirm; besteWahl = bester Stimmanteil der Spielerpartei bei einer Wahl
     quartal: 1, // Quartal im laufenden Regierungsjahr (F12); Haushalt im letzten
     // Problemdruck 0–100 je Problem und beschlossene Reformen (F13); gelten über Wahlperioden hinweg weiter
@@ -100,6 +102,10 @@ export function speichern(zustand) {
 // Migrationen: je alter Version ein Schritt auf die nächste. Neue Felder bekommen ihre Startwerte, nichts geht verloren.
 const MIGRATIONEN = {
   9: (z) => ({ ...z, version: 10, land: landStart(), gruppen: gruppenStart(), kapital: config.kapital.start }),
+  10: (z) => {
+    const { steuern, ...haushalt } = z.haushalt;
+    return { ...z, version: 11, land: { preise: 1, ...z.land }, haushalt: { ...haushalt, einnahmen: einnahmenStart(steuern / steuern2026) } };
+  },
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 import { bilanz, vorschau, haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { neuesSpiel } from '../src/engine/state.js';
-import { etats2026, steuern2026 } from '../src/data/haushalt.js';
+import { etats2026, steuern2026, sonstigeEinnahmen2026 } from '../src/data/haushalt.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { config } from '../src/data/config.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
@@ -33,7 +33,7 @@ const imAmt = (seed = 1) => {
 };
 
 test('Startwerte: Ausgaben 524,54 Mrd., neue Schulden 97,97 Mrd., Schuldenbremse genau eingehalten', () => {
-  const b = bilanz(etats2026, steuern2026);
+  const b = bilanz(etats2026, steuern2026 + sonstigeEinnahmen2026);
   expect(b.ausgaben).toBe(524540138);
   expect(b.einnahmen).toBe(426570000);
   expect(b.neueSchulden).toBe(97970138);
@@ -45,11 +45,12 @@ test('jedes Ministerium hat einen Etat', () => {
   expect(Object.keys(etats2026).sort()).toEqual(ministerien.map((m) => m.id).sort());
 });
 
-test('Schrittgrenzen: ±4 Stufen (±20 %) und ±5 Steuerstufen erlaubt, mehr nicht', () => {
-  expect(() => vorschau(imAmt(), { stufen: { arbeit: -4 }, steuerStufe: 5 })).not.toThrow();
+test('Schrittgrenzen: ±4 Stufen (±20 %) und Einnahmen höchstens maxJeJahr Stufen, mehr nicht', () => {
+  expect(() => vorschau(imAmt(), { stufen: { arbeit: -4 }, einnahmen: { einkommensteuer: 2, umsatz: -1 } })).not.toThrow();
+  expect(() => vorschau(imAmt(), { einnahmen: { umsatz: 2 } })).toThrow();
+  expect(() => vorschau(imAmt(), { einnahmen: { gibtsnicht: 1 } })).toThrow();
   expect(() => vorschau(imAmt(), { stufen: { arbeit: 5 } })).toThrow();
   expect(() => vorschau(imAmt(), { stufen: { arbeit: 1.5 } })).toThrow();
-  expect(() => vorschau(imAmt(), { steuerStufe: -6 })).toThrow();
   expect(() => vorschau(imAmt(), { stufen: { gibtsnicht: 1 } })).toThrow();
 });
 
@@ -67,9 +68,9 @@ test('Mehr Verteidigung über der Freigrenze zählt nicht zur Schuldenbremse', (
 });
 
 test('Wirkung trifft die Partei, die das Ministerium hält', () => {
-  // Arbeit −5 % = −9,867 Mrd. → Union (Arbeit); Steuern +1 % = +3,872 Mrd. → Union (Finanzen); Bildung +5 % → SPD
-  const v = vorschau(imAmt(), { stufen: { arbeit: -1, bildung: 1 }, steuerStufe: 1 });
-  expect(v.wirkung.union).toBeCloseTo(-9.867052 * hh.wirkungKuerzungProMrd - 3.8721 * hh.wirkungSteuerErhoehungProMrd, 4);
+  // Arbeit −5 % = −9,867 Mrd. → Union (Arbeit); Energiesteuern +1 Stufe = +3,5 Mrd. → Union (Finanzen); Bildung +5 % → SPD
+  const v = vorschau(imAmt(), { stufen: { arbeit: -1, bildung: 1 }, einnahmen: { energie: 1 } });
+  expect(v.wirkung.union).toBeCloseTo(-9.867052 * hh.wirkungKuerzungProMrd - 3.5 * hh.wirkungSteuerErhoehungProMrd, 4);
   expect(v.wirkung.spd).toBeCloseTo(0.8332007 * hh.wirkungMehrausgabeProMrd, 4); // Bildung +5 %
   expect(v.bilanz.eingehalten).toBe(true);
 });
@@ -94,13 +95,14 @@ test('nach Jahr 4 beginnt der Wahlkampf, der Haushalt bleibt', () => {
   for (let jahr = 1; jahr <= config.legislaturJahre; jahr++) {
     expect(z.phase).toBe('regierung');
     // direkt ins Haushaltsquartal, ohne Quartale und Ereignisse (F12/F14), damit nur der Haushalt wirkt
-    z = haushaltBeschliessen({ ...z, quartal: config.regierung.quartaleJeJahr }, { stufen: { arbeit: -1 } }).state;
+    // Kürzung bei der Kanzlerpartei (Verkehr, SPD): kein Koalitionsbruch, Schuldenbremse hält
+    z = haushaltBeschliessen({ ...z, quartal: config.regierung.quartaleJeJahr }, { stufen: { verkehr: -1 } }).state;
   }
   expect(z.phase).toBe('wahlkampf');
   expect(z.wahlkampfWoche).toBe(1);
   expect(z.kabinett).toBeNull();
   expect(z.haushalt.jahr).toBe(1);
-  expect(z.haushalt.etats.arbeit).toBeLessThan(etats2026.arbeit);
+  expect(z.haushalt.etats.verkehr).toBeLessThan(etats2026.verkehr);
 });
 
 test('ohne Regierung kein Haushalt', () => {

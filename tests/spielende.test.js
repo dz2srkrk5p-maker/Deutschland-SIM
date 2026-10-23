@@ -137,8 +137,8 @@ test('F11: gescheiterter Haushalt: Vorjahr gilt weiter, Jahr zählt, Kanzlerpart
   expect(state.haushalt.jahr).toBe(2);
   expect(state.statistik.jahreKanzler).toBe(1);
   expect(state.koalition.fehlschlaege).toBe(1);
-  // feste Wirkung −0,5, danach Schwankung höchstens ±0,3 (plus Rückrechnung): klar unter dem Startwert
-  expect(state.anteile.gruene).toBeLessThan(z.anteile.gruene - config.minderheit.umfrageVerlustHaushaltGescheitert + 0.4);
+  // feste Wirkung −0,5 für die Kanzlerpartei (dazu die Lage der Wirtschaft, System 2)
+  expect(ereignisse[0]).toMatch(/Grüne −/);
   const zweite = beschliessen(state, {});
   expect(zweite.state.phase).toBe('opposition');
   expect(zweite.ereignisse.at(-1)).toContain('Minderheitsregierung ist am Ende');
