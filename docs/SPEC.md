@@ -151,6 +151,15 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing: Strategie „immer die erste Möglichkeit“; CDU/CSU 31–65 % Siege je Wahlkampf-Strategie, keine Änderung der Schwierigkeitsstufen.
 - Nicht enthalten (bewusst): Ketten-Ereignisse, Krisen über mehrere Quartale, Affären mit Personen, Ereignisse im Wahlkampf, einmalige Kosten im Haushalt.
 
+## System: Grundlagen der Erweiterung „drei Systeme“ (freigegeben automatisch nach Empfehlung 2026-10-23)
+Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteilen; F13/F14 gehen in der neuen Problem-Engine auf; echte Startwerte, Spielwirkungen; Parteipositionen aus dem Chapel Hill Expert Survey.
+- Landeskennzahlen (`src/data/kennzahlen.js`, Zustand `land`): Wachstum 0,2 %, Inflation 2,2 %, Arbeitslosenquote 6,3 %, Gini 30,1, Schuldenquote 63,5 % (Ist 2025; Quellen in der Datei), dazu Schulden 2 840 Mrd. und BIP 4 472 Mrd. (abgeleitet).
+- Gruppen (Zustand `gruppen`, 0–100, Start 50): Arbeitnehmer, Rentner, Familien, Geringverdiener, Unternehmen, Landwirtschaft.
+- Politisches Kapital (Zustand `kapital`, 0–100, Start 50, +8 je Quartal, `config.kapital`): Ressource für Reformwege und Lösungen.
+- Achsen −2 … +2: Wirtschaft (staatlich ↔ marktliberal), Gesellschaft (progressiv ↔ konservativ), Ökologie (wachstumsorientiert ↔ ökologisch), Europa (national-souverän ↔ EU-orientiert).
+- Parteipositionen: CHES 2024 (`parteien.js`, Feld `ches`), CDU/CSU nach Sitzen gewichtet; Umrechnung in `src/engine/profil.js`.
+- Speichern: Spielstand-Version 10. Ältere Stände ab Version 9 werden beim Laden schrittweise migriert (`MIGRATIONEN` in `state.js`) statt verworfen; neue Felder bekommen ihre Startwerte.
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).

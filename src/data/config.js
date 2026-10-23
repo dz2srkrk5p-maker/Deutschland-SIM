@@ -11,6 +11,10 @@ export const config = {
   // der Haushalt wird im letzten beschlossen.
   regierung: { quartaleJeJahr: 4 },
 
+  // Politisches Kapital (Erweiterung „drei Systeme“, freigegeben automatisch nach Empfehlung 2026-10-23): knappe Ressource
+  // für Reformwege und Problemlösungen, wächst je beendetem Quartal nach. Spielwerte.
+  kapital: { start: 50, max: 100, jeQuartal: 8 },
+
   // Probleme und Reformen (F13, freigegeben automatisch nach Empfehlung 2026-10-22). Druck 0–100, Werte in Punkten.
   reformen: {
     druckAnstiegJeQuartal: 1, // jedes Problem, bei jedem beendeten Quartal (nicht im Haushaltsquartal)

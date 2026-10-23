@@ -1,11 +1,18 @@
 import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
 import { probleme } from '../data/probleme.js';
+import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen.js';
+import { config } from '../data/config.js';
 
-// Erhöhen, sobald sich die Form des Zustands ändert; alte Spielstände werden dann abgelehnt.
-export const ZUSTAND_VERSION = 9; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+// Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
+export const ZUSTAND_VERSION = 10; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
-// 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14)
+// 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
+// 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital
+
+// Neue Felder ab Version 10, auch für die Migration alter Spielstände
+const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip });
+const gruppenStart = () => Object.fromEntries(gruppen.map((g) => [g.id, 50]));
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -41,6 +48,9 @@ export function neuesSpiel(spielerParteiId, seed) {
     reformImQuartal: false, // in diesem Quartal schon eine Reform eingebracht
     offenesEreignis: null, // Ereignis, auf das der Spieler noch reagieren muss (F14)
     ereignisseWahlperiode: [], // schon dagewesene Ereignisse dieser Wahlperiode
+    land: landStart(), // Landeskennzahlen (data/kennzahlen.js), Schulden und BIP in Mrd. €
+    gruppen: gruppenStart(), // Zustimmung je Gruppe 0–100
+    kapital: config.kapital.start, // politisches Kapital 0–100
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
@@ -87,9 +97,16 @@ export function speichern(zustand) {
   return JSON.stringify(zustand);
 }
 
-// Spielstand aus Text laden. Wirft bei kaputtem oder veraltetem Spielstand, statt Unsinn weiterzuspielen.
+// Migrationen: je alter Version ein Schritt auf die nächste. Neue Felder bekommen ihre Startwerte, nichts geht verloren.
+const MIGRATIONEN = {
+  9: (z) => ({ ...z, version: 10, land: landStart(), gruppen: gruppenStart(), kapital: config.kapital.start }),
+};
+
+// Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand
+// (vor Version 9), statt Unsinn weiterzuspielen.
 export function laden(text) {
-  const zustand = JSON.parse(text);
+  let zustand = JSON.parse(text);
+  while (zustand?.version in MIGRATIONEN) zustand = MIGRATIONEN[zustand.version](zustand);
   if (zustand?.version !== ZUSTAND_VERSION) {
     throw new Error(`Spielstand-Version ${zustand?.version} passt nicht zu ${ZUSTAND_VERSION}`);
   }
