@@ -4,12 +4,12 @@ import { config } from '../../data/config.js';
 import { probleme } from '../../data/probleme.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
 import { mehrheit } from '../../engine/koalition.js';
-import { vorschau, mrd, bruchAbstand } from '../../engine/haushalt.js';
+import { vorschau, mrd, bruchAbstand, zugestaendnisSperre } from '../../engine/haushalt.js';
 import { haushaltsQuartal } from '../../engine/regierung.js';
 import { offenesEreignis, folgen } from '../../engine/ereignisse.js';
 import { problemListe } from '../../engine/probleme.js';
 import { tickerHtml } from '../components/ticker.js';
-import { bruchStufe } from '../components/koalitionslage.js';
+import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -50,7 +50,19 @@ function topProblemeHtml(zustand) {
 }
 
 // Lage: Dashboard jedes Quartals. Offenes Ereignis zuerst, dann Kennzahlen, Top-Probleme, Wirtschaft, Schlagzeilen, Hauptaktion.
-export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, zusatz = '' }) {
+// Koalition unter Druck (Block 2): Lage der Partner, Fristen, Gegenmaßnahme Zugeständnis
+function koalitionHtml(zustand) {
+  const kb = config.koalitionsbruch;
+  const knoepfe = zustand.koalition.partner.map((id) => {
+    const sperre = zugestaendnisSperre(zustand, id);
+    return `<button data-zugestaendnis="${id}" ${sperre ? 'disabled' : ''}>Zugeständnis an ${partei(id).name}</button>${sperre ? ` <small>${sperre}</small>` : ''}`;
+  }).join(' ');
+  return `${koalitionslageHtml(zustand)}
+    <p class="klein">Zugeständnis: ${partei(zustand.kanzlerParteiId).name} gibt in einem Streitpunkt nach. Partner +${zahl(kb.zugestaendnisPunkte, 1)}, eigene Partei −${zahl(kb.zugestaendnisKanzler, 1)}, ${kb.zugestaendnisKapital} Kapital und ein Vorhaben; einmal je Partner und Jahr.</p>
+    <div class="knoepfe">${knoepfe}</div>`;
+}
+
+export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onZugestaendnis, zusatz = '' }) {
   const e = offenesEreignis(zustand);
   const regierung = koalitionsParteien(zustand);
   const sitze = regierung.reduce((s, id) => s + zustand.sitze[id], 0);
@@ -78,6 +90,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, zusat
       ${kennzahl('Schuldenbremse', `${zahl(mrd(spielraum), 1)} Mrd.`, spielraum >= 0 ? status('ok', 'Spielraum') : status('rot', 'überschritten – im Haushalt ausgleichen'))}
       ${kennzahl('Politisches Kapital', `${zustand.kapital} <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeQuartal} je Quartal`)}
     </div>
+    ${koalitionsWarnung(zustand) ? karte(koalitionHtml(zustand), { titel: `Koalition: ${koalitionsWarnung(zustand).text}` }) : ''}
     ${e ? '' : karte(hauptaktion, { titel: `Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} · Quartal ${zustand.quartal} von ${config.regierung.quartaleJeJahr}` })}
     <div class="kennzahlen">
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
@@ -88,6 +101,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, zusat
   </div>`;
 
   el.querySelector('#weiter')?.addEventListener('click', () => onWeiter());
+  el.querySelectorAll('[data-zugestaendnis]').forEach((k) => k.addEventListener('click', () => onZugestaendnis({ partnerId: k.dataset.zugestaendnis })));
   el.querySelectorAll('[data-wahl]').forEach((k) => k.addEventListener('click', () => onEreignis({ wahl: Number(k.dataset.wahl) })));
   el.querySelectorAll('[data-gehe]').forEach((k) => k.addEventListener('click', () => onBereich(k.dataset.gehe)));
 }

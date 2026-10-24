@@ -163,4 +163,13 @@ export const config = {
     warnAnteil: 0.5, // Haushalt zeigt einen Partner gelb ab diesem Anteil der Bruchgrenze (F01, freigegeben 2026-10-21)
     siegJahreKanzler: 12, // Haushaltsjahre als Kanzler, über Wahlperioden hinweg
   },
+
+  // Vorhersehbarer Koalitionsbruch (Schwächen-Bearbeitung Block 2, freigegeben automatisch nach Empfehlung 2026-10-24). Spielwerte.
+  koalitionsbruch: {
+    ultimatumAnteil: 0.8, // ab diesem Anteil der Bruchgrenze stellt ein Partner ein Ultimatum
+    fristQuartale: 2, // so viele Quartalsenden später wird gebrochen, wenn er dann noch über der Grenze liegt
+    zugestaendnisKapital: 15, // Gegenmaßnahme Zugeständnis: kostet Kapital und ein Vorhaben, einmal je Partner und Jahr
+    zugestaendnisPunkte: 0.4, // Partner gewinnt so viele Umfragepunkte
+    zugestaendnisKanzler: 0.2, // Kanzlerpartei verliert so viele
+  },
 };

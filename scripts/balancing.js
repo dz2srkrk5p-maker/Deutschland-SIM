@@ -7,7 +7,7 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { wahlkampfWoche, ertragFaktor } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
-import { haushaltBeschliessen, kuerzungsVorschlag } from '../src/engine/haushalt.js';
+import { haushaltBeschliessen, kuerzungsVorschlag, zugestaendnis, zugestaendnisSperre } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 import { loesungStarten, loesungSperre, erfolgschance, problemListe, loesung } from '../src/engine/probleme.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
@@ -208,8 +208,9 @@ const REFORM = {
   beliebig: wegWahl(() => true),
 };
 const REFORM_PARTEIEN = ['union', 'spd', 'gruene'];
-const reformZeilen = REFORM_PARTEIEN.flatMap((id) =>
-  Object.entries(REFORM).map(([name, wahl]) => {
+// Block 2: „reagieren“ = auf ein Ultimatum mit einem Zugeständnis antworten, sobald möglich; fehlt nur Kapital, wird gespart
+const drohend = (z) => z.koalition.partner.filter((p) => z.koalition.ultimatum?.[p] !== undefined && z.koalition.zugestaendnisse?.[p] !== z.haushalt.jahr);
+function reformZeile(id, name, wahl, reagieren) {
     let siege = 0, wege = 0, gescheitert = 0, krisen = 0, quote = 0, brueche = 0;
     for (let seed = 1; seed <= PARTIEN; seed++) {
       let z = neuesSpiel(id, seed), bruch = false;
@@ -219,6 +220,11 @@ const reformZeilen = REFORM_PARTEIEN.flatMap((id) =>
         else if (z.phase === 'koalition') r = KOALITION['Minderheit nur ohne Mehrheit'](z);
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
         else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
+        else if (z.phase === 'regierung' && reagieren && drohend(z).length) {
+          const frei = drohend(z).find((p) => !zugestaendnisSperre(z, p));
+          if (frei) r = zugestaendnis(z, { partnerId: frei });
+          else r = haushaltsQuartal(z) ? beschliessen(z, {}) : quartalBeenden(z);
+        }
         else if (z.phase === 'regierung' && haushaltsQuartal(z)) r = beschliessen(z, {});
         else if (z.phase === 'regierung') {
           const w = wahl(z);
@@ -237,13 +243,14 @@ const reformZeilen = REFORM_PARTEIEN.flatMap((id) =>
     }
     const n = (x, d = 1) => (x / PARTIEN).toFixed(d);
     return `| ${parteien.find((p) => p.id === id).name} | ${name} | ${prozent(siege)} | ${prozent(brueche)} | ${n(wege)} | ${n(gescheitert)} | ${n(krisen)} | ${n(quote, 0)} % |`;
-  }),
-);
+}
+const reformZeilen = REFORM_PARTEIEN.flatMap((id) => Object.entries(REFORM).map(([name, wahl]) => reformZeile(id, name, wahl, false)));
+const bruchZeilen = REFORM_PARTEIEN.flatMap((id) => Object.entries(REFORM).map(([name, wahl]) => reformZeile(id, name, wahl, true)));
 
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2', reformwege: 'System 1' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2', reformwege: 'System 1', koalitionsbruch: 'Block 2' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
@@ -290,6 +297,13 @@ Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
 ${reformZeilen.join('\n')}
+
+## Koalitionsbruch mit Gegenmaßnahme (Block 2)
+Wie der Abschnitt davor, aber der Spieler reagiert auf jedes Ultimatum mit einem Zugeständnis, sobald es geht (fehlt nur Kapital, wird gespart). Ziele (vor der Änderung festgelegt): klar koalitionsfeindlicher Kurs (SPD marktliberal, konservativ, beliebig) bleibt bei mindestens 25 % Bruch; moderater Kurs (SPD passend, grün, pragmatisch; CDU/CSU marktliberal, konservativ, passend) mindestens halbiert gegenüber dem Abschnitt davor.
+
+| Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
+|---|---|---|---|---|---|---|---|
+${bruchZeilen.join('\n')}
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.

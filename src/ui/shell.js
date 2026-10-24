@@ -4,6 +4,8 @@ import { config } from '../data/config.js';
 import { hinweiseAn } from '../storage/speicher.js';
 import { zahl, prozent, trend, punkt } from './components/basis.js';
 import { teilenHtml } from './components/teilen.js';
+import { koalitionsWarnung } from './components/koalitionslage.js';
+import { status } from './components/basis.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 
@@ -47,6 +49,7 @@ function kopfHtml(z) {
         <div><dt>Umfrage</dt><dd>${prozent(z.anteile[p.id])} ${trend(umfrageTrend(z))}</dd></div>
         <div><dt>Kanzlerjahre</dt><dd>${zahl(z.statistik.jahreKanzler)} von ${config.spielende.siegJahreKanzler}</dd></div>
         ${z.phase === 'regierung' ? `<div><dt>Kapital</dt><dd>${z.kapital}</dd></div>` : ''}
+        ${z.phase === 'regierung' && koalitionsWarnung(z) ? `<div><dt>Koalition</dt><dd>${status(koalitionsWarnung(z).stufe, koalitionsWarnung(z).text)}</dd></div>` : ''}
       </dl>
       <button id="menue-auf" aria-haspopup="dialog">☰ Spiel</button>
     </div></header>`;

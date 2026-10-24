@@ -173,7 +173,7 @@ export function haushaltBeschliessen(zustand, params = {}) {
   if (fehlschlaege >= config.minderheit.fehlschlaegeBisSpielende) {
     return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, `${fehlschlaege}. gescheiterter Haushalt in dieser Wahlperiode: Die Minderheitsregierung ist am Ende, Opposition`] };
   }
-  const bruch = koalitionsbruch(state);
+  const bruch = koalitionPruefen(state);
   if (bruch.neuwahl) return { state: zurueckInDenWahlkampf(bruch.state), ereignisse: [...ereignisse, ...bruch.ereignisse] };
   if (jahr < config.legislaturJahre) return { state: bruch.state, ereignisse: [...ereignisse, ...bruch.ereignisse] };
   return {
@@ -195,9 +195,9 @@ export function bruchAbstand(zustand, anteile = zustand.anteile) {
 // Partner, deren Umfrage mehr als koalitionsbruchPunkte unter dem Wert bei Regierungsbildung liegt, verlassen die Koalition.
 // Ihre Ministerien gehen an die Spielerpartei. Ohne verbleibende Mehrheit: als Minderheit weiter, wenn die Spielerpartei
 // die stärkste Fraktion ist (F11), sonst vorgezogene Neuwahl.
-export function koalitionsbruch(zustand) {
+export function koalitionsbruch(zustand, kandidaten = zustand.koalition.partner) {
   const { partner } = zustand.koalition;
-  const gehen = bruchAbstand(zustand).filter((a) => a.geht).map((a) => a.id);
+  const gehen = bruchAbstand(zustand).filter((a) => a.geht && kandidaten.includes(a.id)).map((a) => a.id);
   if (!gehen.length) return { state: zustand, ereignisse: [], neuwahl: false };
 
   const spieler = zustand.spielerParteiId;
@@ -208,7 +208,8 @@ export function koalitionsbruch(zustand) {
     anspruch[spieler] += anspruch[id];
     delete anspruch[id];
   }
-  const state = { ...zustand, koalition: { ...zustand.koalition, partner: bleiben }, kabinett: { anspruch, verteilung } };
+  const ultimatum = Object.fromEntries(Object.entries(zustand.koalition.ultimatum ?? {}).filter(([id]) => !gehen.includes(id)));
+  const state = { ...zustand, koalition: { ...zustand.koalition, partner: bleiben, ultimatum }, kabinett: { anspruch, verteilung } };
   const ereignisse = gehen.map((id) => `Koalitionsbruch: ${parteien.find((p) => p.id === id).name} verlässt die Koalition`);
   const sitze = [spieler, ...bleiben].reduce((s, id) => s + zustand.sitze[id], 0);
   if (sitze >= mehrheit(zustand.sitze)) return { state, ereignisse: [...ereignisse, `Regierung behält die Mehrheit (${sitze} Sitze)`], neuwahl: false };
@@ -218,4 +219,59 @@ export function koalitionsbruch(zustand) {
     return { state: minderheit, ereignisse: [...ereignisse, `Keine Mehrheit mehr (${sitze} Sitze): weiter als Minderheitsregierung`], neuwahl: false };
   }
   return { state, ereignisse: [...ereignisse, `Keine Mehrheit mehr (${sitze} Sitze): vorgezogene Neuwahl`], neuwahl: true };
+}
+
+// Vorhersehbarer Bruch (Block 2): ab ultimatumAnteil der Grenze stellt ein Partner ein Ultimatum mit Frist. Gebrochen wird
+// erst, wenn die Frist abgelaufen ist und er dann über der Grenze liegt. Unter der Warnstufe zieht er das Ultimatum zurück.
+// Läuft am Ende jedes Quartals und nach dem Haushalt.
+export function koalitionPruefen(zustand) {
+  if (zustand.phase !== 'regierung' || !zustand.koalition?.partner.length) return { state: zustand, ereignisse: [], neuwahl: false };
+  const kb = config.koalitionsbruch;
+  const ultimatum = { ...(zustand.koalition.ultimatum ?? {}) };
+  const ereignisse = [];
+  const abgelaufen = [];
+  for (const a of bruchAbstand(zustand)) {
+    const n = parteien.find((p) => p.id === a.id).name;
+    if (ultimatum[a.id] === undefined) {
+      if (a.verlust > a.grenze * kb.ultimatumAnteil) {
+        ultimatum[a.id] = zustand.runde + kb.fristQuartale;
+        ereignisse.push(`Ultimatum: ${n} droht mit dem Koalitionsbruch, wenn sie in ${kb.fristQuartale} Quartalen noch mehr als ${a.grenze.toLocaleString('de-DE')} Punkte unter ihrem Start liegt`);
+      }
+    } else if (a.verlust < a.grenze * config.spielende.warnAnteil) {
+      delete ultimatum[a.id];
+      ereignisse.push(`${n} zieht das Ultimatum zurück`);
+    } else if (a.geht && ultimatum[a.id] <= zustand.runde) abgelaufen.push(a.id);
+  }
+  const bruch = koalitionsbruch({ ...zustand, koalition: { ...zustand.koalition, ultimatum } }, abgelaufen);
+  return { ...bruch, ereignisse: [...ereignisse, ...bruch.ereignisse] };
+}
+
+// Quartalsenden bis zur Bruchprüfung (1: am Ende dieses Quartals), null ohne Ultimatum
+export const ultimatumRest = (zustand, id) => {
+  const frist = zustand.koalition?.ultimatum?.[id];
+  return frist === undefined ? null : Math.max(1, frist - zustand.runde);
+};
+
+// Gegenmaßnahme Zugeständnis: der Partner bekommt ein Vorhaben durch, das ihm wichtig ist
+export function zugestaendnisSperre(zustand, partnerId) {
+  const kb = config.koalitionsbruch;
+  if (zustand.phase !== 'regierung' || !zustand.koalition.partner.includes(partnerId)) return 'kein Koalitionspartner';
+  if (zustand.offenesEreignis) return 'erst auf das Ereignis reagieren';
+  if (zustand.koalition.zugestaendnisse?.[partnerId] === zustand.haushalt.jahr) return 'in diesem Jahr schon ein Zugeständnis';
+  if (zustand.aktionenImQuartal >= config.probleme.aktionenJeQuartal) return `höchstens ${config.probleme.aktionenJeQuartal} Vorhaben je Quartal`;
+  if (zustand.kapital < kb.zugestaendnisKapital) return `zu wenig politisches Kapital (${kb.zugestaendnisKapital} nötig)`;
+  return null;
+}
+
+export function zugestaendnis(zustand, { partnerId }) {
+  const grund = zugestaendnisSperre(zustand, partnerId);
+  if (grund) throw new Error(`Zugeständnis nicht möglich: ${grund}`);
+  const kb = config.koalitionsbruch;
+  const anteile = runden(umverteilen(zustand.anteile, { [partnerId]: kb.zugestaendnisPunkte, [zustand.kanzlerParteiId]: -kb.zugestaendnisKanzler }));
+  const koalition = { ...zustand.koalition, zugestaendnisse: { ...zustand.koalition.zugestaendnisse, [partnerId]: zustand.haushalt.jahr } };
+  const n = parteien.find((p) => p.id === partnerId).name;
+  return {
+    state: mitVerlauf({ ...zustand, anteile, koalition, kapital: zustand.kapital - kb.zugestaendnisKapital, aktionenImQuartal: zustand.aktionenImQuartal + 1 }),
+    ereignisse: [`Zugeständnis an ${n}: +${kb.zugestaendnisPunkte.toLocaleString('de-DE')} für ${n}, −${kb.zugestaendnisKanzler.toLocaleString('de-DE')} für die eigene Partei, Kapital −${kb.zugestaendnisKapital}`],
+  };
 }

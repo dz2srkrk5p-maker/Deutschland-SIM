@@ -3,7 +3,7 @@ import { neuesSpiel, seedAusAdresse } from '../engine/state.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
 import { verhandeln, minderheitAntreten } from '../engine/koalition.js';
 import { bestaetigen } from '../engine/kabinett.js';
-import { haushaltBeschliessen } from '../engine/haushalt.js';
+import { haushaltBeschliessen, zugestaendnis } from '../engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../engine/regierung.js';
 import { loesungStarten } from '../engine/probleme.js';
 import { ereignisEntscheiden } from '../engine/ereignisse.js';
@@ -100,7 +100,7 @@ function zeichne() {
     const onBereich = (b) => (b === 'haushalt' && (ui.entwurf.tab = 'ueberblick'), wechseln(b));
     // Richtungsprofil auf dem Dashboard (System 1)
     const zusatz = karte(`${profilHtml(richtungsprofil(zustand))}<div class="knoepfe"><button data-gehe="reformen">Zu den Reformen</button></div>`, { titel: 'Richtungsprofil' });
-    return lageScreen(a, zustand, { onWeiter: ausfuehren(quartalBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onBereich, zusatz });
+    return lageScreen(a, zustand, { onWeiter: ausfuehren(quartalBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onBereich, zusatz });
   }
   if (ui.bereich === 'reformen') {
     return reformenScreen(a, zustand, { auswahl: ui.reformBereich, onBeschliessen: ausfuehren(wegBeschliessen), onAuswahl: (b) => ((ui.reformBereich = b), zeichne(), fokusOben()) });

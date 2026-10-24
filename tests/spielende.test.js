@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { koalitionsbruch, bruchAbstand, vorschau, haushaltBeschliessen } from '../src/engine/haushalt.js';
+import { koalitionsbruch, bruchAbstand, vorschau, haushaltBeschliessen, koalitionPruefen, ultimatumRest, zugestaendnis, zugestaendnisSperre } from '../src/engine/haushalt.js';
 import { verhandeln } from '../src/engine/koalition.js';
 import { wahl } from '../src/engine/wahl.js';
 import { neuesSpiel } from '../src/engine/state.js';
@@ -69,10 +69,63 @@ test('Bruch ohne Mehrheit: vorgezogene Neuwahl', () => {
   // SPD 200 + Grüne 80 = 280 < 316, wenn die Union geht; SPD ist nicht stärkste Fraktion (seit F11 sonst Minderheit)
   const z = mitAnteil(imAmt({ spd: 200, union: 210, gruene: 80, afd: 140 }), 'union', 26.0);
   expect(koalitionsbruch(z).neuwahl).toBe(true);
-  const { state, ereignisse } = beschliessen(z, {});
-  expect(state.phase).toBe('wahlkampf');
-  expect(state.koalition).toBeNull();
-  expect(ereignisse.some((e) => e.includes('vorgezogene Neuwahl'))).toBe(true);
+  // Block 2: erst das Ultimatum am Quartalsende, nach Ablauf der Frist der Bruch, hier mit Neuwahl
+  let r = { state: z, ereignisse: [] };
+  const alle = [];
+  for (let i = 0; i < 10 && r.state.phase === 'regierung'; i++) {
+    if (r.state.offenesEreignis) r = ereignisEntscheiden(r.state, { wahl: 0 });
+    else r = haushaltsQuartal(r.state) ? haushaltBeschliessen(r.state, {}) : quartalBeenden(r.state);
+    alle.push(...r.ereignisse);
+  }
+  expect(r.state.phase).toBe('wahlkampf');
+  expect(r.state.koalition).toBeNull();
+  const u = alle.findIndex((e) => e.startsWith('Ultimatum: CDU/CSU'));
+  const b = alle.findIndex((e) => e.includes('vorgezogene Neuwahl'));
+  expect(u).toBeGreaterThanOrEqual(0);
+  expect(b).toBeGreaterThan(u);
+  // zwischen Ultimatum und Bruch liegen so viele Quartalsenden wie die Frist
+  expect(alle.slice(u, b).filter((e) => / vorbei$|beschlossen/.test(e)).length).toBeGreaterThanOrEqual(config.koalitionsbruch.fristQuartale);
+});
+
+test('Block 2: Ultimatum ab 80 % der Grenze, Bruch erst nach der Frist, Rücknahme unter der Warnstufe', () => {
+  const grenze = config.spielende.koalitionsbruchPunkte;
+  const kb = config.koalitionsbruch;
+  // alter Spielstand ohne ultimatum-Feld: über der Grenze, aber noch kein Ultimatum → kein Bruch
+  const z = { ...mitAnteil(imAmt(), 'gruene', 11.6 - grenze - 0.5), runde: 5 };
+  const erst = koalitionPruefen(z);
+  expect(erst.state.koalition.partner).toEqual(['union', 'gruene']);
+  expect(erst.state.koalition.ultimatum).toEqual({ gruene: 5 + kb.fristQuartale });
+  expect(ultimatumRest(erst.state, 'gruene')).toBe(kb.fristQuartale);
+  expect(ultimatumRest({ ...erst.state, runde: 6 }, 'gruene')).toBe(1);
+  // vor der Frist: bleibt
+  expect(koalitionPruefen({ ...erst.state, runde: 6 }).state.koalition.partner).toEqual(['union', 'gruene']);
+  // Frist abgelaufen und weiter über der Grenze: Bruch, Ultimatum gelöscht
+  const bruch = koalitionPruefen({ ...erst.state, runde: 7 });
+  expect(bruch.state.koalition.partner).toEqual(['union']);
+  expect(bruch.state.koalition.ultimatum).toEqual({});
+  // Frist abgelaufen, aber zwischen Warnstufe und Grenze: bleibt mit Ultimatum
+  const knapp = { ...mitAnteil(erst.state, 'gruene', 11.6 - grenze * 0.9), runde: 7 };
+  expect(koalitionPruefen(knapp).state.koalition.ultimatum.gruene).toBe(7);
+  // unter der Warnstufe: Ultimatum zurückgezogen
+  const erholt = koalitionPruefen({ ...mitAnteil(erst.state, 'gruene', 11.4), runde: 7 });
+  expect(erholt.state.koalition.ultimatum).toEqual({});
+  expect(erholt.ereignisse[0]).toContain('zieht das Ultimatum zurück');
+  // unter 80 %: kein Ultimatum
+  expect(koalitionPruefen(mitAnteil(imAmt(), 'gruene', 11.6 - grenze * 0.7)).state.koalition.ultimatum).toEqual({});
+});
+
+test('Block 2: Zugeständnis hebt den Partner, kostet Kapital, Vorhaben und eigene Punkte, einmal je Jahr', () => {
+  const kb = config.koalitionsbruch;
+  const z = { ...imAmt(), kapital: 50, aktionenImQuartal: 0 };
+  const { state, ereignisse } = zugestaendnis(z, { partnerId: 'gruene' });
+  expect(state.anteile.gruene).toBeCloseTo(z.anteile.gruene + kb.zugestaendnisPunkte, 2);
+  expect(state.anteile.spd).toBeCloseTo(z.anteile.spd - kb.zugestaendnisKanzler, 2);
+  expect(state.kapital).toBe(50 - kb.zugestaendnisKapital);
+  expect(state.aktionenImQuartal).toBe(1);
+  expect(ereignisse[0]).toContain('Zugeständnis an Grüne');
+  expect(zugestaendnisSperre(state, 'gruene')).toContain('schon');
+  expect(zugestaendnisSperre({ ...z, kapital: 5 }, 'gruene')).toContain('Kapital');
+  expect(zugestaendnisSperre(z, 'linke')).toBe('kein Koalitionspartner');
 });
 
 test('Sieg nach 12 Jahren als Kanzler, nicht nach 11', () => {
