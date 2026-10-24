@@ -1,9 +1,10 @@
 // Richtungsprofil des Landes (System 1): je Achse ein Balken von −2 bis +2 mit Marke
 import { achsen } from '../../data/kennzahlen.js';
 import { zahl } from './basis.js';
+import { erklaerungen } from '../../data/hinweise.js';
 
 export function profilHtml(profil, { vergleich = null } = {}) {
-  return `<div class="profil">${achsen.map((a) => {
+  return `<div class="profil" title="${erklaerungen.profil}">${achsen.map((a) => {
     const x = profil[a.id] ?? 0;
     const pos = ((x + 2) / 4) * 100;
     const v = vergleich?.[a.id];

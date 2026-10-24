@@ -6,6 +6,7 @@ import { achsen, gruppen, kennzahlen } from '../../data/kennzahlen.js';
 import { problemListe, ursachen, loesungSperre, erfolgschance, problem as problemVon } from '../../engine/probleme.js';
 import { mrd } from '../../engine/haushalt.js';
 import { bereiche } from '../../data/reformwege.js';
+import { erklaerungen } from '../../data/hinweise.js';
 import { karte, badge, balken, zahl, plusMinus, leer, aufklapp } from '../components/basis.js';
 
 const gName = (id) => gruppen.find((g) => g.id === id)?.name ?? id;
@@ -103,6 +104,7 @@ export function problemeScreen(el, zustand, { auswahl, filter, onAuswahl, onFilt
         ${kategorien.map((k) => `<button data-filter="${k}" aria-pressed="${filter === k}">${k}</button>`).join('')}
       </div>
       ${karte(prominent.length ? `<ul class="liste">${prominent.map(zeile).join('')}</ul>` : leer('Keine drängenden Probleme in dieser Kategorie.'), { titel: `Drängend (${prominent.length})` })}
+      <p class="klein">${erklaerungen.beobachtung}</p>
       ${karte(beobachtung.length ? aufklapp(`Beobachtungsliste (${beobachtung.length}${beobachtung.some((e) => e.fruehwarnung) ? `, ${beobachtung.filter((e) => e.fruehwarnung).length} mit Frühwarnung` : ''})`, `<ul class="liste">${beobachtung.map(zeile).join('')}</ul>`, beobachtung.some((e) => e.fruehwarnung)) : leer('Nichts auf der Beobachtungsliste.'))}`}
   </div>`;
   el.querySelectorAll('[data-problem]').forEach((b) => b.addEventListener('click', () => onAuswahl(b.dataset.problem)));

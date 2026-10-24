@@ -9,6 +9,7 @@ import { haushaltsQuartal } from '../../engine/regierung.js';
 import { offenesEreignis, folgen } from '../../engine/ereignisse.js';
 import { problemListe } from '../../engine/probleme.js';
 import { tickerHtml } from '../components/ticker.js';
+import { erklaerungen } from '../../data/hinweise.js';
 import { umfrageBilanzHtml } from '../components/umfragebilanz.js';
 import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
@@ -88,8 +89,8 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onZug
       ${kennzahl('Regierung', abstaende.length ? status(koalitionStufe, STUFE_TEXT[koalitionStufe]) : zustand.koalition.minderheit ? status('gelb', 'Minderheit') : status('ok', 'allein'),
         regierung.map((id) => partei(id).name).join(', '))}
       ${kennzahl('Mehrheit im Bundestag', `${sitze} <small>von ${noetig}</small>`, sitze >= noetig ? status('ok', 'eigene Mehrheit') : status('gelb', 'Stimmen der Opposition nötig'))}
-      ${kennzahl('Schuldenbremse', `${zahl(mrd(spielraum), 1)} Mrd.`, spielraum >= 0 ? status('ok', 'Spielraum') : status('rot', 'überschritten – im Haushalt ausgleichen'))}
-      ${kennzahl('Politisches Kapital', `${zustand.kapital} <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeQuartal} je Quartal`)}
+      ${kennzahl('Schuldenbremse', `<span title="${erklaerungen.schuldenbremse}">${zahl(mrd(spielraum), 1)} Mrd.</span>`, spielraum >= 0 ? status('ok', 'Spielraum') : status('rot', 'überschritten – im Haushalt ausgleichen'))}
+      ${kennzahl('Politisches Kapital', `<span title="${erklaerungen.kapital}">${zustand.kapital}</span> <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeQuartal} je Quartal`)}
     </div>
     ${koalitionsWarnung(zustand) ? karte(koalitionHtml(zustand), { titel: `Koalition: ${koalitionsWarnung(zustand).text}` }) : ''}
     ${e ? '' : karte(hauptaktion, { titel: `Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} · Quartal ${zustand.quartal} von ${config.regierung.quartaleJeJahr}` })}

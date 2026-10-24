@@ -283,3 +283,8 @@ Ersetzt die Bildschirmbeschreibungen in „Oberfläche (M5)“ und den F-Abschni
 
 ## Systeme
 Noch offen: Koalition, Kabinett, Haushalt, Bundesrat, Game Over. Werden abgefragt, wenn sie laut PLAN.md dran sind.
+
+## Oberfläche: Hinweistexte (Paket Klein, Feature 4, freigegeben 2026-10-24)
+- Datei: `src/data/hinweise.js` (`hinweise` aktualisiert: Quartal mit Vorhaben, Regierung mit Ultimatum; neu `erklaerungen`, höchstens zwei Sätze, Zahlen aus config.js).
+- Tooltips an fünf Stellen: Kapital (Kopfzeile, Lage), Richtungsprofil, Beobachtungsliste (als Kurztext), Schuldenbremse-Spielraum (Lage), Abstimmung nach Inhalt (Wegekarte). Der Koalitions-Hinweis zur Sitzordnung bleibt, er ist korrekt.
+- Messung: Simulation unverändert.

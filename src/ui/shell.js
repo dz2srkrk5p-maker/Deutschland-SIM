@@ -7,6 +7,7 @@ import { teilenHtml } from './components/teilen.js';
 import { koalitionsWarnung } from './components/koalitionslage.js';
 import { hilfeHtml } from './components/hilfe.js';
 import { umfrageBilanzKurz } from './components/umfragebilanz.js';
+import { erklaerungen } from '../data/hinweise.js';
 import { status } from './components/basis.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -50,7 +51,7 @@ function kopfHtml(z) {
         <div><dt>Zeit</dt><dd>${zeitText(z)}</dd></div>
         <div><dt>Umfrage</dt><dd title="${umfrageBilanzKurz(z) || 'Noch keine Änderung'}. Einzelheiten: Lage, „Warum bewegt sich die Umfrage?“">${prozent(z.anteile[p.id])} ${trend(umfrageTrend(z))}</dd></div>
         <div><dt>Kanzlerjahre</dt><dd>${zahl(z.statistik.jahreKanzler)} von ${config.spielende.siegJahreKanzler}</dd></div>
-        ${z.phase === 'regierung' ? `<div><dt>Kapital</dt><dd>${z.kapital}</dd></div>` : ''}
+        ${z.phase === 'regierung' ? `<div><dt>Kapital</dt><dd title="${erklaerungen.kapital}">${z.kapital}</dd></div>` : ''}
         ${z.phase === 'regierung' && koalitionsWarnung(z) ? `<div><dt>Koalition</dt><dd>${status(koalitionsWarnung(z).stufe, koalitionsWarnung(z).text)}</dd></div>` : ''}
       </dl>
       <button id="menue-auf" aria-haspopup="dialog">☰ Spiel</button>

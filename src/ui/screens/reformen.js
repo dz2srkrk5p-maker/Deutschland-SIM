@@ -9,6 +9,7 @@ import { bereichStatus, wegVorschau, richtungsprofil } from '../../engine/reform
 import { mrd } from '../../engine/haushalt.js';
 import { profilHtml } from '../components/profil.js';
 import { karte, badge, status, zahl, plusMinus, aufklapp } from '../components/basis.js';
+import { erklaerungen } from '../../data/hinweise.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const gName = (id) => gruppen.find((g) => g.id === id)?.name ?? id;
@@ -51,7 +52,7 @@ function wegKarte(zustand, w) {
       <tr><th scope="row">Risiko des Scheiterns</th><td>${Math.round(v.risiko * 100)} %${w.verfassung ? ' <span class="gelb">⚠ verfassungsrechtlich umstritten</span>' : ''}</td></tr>
       <tr><th scope="row">Politisches Kapital</th><td>${v.kapital}${v.revision ? ` <span class="gelb">(davon ${config.reformwege.revisionKapital} für den Kurswechsel)</span>` : ''}</td></tr>
       ${v.bonus ? `<tr><th scope="row">${partei(zustand.kanzlerParteiId).name}</th><td>${status('ok', `passt zur eigenen Linie, +${zahl(v.bonus, 2)} beim Beschluss`)}</td></tr>` : ''}
-      <tr><th scope="row">Bundestag</th><td>${status(a.angenommen ? 'ok' : 'rot', `${a.ja} Ja, ${a.nein} Nein`)}</td></tr>
+      <tr><th scope="row" title="${erklaerungen.abstimmung}">Bundestag ⓘ</th><td title="${erklaerungen.abstimmung}">${status(a.angenommen ? 'ok' : 'rot', `${a.ja} Ja, ${a.nein} Nein`)}</td></tr>
       ${v.bundesrat ? `<tr><th scope="row">Bundesrat</th><td>${status(v.bundesrat.mehrheit ? 'ok' : 'rot', `${v.bundesrat.ja} von ${v.bundesrat.noetig}`)}</td></tr>` : ''}
       ${w.haushalt ? '<tr><th scope="row">Haushalt</th><td>braucht Spielraum in der Schuldenbremse</td></tr>' : ''}
       ${v.partner.map((p) => `<tr><th scope="row">${partei(p.id).name}</th><td>${p.veto ? status('rot', 'Veto (stimmt mit Nein)') : p.unmut ? status('gelb', `trägt mit, Unmut −${zahl(p.unmut, 2)}`) : status('ok', 'trägt mit')}</td></tr>`).join('')}

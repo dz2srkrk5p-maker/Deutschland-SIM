@@ -10,7 +10,17 @@ export const hinweise = {
   wahlkampf: `Bis zur Wahl hast du ${config.wahlkampf.wochen} Wochen, jede Woche eine Aktion. Unter ${zahl(config.sperrklauselProzent)} % kommt eine Partei nicht in den Bundestag. Danach brauchst du mit Partnern mindestens ${mehrheit} Sitze.`,
   koalition: `Wähle Partner, bis ihr zusammen mindestens ${mehrheit} Sitze habt. Wer absagt, ist bis zur nächsten Wahl gesperrt. Je weiter weg eine Partei in der Sitzordnung ist, desto eher sagt sie ab. Als stärkste Fraktion kannst du auch eine Minderheitsregierung bilden – riskant.`,
   kabinett: 'Verteile die Ministerien. Jede Koalitionspartei bekommt so viele, wie ihr nach Sitzen zustehen. Wer ein Ministerium hält, gewinnt oder verliert später Umfragepunkte durch dessen Etat.',
-  quartal: `Ein Regierungsjahr hat ${config.regierung.quartaleJeJahr} Quartale. Im letzten stellst du den Haushalt auf.`,
-  regierung: `Stelle den Haushalt für dieses Jahr auf, ohne die Schuldenbremse zu brechen. Kürzungen schaden der Partei, die das Ministerium hält. Fällt ein Partner mehr als ${zahl(config.spielende.koalitionsbruchPunkte)} Punkte unter seinen Wert bei Regierungsbildung, verlässt er die Koalition.`,
+  quartal: `Ein Regierungsjahr hat ${config.regierung.quartaleJeJahr} Quartale; in jedem kannst du bis zu ${config.probleme.aktionenJeQuartal} Vorhaben starten (Lösungen oder Reformwege). Im letzten Quartal stellst du den Haushalt auf.`,
+  regierung: `Stelle den Haushalt für dieses Jahr auf, ohne die Schuldenbremse zu brechen; Kürzungen schaden der Partei, die das Ministerium hält. Liegt ein Partner mehr als ${zahl(config.spielende.koalitionsbruchPunkte * config.koalitionsbruch.ultimatumAnteil)} Punkte unter seinem Startwert, stellt er ein Ultimatum, und nach ${config.koalitionsbruch.fristQuartale} Quartalen über ${zahl(config.spielende.koalitionsbruchPunkte)} Punkten verlässt er die Koalition.`,
   ende: 'Die Partie ist vorbei. Mit „Neues Spiel“ beginnst du von vorn, mit derselben oder einer anderen Partei.',
+};
+
+// Kurztexte an unklaren Stellen der Oberfläche (Paket Klein, Feature 4), höchstens zwei Sätze, als Tooltip
+const fz = (x) => x.toLocaleString('de-DE', { maximumFractionDigits: 1 });
+export const erklaerungen = {
+  kapital: `Politisches Kapital bezahlt Lösungen, Reformwege und Zugeständnisse. Es wächst um ${config.kapital.jeQuartal} je Quartal, höchstens bis ${config.kapital.max}.`,
+  profil: 'Das Richtungsprofil ist der Durchschnitt aller laufenden und beschlossenen Reformwege, je Achse von −2 bis +2. Es wirkt auf Wachstum, Partner, Wählerstimmung, den Erfolg von Lösungen und darauf, welche Ereignisse kommen.',
+  beobachtung: `Prominent sind höchstens ${config.probleme.maxAktiv} Probleme ab „angespannt“; nur ernste und kritische unter ihnen kosten Umfragepunkte. Die übrigen stehen auf der Beobachtungsliste, mit Frühwarnung ab ${config.probleme.fruehwarnungAb} bei steigendem Trend.`,
+  schuldenbremse: `Spielraum = Grenze der Schuldenbremse minus die zählende Neuverschuldung des aktuellen Haushalts. Verteidigungsausgaben über ${fz(config.haushalt.verteidigungsFreigrenze / 1e6)} Mrd. zählen nicht mit, und in schwachen Jahren erlaubt die Konjunkturkomponente mehr Kredit.`,
+  abstimmung: 'Jede Fraktion stimmt nach dem Abstand ihres Programms (Chapel Hill Expert Survey) zum Inhalt des Wegs: nah Ja, mittel Enthaltung, weit Nein. Koalitionspartner stimmen zu, außer der Abstand ist sehr groß (Veto).',
 };
