@@ -76,6 +76,9 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Umfrage-Bilanz (Paket Klein, Feature 1): reine Anzeige, wie viele Runden zurück die Ursachen gezeigt werden. Spielwert.
+  umfrageBilanz: { runden: 8 },
+
   // Nachrichtenticker (F15, freigegeben automatisch nach Empfehlung 2026-10-22): reine Anzeige, Schwellen für Schlagzeilen
   ticker: {
     anzahl: 3, // höchstens so viele Schlagzeilen

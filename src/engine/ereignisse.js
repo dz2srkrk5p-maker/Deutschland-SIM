@@ -5,6 +5,7 @@ import { probleme } from '../data/probleme.js';
 import { zufall } from './rng.js';
 import { umverteilen, runden } from './wahlkampf.js';
 import { mitVerlauf } from './state.js';
+import { umfrageBuchen } from './umfragebilanz.js';
 import { richtungsprofil } from './profil.js';
 
 const ereignis = (id) => ereignisse.find((e) => e.id === id);
@@ -46,7 +47,9 @@ export function ereignisEntscheiden(zustand, { wahl }) {
   const neu = { ...zustand.probleme };
   for (const [id, d] of Object.entries(f.probleme)) neu[id] = { ...neu[id], wert: Math.max(0, Math.min(100, neu[id].wert + d)) };
   const basis = { ...zustand, probleme: neu, offenesEreignis: null, ereignisseWahlperiode: [...zustand.ereignisseWahlperiode, e.id] };
-  const state = Object.keys(f.parteien).length ? mitVerlauf({ ...basis, anteile: runden(umverteilen(zustand.anteile, f.parteien)) }) : basis;
+  const state = Object.keys(f.parteien).length
+    ? umfrageBuchen(zustand, mitVerlauf({ ...basis, anteile: runden(umverteilen(zustand.anteile, f.parteien)) }), Object.entries(f.parteien).map(([id, w]) => ({ ursache: `Ereignis: ${e.titel}`, partei: id, wert: w })))
+    : basis;
   const teile = [
     ...Object.entries(f.parteien).map(([id, w]) => `${name(id)} ${zahl(w)}`),
     ...Object.entries(f.probleme).map(([id, d]) => `${probleme.find((p) => p.id === id).name} ${zahl(d)}`),

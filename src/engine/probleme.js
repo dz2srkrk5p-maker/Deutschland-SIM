@@ -9,6 +9,7 @@ import { umverteilen, runden } from './wahlkampf.js';
 import { mitVerlauf } from './state.js';
 import { richtungsprofil, abstand } from './profil.js';
 import { wirkungSumme, skaliert } from './wirtschaft.js';
+import { umfrageBuchen } from './umfragebilanz.js';
 import { wegTrends } from './reformwege.js';
 
 // Problem-Engine (System 3): Probleme entstehen und eskalieren aus dem Zustand des Landes, Lösungen senken sie.
@@ -144,7 +145,8 @@ export function problemeQuartal(zustand) {
   // fertige Lösungen: Erfolg würfeln, Wirkung anwenden
   const loesungen = { ...zustand.loesungen };
   const umfrage = {};
-  const dazu = (id, x) => (umfrage[id] = (umfrage[id] ?? 0) + x);
+  const posten = []; // Umfrage-Bilanz
+  const dazu = (id, x, ursache) => ((umfrage[id] = (umfrage[id] ?? 0) + x), posten.push({ ursache, partei: id, wert: x }));
   let jahresWirkung = zustand.jahresWirkung;
   let gruppenNeu = { ...zustand.gruppen };
   for (const [id, stand] of Object.entries(zustand.loesungen)) {
@@ -156,11 +158,11 @@ export function problemeQuartal(zustand) {
     loesungen[id] = { ...stand, status: erfolg ? 'erfolg' : 'gescheitert' };
     if (erfolg) {
       const halter = zustand.kabinett.verteilung[l.problem.ministerium];
-      if (halter) dazu(halter, senkung * pc.gewinnJeWertpunkt);
+      if (halter) dazu(halter, senkung * pc.gewinnJeWertpunkt, `Lösung wirkt: ${l.name} (zuständiges Ressort)`);
       // gemeinsamer Regierungserfolg: auf alle Koalitionsparteien nach Umfrageanteil verteilt
       const regierung = [zustand.kanzlerParteiId, ...zustand.koalition.partner];
       const summe = regierung.reduce((s, id) => s + zustand.anteile[id], 0);
-      for (const id of regierung) dazu(id, (senkung * pc.gewinnRegierungJeWertpunkt * zustand.anteile[id]) / summe);
+      for (const id of regierung) dazu(id, (senkung * pc.gewinnRegierungJeWertpunkt * zustand.anteile[id]) / summe, `Lösung wirkt: ${l.name} (Regierungserfolg)`);
       if (l.nebenwirkung) {
         jahresWirkung = wirkungSumme(jahresWirkung, { ...l.nebenwirkung, gruppen: {}, probleme: {} });
         for (const [g, v] of Object.entries(l.nebenwirkung.gruppen ?? {})) gruppenNeu[g] = Math.max(0, Math.min(100, gruppenNeu[g] + v));
@@ -168,15 +170,17 @@ export function problemeQuartal(zustand) {
       }
       ereignisse.push(`Lösung wirkt: „${l.name}“ – ${l.problem.name} −${r1(senkung)}`);
     } else {
-      dazu(zustand.kanzlerParteiId, -pc.fehlschlagUmfrage);
+      dazu(zustand.kanzlerParteiId, -pc.fehlschlagUmfrage, `Lösung gescheitert: ${l.name}`);
       ereignisse.push(`Lösung gescheitert: „${l.name}“ – ${l.problem.name} nur −${r1(senkung)}`);
     }
   }
 
   // prominente ernste Probleme und Krisen kosten die Kanzlerpartei
   const zwischen = { ...zustand, probleme: neu };
-  const verlust = problemListe(zwischen).filter((e) => e.prominent).reduce((s, e) => s + (pc.umfrageJeQuartal[e.stufe.id] ?? 0), 0);
-  if (verlust) dazu(zustand.kanzlerParteiId, -verlust);
+  const belastend = problemListe(zwischen).filter((e) => e.prominent && pc.umfrageJeQuartal[e.stufe.id]);
+  const verlust = belastend.reduce((s, e) => s + pc.umfrageJeQuartal[e.stufe.id], 0);
+  for (const e of belastend) posten.push({ ursache: `Problem „${e.problem.name}“ (${e.stufe.name})`, partei: zustand.kanzlerParteiId, wert: -pc.umfrageJeQuartal[e.stufe.id] });
+  if (verlust) umfrage[zustand.kanzlerParteiId] = (umfrage[zustand.kanzlerParteiId] ?? 0) - verlust;
 
   let state = {
     ...zustand,
@@ -190,7 +194,7 @@ export function problemeQuartal(zustand) {
     kapital: Math.min(config.kapital.max, zustand.kapital + config.kapital.jeQuartal),
   };
   if (Object.keys(umfrage).length) {
-    state = mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) });
+    state = umfrageBuchen(zustand, mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) }), posten);
     const text = Object.entries(umfrage).map(([id, x]) => `${name(id)} ${x >= 0 ? '+' : '−'}${Math.abs(r2(x)).toLocaleString('de-DE')}`).join(', ');
     if (verlust) ereignisse.push(`Ungelöste Probleme belasten die Regierung: ${text}`);
   }

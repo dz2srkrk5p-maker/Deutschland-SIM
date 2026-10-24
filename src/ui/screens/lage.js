@@ -9,6 +9,7 @@ import { haushaltsQuartal } from '../../engine/regierung.js';
 import { offenesEreignis, folgen } from '../../engine/ereignisse.js';
 import { problemListe } from '../../engine/probleme.js';
 import { tickerHtml } from '../components/ticker.js';
+import { umfrageBilanzHtml } from '../components/umfragebilanz.js';
 import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
 
@@ -96,6 +97,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onZug
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
       ${karte(wirtschaftHtml(zustand.land), { titel: 'Wirtschaft (Vorjahr)' })}
     </div>
+    ${karte(umfrageBilanzHtml(zustand), { titel: 'Warum bewegt sich die Umfrage?' })}
     ${zusatz}
     ${tickerHtml(zustand) ? karte(tickerHtml(zustand), { titel: 'Schlagzeilen' }) : ''}
   </div>`;

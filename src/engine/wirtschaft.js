@@ -59,6 +59,17 @@ export function gruppenSchritt(alt, wirkungGruppen = {}) {
   }));
 }
 
+// Teile von lageUmfrage für die Umfrage-Bilanz: je Kennzahl und je Gruppe, ungerundet (die Summe rundet lageUmfrage)
+export function lageTeile(altLand, neuLand, gruppenNeu) {
+  const u = w.umfrage;
+  return [
+    { ursache: 'Wirtschaftslage: Wachstum', wert: u.wachstum * (neuLand.wachstum - w.potenzialWachstum) },
+    { ursache: 'Wirtschaftslage: Arbeitslosigkeit', wert: -u.arbeitslosigkeit * (neuLand.arbeitslosigkeit - altLand.arbeitslosigkeit) },
+    { ursache: 'Wirtschaftslage: Inflation', wert: -u.inflation * Math.max(0, neuLand.inflation - u.inflationUeber) },
+    ...gruppen.map((g) => ({ ursache: `Stimmung der Gruppe ${g.name}`, wert: (u.gruppen * ((gruppenNeu[g.id] ?? 50) - 50)) / 50 })),
+  ];
+}
+
 // Wirkung der Lage auf die Kanzlerpartei (Punkte) nach einem Jahr
 export function lageUmfrage(altLand, neuLand, gruppenNeu) {
   const u = w.umfrage;

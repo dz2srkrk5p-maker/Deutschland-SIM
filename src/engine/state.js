@@ -6,12 +6,13 @@ import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen
 import { config } from '../data/config.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 13; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 14; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
 // 12: Problem-Engine: probleme { id: { wert, verlauf } }, loesungen, runde, aktionenImQuartal, jahresWirkung (statt reformen, reformImQuartal);
 // 13: reformwege { wegId: { status: umsetzung | beschlossen | gescheitert, fertig } } (System 1)
+// 14: umfrageBilanz [{ zeit, posten: [{ ursache, partei, wert, rest? }] }] (Paket Klein, Feature 1)
 
 // Neue Felder ab Version 10, auch für die Migration alter Spielstände
 const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip, preise: 1 });
@@ -54,6 +55,7 @@ export function neuesSpiel(spielerParteiId, seed) {
     aktionenImQuartal: 0, // gestartete Lösungen und Reformwege in diesem Quartal (Aufmerksamkeit)
     jahresWirkung: wirkungSumme(), // Wirkungen im laufenden Jahr, fließen in den nächsten Jahresschritt
     reformwege: {}, // gewählte Reformwege (System 1); gelten über Wahlperioden hinweg
+    umfrageBilanz: [], // Ursachen der Umfrageänderungen der letzten Runden (Anzeige)
     offenesEreignis: null, // Ereignis, auf das der Spieler noch reagieren muss (F14)
     ereignisseWahlperiode: [], // schon dagewesene Ereignisse dieser Wahlperiode
     land: landStart(), // Landeskennzahlen (data/kennzahlen.js), Schulden und BIP in Mrd. €
@@ -123,6 +125,7 @@ const MIGRATIONEN = {
     return { ...rest, version: 12, probleme, loesungen, runde: 0, aktionenImQuartal: reformImQuartal ? 1 : 0, jahresWirkung: wirkungSumme() };
   },
   12: (z) => ({ ...z, version: 13, reformwege: {} }),
+  13: (z) => ({ ...z, version: 14, umfrageBilanz: [] }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

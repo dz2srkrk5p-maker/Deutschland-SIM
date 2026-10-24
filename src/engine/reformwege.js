@@ -10,6 +10,7 @@ import { bundesratAbstimmung } from './bundesrat.js';
 import { koalitionsParteien } from './kabinett.js';
 import { parteiPosition, abstand, richtungsprofil } from './profil.js';
 import { wirkungSumme } from './wirtschaft.js';
+import { umfrageBuchen } from './umfragebilanz.js';
 import { vorschau } from './haushalt.js';
 
 // Reformwege (System 1): verbindliche Wegentscheidungen je Bereich mit politischer Ausrichtung.
@@ -126,21 +127,22 @@ export function wegBeschliessen(zustand, { wegId }) {
   }
   const reformwege = { ...zustand.reformwege };
   const umfrage = {};
-  const dazu = (id, x) => (umfrage[id] = (umfrage[id] ?? 0) + x);
+  const posten = []; // Umfrage-Bilanz
+  const dazu = (id, x, ursache) => ((umfrage[id] = (umfrage[id] ?? 0) + x), posten.push({ ursache, partei: id, wert: x }));
   const ereignisse = [`Reform beschlossen: „${w.name}“ (${v.ausrichtung}, ${stimmen}); Umsetzung in ${w.dauer} Quartalen`];
   if (v.revision) {
     // alter Weg und seine Folgewege fallen weg
     for (const x of w.bereich.wege) if (x.id === v.revision.id || x.braucht === v.revision.id) delete reformwege[x.id];
-    dazu(zustand.kanzlerParteiId, -rw.revisionUmfrage);
+    dazu(zustand.kanzlerParteiId, -rw.revisionUmfrage, `Kurswechsel: ${v.revision.name} zurückgenommen`);
     ereignisse.push(`Kurswechsel: „${v.revision.name}“ wird zurückgenommen (Glaubwürdigkeit −${rw.revisionUmfrage.toLocaleString('de-DE')})`);
   }
   reformwege[w.id] = { status: 'umsetzung', fertig: zustand.runde + w.dauer };
-  for (const p of v.partner) if (p.unmut) dazu(p.id, -p.unmut);
+  for (const p of v.partner) if (p.unmut) dazu(p.id, -p.unmut, `Reform „${w.name}“: Unmut beim Partner`);
   // Gegenstück zum Unmut: Weg nahe an der eigenen Linie bringt der Kanzlerpartei Glaubwürdigkeit
   if (v.bonus > 0) {
-    dazu(zustand.kanzlerParteiId, v.bonus);
+    dazu(zustand.kanzlerParteiId, v.bonus, `Reform „${w.name}“ passt zur eigenen Linie`);
     // zulasten der Opposition: Partner stehen mit festem Wert in der Umverteilung
-    for (const id of zustand.koalition.partner) dazu(id, 0);
+    for (const id of zustand.koalition.partner) umfrage[id] = umfrage[id] ?? 0;
   }
 
   // Kurzwirkung: Gruppen und Probleme sofort, Kennzahlen im Jahresschritt; Akteure ziehen ihre Gruppen mit
@@ -162,7 +164,7 @@ export function wegBeschliessen(zustand, { wegId }) {
     jahresWirkung: wirkungSumme(zustand.jahresWirkung, { ...w.kurz, gruppen: {}, probleme: {} }),
   };
   if (Object.keys(umfrage).length) {
-    state = mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) });
+    state = umfrageBuchen(zustand, mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) }), posten);
     const unmut = v.partner.filter((p) => p.unmut);
     if (unmut.length) ereignisse.push(`Unmut beim Partner: ${unmut.map((p) => `${name(p.id)} −${p.unmut.toLocaleString('de-DE')}`).join(', ')}`);
   }
@@ -180,7 +182,8 @@ export function reformwegeQuartal(zustand) {
   let gruppen = zustand.gruppen;
   let jahresWirkung = zustand.jahresWirkung;
   const umfrage = {};
-  const dazu = (id, x) => (umfrage[id] = (umfrage[id] ?? 0) + x);
+  const posten = []; // Umfrage-Bilanz
+  const dazu = (id, x, ursache) => ((umfrage[id] = (umfrage[id] ?? 0) + x), posten.push({ ursache, partei: id, wert: x }));
   for (const [id, s] of Object.entries(zustand.reformwege)) {
     if (s.status !== 'umsetzung' || s.fertig > zustand.runde) continue;
     const w = weg(id);
@@ -191,7 +194,7 @@ export function reformwegeQuartal(zustand) {
     rngZustand = b.rngZustand;
     if (karlsruhe || b.wert < w.risiko) {
       reformwege[id] = { ...s, status: 'gescheitert' };
-      dazu(zustand.kanzlerParteiId, -rw.fehlschlagUmfrage);
+      dazu(zustand.kanzlerParteiId, -rw.fehlschlagUmfrage, karlsruhe ? `Reform „${w.name}“ vom Verfassungsgericht gekippt` : `Reform „${w.name}“ gescheitert`);
       ereignisse.push(karlsruhe ? `Das Bundesverfassungsgericht kippt „${w.name}“.` : `Umsetzung gescheitert: „${w.name}“.`);
       continue;
     }
@@ -205,14 +208,14 @@ export function reformwegeQuartal(zustand) {
     const senkung = Object.values(w.lang?.probleme ?? {}).reduce((sum, x) => sum + Math.max(0, -x), 0);
     const pc = config.probleme;
     const halter = zustand.kabinett.verteilung[w.bereich.ministerium];
-    if (halter) dazu(halter, senkung * pc.gewinnJeWertpunkt);
+    if (halter) dazu(halter, senkung * pc.gewinnJeWertpunkt, `Reform „${w.name}“ umgesetzt (zuständiges Ressort)`);
     const regierung = [zustand.kanzlerParteiId, ...zustand.koalition.partner];
     const summe = regierung.reduce((sum, p) => sum + zustand.anteile[p], 0);
-    for (const p of regierung) dazu(p, (senkung * pc.gewinnRegierungJeWertpunkt * zustand.anteile[p]) / summe);
+    for (const p of regierung) dazu(p, (senkung * pc.gewinnRegierungJeWertpunkt * zustand.anteile[p]) / summe, `Reform „${w.name}“ umgesetzt (Regierungserfolg)`);
     ereignisse.push(`Reform umgesetzt: „${w.name}“`);
   }
   let state = { ...zustand, rngZustand, reformwege, probleme, gruppen, jahresWirkung };
-  if (Object.keys(umfrage).length) state = mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) });
+  if (Object.keys(umfrage).length) state = umfrageBuchen(zustand, mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) }), posten);
   return { state, ereignisse };
 }
 

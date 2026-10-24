@@ -201,6 +201,14 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
 - Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
 
+## Oberfläche: Umfrage-Bilanz (Paket Klein, Feature 1, freigegeben 2026-10-24)
+- Dateien:  (), ; Zahl:  (8, Spielwert, reine Anzeige).
+- Keine neue Berechnung: Jede Aktion, die Umfragen ändert (Wahlkampf, Haushalt, Quartal mit Problemen und Lösungen, Reformwege, Ereignisse, Zugeständnis), bucht ihre festen Teilbeiträge mit Ursache. Der Rest der tatsächlichen Änderung (Zufall, Verschiebung durch andere Parteien, Rundung) wird als eigener Posten gebucht; die Summe ergibt immer die tatsächliche Änderung.
+- Haushalt aufgeschlüsselt nach Etat, Einnahmen, Richtungsprofil, Wirtschaftslage (Wachstum, Arbeitslosigkeit, Inflation) und je Gruppe (der bisherige Durchschnittsterm, einzeln gezeigt).
+- Anzeige: Lage, Karte „Warum bewegt sich die Umfrage?“ (letzte 8 Zeitangaben, neueste offen, eigene Partei und Partner); Tooltip am Umfragewert in der Kopfzeile.
+- Spielstand-Version 14:  (alte Stände: leer).
+- Messung: Simulation identisch mit der Baseline (123 von 123 Tabellenzeilen gleich).
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).

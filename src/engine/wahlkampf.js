@@ -2,6 +2,7 @@ import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
 import { zufall } from './rng.js';
 import { wahl } from './wahl.js';
+import { umfrageBuchen } from './umfragebilanz.js';
 import { mitVerlauf } from './state.js';
 
 const wk = config.wahlkampf;
@@ -95,7 +96,10 @@ export function wahlkampfWoche(zustand, params) {
   const anzahl = zustand.wahlkampfSerie?.aktion === params.aktion ? zustand.wahlkampfSerie.anzahl + 1 : 1;
   const wahlkampfSerie = { aktion: params.aktion, anzahl };
   // nach der letzten Woche folgt die Wahl mit genau diesen Anteilen: Eintrag als Wahl markieren
-  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, wahlkampfWoche: woche + 1, wahlkampfSerie }, woche >= wk.wochen);
+  // Umfrage-Bilanz: feste Wirkung der Aktion je betroffener Partei, Schwankung als Rest
+  const posten = [...new Set([zustand.spielerParteiId, params.ziel].filter(Boolean))]
+    .map((id) => ({ ursache: `Wahlkampf: ${w.text.split(':')[0]}`, partei: id, wert: w.anteile[id] - zustand.anteile[id] }));
+  const state = umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, wahlkampfWoche: woche + 1, wahlkampfSerie }, woche >= wk.wochen), posten);
   const abnahme = faktor < 1 ? ` (${anzahl}. Mal in Folge, ${Math.round(faktor * 100)} % Wirkung)` : '';
   const ereignisse = [`Woche ${woche}: ${w.text}${abnahme}`];
 
