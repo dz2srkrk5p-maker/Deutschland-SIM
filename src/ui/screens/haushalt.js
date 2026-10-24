@@ -6,6 +6,7 @@ import { gruppen as gruppenListe } from '../../data/kennzahlen.js';
 import { festeAusgaben2026 } from '../../data/haushalt.js';
 import { vorschau, mrd, prognose, kuerzungsVorschlag } from '../../engine/haushalt.js';
 import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
+import { RECHTSARTEN } from '../../data/einnahmen.js';
 import { gegenfinanzierung } from '../../engine/einnahmen.js';
 import { haushaltsQuartal } from '../../engine/regierung.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
@@ -77,10 +78,10 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       <tr><th scope="row"><strong>Summe</strong></th><td><strong>${euro(z.summe)}</strong></td></tr>
     </tbody></table>
     <p class="klein">${a.erklaerung} Je Stufe: ${a.aufkommenJeStufe ? euro(a.aufkommenJeStufe) : 'keine Bundeseinnahme'}; Wirkung: ${wirkungListe(a.wirkungJeStufe)}.
-      ${a.bundesrat ? 'Änderungen brauchen den Bundesrat.' : 'Ohne Bundesrat änderbar.'}${a.verfassung ? ' ⚠ Verfassungsrechtlich umstritten.' : ''}</p>
+      ${a.bundesrat ? 'Änderungen brauchen den Bundesrat.' : 'Ohne Bundesrat änderbar.'}${a.rechtsrisiko ? ` <span class="gelb" title="${risikoText(a.rechtsrisiko)}">${risikoKurz(a.rechtsrisiko)} bei Erhöhung</span>` : ''}</p>
     ${a.ausgestaltung.length ? `<h4>Ausgestaltung</h4>${a.ausgestaltung.map((s) => {
       const an = entwurf.ausgestaltung[s.id] ?? zustand.haushalt.einnahmen.ausgestaltung.includes(s.id);
-      return `<div class="posten nurlesen"><span>${s.name}<br><small>${s.kosten ? euro(s.kosten) + ' je Jahr · ' : ''}${wirkungListe(s.wirkung)}${s.verfassung ? ' · ⚠ verfassungsrechtlich umstritten' : ''}</small></span>
+      return `<div class="posten nurlesen"><span>${s.name}<br><small>${s.kosten ? euro(s.kosten) + ' je Jahr · ' : ''}${wirkungListe(s.wirkung)}${s.rechtsrisiko ? ` · <span class="gelb" title="${risikoText(s.rechtsrisiko)}">${risikoKurz(s.rechtsrisiko)}</span>` : ''}</small></span>
         ${bearbeitbar ? `<button data-schalter="${s.id}" aria-pressed="${an}">${an ? '✓ aktiv' : 'aktivieren'}</button>` : `<span>${an ? status('ok', 'aktiv') : 'aus'}</span>`}</div>`;
     }).join('')}` : ''}`;
     return `<div class="einnahme">
@@ -122,7 +123,8 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         <span>Bundestag</span><span>${status(v.bundestag.angenommen ? 'ok' : 'rot', `${v.bundestag.ja} Ja, ${v.bundestag.nein} Nein`)}</span>
         ${v.bundesrat ? `<span>Bundesrat (Steueränderung)</span><span>${status(v.bundesrat.mehrheit ? 'ok' : 'rot', `${v.bundesrat.ja} von ${v.bundesrat.noetig} Stimmen`)}</span>` : ''}
       </div>
-      ${v.verfassung ? '<p class="gelb">⚠ Der Entwurf enthält verfassungsrechtlich umstrittene Abgaben.</p>' : ''}
+      ${v.rechtsrisiken.length ? `<p class="gelb">⚠ Rechtsrisiko vor dem Bundesverfassungsgericht:</p><ul>${v.rechtsrisiken.map((r) => `<li><strong>${r.name}</strong>: ${risikoText(r)}</li>`).join('')}</ul>` : ''}
+      ${(zustand.verfahren ?? []).length ? `<p><strong>Anhängige Verfahren:</strong> ${zustand.verfahren.map((x) => `${x.name} (Urteil in ${Math.max(1, x.faellig - zustand.runde)} Quartalen, Risiko ${Math.round(x.chance * 100)} %)`).join('; ')}</p>` : ''}
       ${aufklapp('Abstimmungen im Detail', abstimmungHtml(v.bundestag, 'Bundestag über den Haushalt', true) + bundesratHtml(bundesratAbstimmung(koalitionsParteien(zustand))))}`, { titel: 'Saldo und Schuldenbremse' })}
       ${karte(`<p><strong>Umfragen:</strong> ${wirkung.length ? wirkung.map(([id, w]) => `${partei(id).name} ${plusMinus(w)}`).join(' · ') : 'keine Änderung'}</p>
         <p><strong>Kennzahlen und Gruppen:</strong> ${wirkungListe(v.kennzahlWirkung)}</p>`, { titel: 'Wirkung des Entwurfs' })}
@@ -158,6 +160,10 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       </div>`, { titel: 'Feste Ausgaben' });
   }
 
+  // Rechtsrisiko (Feature 3): kurzer Hinweis und Erklärung, Werte sind Spielwerte
+  const vr = config.verfassungsrisiko;
+  const risikoKurz = (r) => `⚠ Rechtsrisiko ${Math.round(r.chance * 100)} % (${RECHTSARTEN[r.art].name}, Spielwert)`;
+  const risikoText = (r) => `Mit ${Math.round(r.chance * 100)} % Wahrscheinlichkeit kippt das Bundesverfassungsgericht diese Änderung nach ${vr.dauerQuartale} Quartalen (${RECHTSARTEN[r.art].name}, ${RECHTSARTEN[r.art].grundlage}). Dann wird sie zurückgenommen, die Einnahmen fallen weg und die Kanzlerpartei verliert ${zahl(vr.verlustUmfrage, 1)} Punkte.`;
   const za = hh.zinsaufschlag;
   const hinweisZins = `Die Zinslast steigt mit einem Aufschlag, wenn die Schuldenquote über ${zahl(za.quoteAb)} % liegt oder der Bund mehr als ${zahl(za.defizitAb, 1)} % des BIP neu leiht. Der Aufschlag nähert sich jedes Jahr nur zu ${zahl(za.anpassung * 100)} % seinem Ziel und ist bei ${zahl(za.max * 100)} % gedeckelt (Spielwerte).`;
 

@@ -46,7 +46,8 @@ export function hilfeHtml() {
       <li>${wege} Reformwege in ${bereiche.length} Bereichen, Ausrichtungen, Reaktionen der Verbände und der EU</li>
       <li>${ereignisse.length} Ereignisse und ihre Folgen</li>
       <li>Gruppenstimmung (${gruppen.map((g) => g.name).join(', ')}), Start 50</li>
-      <li>Wirtschaftsdynamik (Rückkehr zum Potenzialwachstum, Okun, Zinsen), politisches Kapital, Koalitionsbruch, Wahlkampf</li>
+      <li>Wirtschaftsdynamik (Rückkehr zum Potenzialwachstum, Okun, Zinsen und Zinsaufschlag), politisches Kapital, Koalitionsbruch, Wahlkampf</li>
+      <li>Rechtsrisiken von Steueränderungen (Chance, dass das Bundesverfassungsgericht eine Änderung kippt); belegt sind nur die Grundlagen Art. 3 und Art. 14 GG</li>
       <li>Alle übrigen Konstanten in <code>src/data/config.js</code></li>
     </ul>`)}
     ${aufklapp('Bewusste Vereinfachungen', `<ul>

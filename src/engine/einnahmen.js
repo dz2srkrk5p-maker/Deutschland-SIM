@@ -81,7 +81,23 @@ export function entwurfWirkung(zustand, entwurf = {}) {
     teile.push(skaliert(art.ausgestaltung.find((s) => s.id === id).wirkung, an ? 1 : -1));
     bundesrat ||= art.bundesrat;
   }
-  return { wirkung: wirkungSumme(...teile), bundesrat, verfassung: Object.entries(entwurf.ausgestaltung ?? {}).some(([id, an]) => an && einnahmearten.some((a) => a.ausgestaltung.some((s) => s.id === id && s.verfassung))) || Object.entries(entwurf.einnahmen ?? {}).some(([id, d]) => d > 0 && einnahmeart(id).verfassung) };
+  const risiken = rechtsrisiken(zustand, entwurf);
+  return { wirkung: wirkungSumme(...teile), bundesrat, rechtsrisiken: risiken, verfassung: risiken.length > 0 };
+}
+
+// Rechtsrisiken eines Entwurfs (Feature 3): Erhöhungen riskanter Einnahmearten, neu eingeschaltete riskante Ausgestaltungen
+export function rechtsrisiken(zustand, entwurf = {}) {
+  const liste = [];
+  for (const [id, d] of Object.entries(entwurf.einnahmen ?? {})) {
+    const art = einnahmeart(id);
+    if (d > 0 && art.rechtsrisiko) liste.push({ typ: 'einnahme', id, name: `${art.name} erhöht`, stufen: d, ...art.rechtsrisiko });
+  }
+  for (const [id, an] of Object.entries(entwurf.ausgestaltung ?? {})) {
+    if (!an || zustand.haushalt.einnahmen.ausgestaltung.includes(id)) continue;
+    const s = einnahmearten.flatMap((a) => a.ausgestaltung).find((x) => x.id === id);
+    if (s.rechtsrisiko) liste.push({ typ: 'ausgestaltung', id, name: s.name, ...s.rechtsrisiko });
+  }
+  return liste;
 }
 
 // Neuer Einnahmenstand nach dem Beschluss (einmalige Posten wie Privatisierungen werden nicht gespeichert)

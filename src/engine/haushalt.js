@@ -16,6 +16,7 @@ import { wegKosten, profilWirkung } from './reformwege.js';
 export const laufendeKosten = (zustand) => loesungsKosten(zustand) + wegKosten(zustand);
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
 import { umfrageBuchen } from './umfragebilanz.js';
+import { verfahrenAnlegen } from './verfahren.js';
 import { jahresSchritt, gruppenSchritt, lageUmfrage, lageTeile, wirkungSumme } from './wirtschaft.js';
 
 const hh = config.haushalt;
@@ -79,7 +80,7 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   const bundestag = abstimmung(zustand, 'haushalt');
   return {
     etats, einnahmen: einnahmenNeu, bilanz: bilanz(etats, einnahmenNeu.kern, laufendeKosten(zustand), zinsen(zustand), schuldenbremseGrenze(zustand)),
-    wirkung, posten, kennzahlWirkung: ew.wirkung, verfassung: ew.verfassung, bundesrat, bundestag,
+    wirkung, posten, kennzahlWirkung: ew.wirkung, verfassung: ew.verfassung, rechtsrisiken: ew.rechtsrisiken, bundesrat, bundestag,
     // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
     anteile: runden(umverteilen(zustand.anteile, wirkung)),
   };
@@ -175,7 +176,7 @@ export function haushaltBeschliessen(zustand, params = {}) {
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme() }), posten, `Haushalt Jahr ${jahr}`);
+  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme() }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

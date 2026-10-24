@@ -230,6 +230,8 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `probleme.passungBonus` | 0.15 | System 3 |
 | `probleme.verlaufLaenge` | 16 | System 3 |
 | `ereignisse.chanceJeQuartal` | 0.3 | F14 |
+| `verfassungsrisiko.dauerQuartale` | 4 | M1/M3 (Quelle in config.js) |
+| `verfassungsrisiko.verlustUmfrage` | 0.3 | M1/M3 (Quelle in config.js) |
 | `umfrageBilanz.runden` | 8 | Paket Klein |
 | `ticker.anzahl` | 3 | F15 |
 | `ticker.trendSchritte` | 3 | F15 |

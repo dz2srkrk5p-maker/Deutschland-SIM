@@ -76,6 +76,10 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Verfassungsrisiko für Steuern (Paket Klein, Feature 3, Spielwerte): Nach dauerQuartale Quartalen entscheidet das
+  // Gericht; kippt es eine Änderung, wird sie zurückgenommen (Einnahmeausfall ab dann) und die Kanzlerpartei verliert.
+  verfassungsrisiko: { dauerQuartale: 4, verlustUmfrage: 0.3 },
+
   // Umfrage-Bilanz (Paket Klein, Feature 1): reine Anzeige, wie viele Runden zurück die Ursachen gezeigt werden. Spielwert.
   umfrageBilanz: { runden: 8 },
 

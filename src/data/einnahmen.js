@@ -23,9 +23,17 @@
 // verzoegerung: Anteil des Mehr- oder Minderaufkommens, der im ersten Jahr schon wirkt
 // bundesrat: Änderung braucht die Zustimmung des Bundesrats (Gemeinschafts-, Länder- und Gemeindesteuern)
 // ausgestaltung: Schalter zur Differenzierung, je mit Kosten (tausend €/Jahr, negativ = Mindereinnahme) und Wirkung
+// rechtsrisiko (Feature 3, Spielwerte, keine Rechtsauskunft): Chance, dass eine Klage gegen die Erhöhung einer Einnahmeart
+// bzw. das Einschalten einer Ausgestaltung vor dem Bundesverfassungsgericht Erfolg hat; art siehe RECHTSARTEN.
 
 const SKALA = 387.21 / 431.84;
 const anteil = (mrd) => Math.round(mrd * SKALA * 1e6); // Mrd. 2024 → tausend € 2026
+
+// Art des Rechtsrisikos (Feature 3). Rückwirkung kommt im Spiel nicht vor: alle Änderungen gelten erst ab dem Beschluss.
+export const RECHTSARTEN = {
+  eigentum: { name: 'Eingriff in das Eigentum', grundlage: 'Art. 14 GG', quelle: 'Quelle: Grundgesetz, 2026' },
+  gleichheit: { name: 'Gleichbehandlung', grundlage: 'Art. 3 GG', quelle: 'Quelle: Grundgesetz, 2026' },
+};
 
 export const einnahmearten = [
   {
@@ -65,7 +73,7 @@ export const einnahmearten = [
     wirkungJeStufe: { wachstum: -0.07, gini: -0.05, gruppen: { unternehmen: -5, arbeitnehmer: 1 } },
     ausgestaltung: [
       { id: 'forschung', name: 'Steuerbonus für Forschung', kosten: -1500000, wirkung: { wachstum: 0.05, gruppen: { unternehmen: 3 } } },
-      { id: 'mittelstand', name: 'Entlastung für Mittelstand und Handwerk', kosten: -1200000, wirkung: { wachstum: 0.02, gruppen: { unternehmen: 3 } } },
+      { id: 'mittelstand', name: 'Entlastung für Mittelstand und Handwerk', kosten: -1200000, wirkung: { wachstum: 0.02, gruppen: { unternehmen: 3 } }, rechtsrisiko: { art: 'gleichheit', chance: 0.1, quelle: 'Spielwert' } },
     ],
   },
   {
@@ -78,7 +86,7 @@ export const einnahmearten = [
     wirkungJeStufe: { wachstum: -0.08, inflation: 0.35, gini: 0.12, gruppen: { geringverdiener: -4, familien: -3, rentner: -2 } },
     ausgestaltung: [
       { id: 'lebensmittel', name: 'Lebensmittel von der Umsatzsteuer befreien', kosten: -5500000, wirkung: { inflation: -0.3, gini: -0.2, gruppen: { geringverdiener: 6, familien: 4, landwirtschaft: 2 } } },
-      { id: 'gastronomie', name: 'Ermäßigter Satz für Gastronomie', kosten: -1800000, wirkung: { gruppen: { unternehmen: 2 } } },
+      { id: 'gastronomie', name: 'Ermäßigter Satz für Gastronomie', kosten: -1800000, wirkung: { gruppen: { unternehmen: 2 } }, rechtsrisiko: { art: 'gleichheit', chance: 0.1, quelle: 'Spielwert' } },
     ],
   },
   {
@@ -100,8 +108,8 @@ export const einnahmearten = [
     aufkommenJeStufe: 3500000, ausweichenAb: 2, ausweichen: 0.1, verzoegerung: 1,
     wirkungJeStufe: { wachstum: -0.03, inflation: 0.12, gini: 0.05, gruppen: { geringverdiener: -2, landwirtschaft: -3, unternehmen: -1 }, probleme: { klimafolgen: -1 } },
     ausgestaltung: [
-      { id: 'industriestrom', name: 'Stromsteuer für Industrie auf EU-Minimum', kosten: -3000000, wirkung: { wachstum: 0.05, gruppen: { unternehmen: 4 }, probleme: { rezession: -3, energiepreise: -3 } } },
-      { id: 'agrardiesel', name: 'Agrardiesel-Rückvergütung', kosten: -450000, wirkung: { gruppen: { landwirtschaft: 6 }, probleme: { landwirtschaftsproteste: -6 } } },
+      { id: 'industriestrom', name: 'Stromsteuer für Industrie auf EU-Minimum', kosten: -3000000, wirkung: { wachstum: 0.05, gruppen: { unternehmen: 4 }, probleme: { rezession: -3, energiepreise: -3 } }, rechtsrisiko: { art: 'gleichheit', chance: 0.1, quelle: 'Spielwert' } },
+      { id: 'agrardiesel', name: 'Agrardiesel-Rückvergütung', kosten: -450000, wirkung: { gruppen: { landwirtschaft: 6 }, probleme: { landwirtschaftsproteste: -6 } }, rechtsrisiko: { art: 'gleichheit', chance: 0.1, quelle: 'Spielwert' } },
     ],
   },
   {
@@ -117,7 +125,7 @@ export const einnahmearten = [
     ],
   },
   {
-    id: 'vermoegen', name: 'Vermögensteuer', gruppe: 'Vermögen', bundesrat: true, keinBund: 'Länder', verfassung: true,
+    id: 'vermoegen', name: 'Vermögensteuer', gruppe: 'Vermögen', bundesrat: true, keinBund: 'Länder', rechtsrisiko: { art: 'eigentum', chance: 0.35, quelle: 'Spielwert' },
     erklaerung: 'Seit 1997 nicht erhoben. Wiedereinführung als Ländersteuer per Bundesgesetz; verfassungsrechtlich heikel (Bewertung).',
     start: 0,
     quelle: { start: 'Quelle: Art. 106 GG, 2026', satz: 'Quelle: BVerfG, 2 BvL 37/91, 1995', wirkung: 'Spielwert' },
@@ -125,7 +133,7 @@ export const einnahmearten = [
     aufkommenJeStufe: 0, ausweichenAb: 1, ausweichen: 0.3, verzoegerung: 0.5,
     wirkungJeStufe: { gini: -0.3, wachstum: -0.05, gruppen: { unternehmen: -6, geringverdiener: 2 }, probleme: { soziale_spaltung: -4, rezession: 2 } },
     ausgestaltung: [
-      { id: 'vermoegensabgabe', name: 'Einmalige Vermögensabgabe an den Bund (über 10 Jahre)', kosten: 8000000, wirkung: { gini: -0.4, wachstum: -0.08, gruppen: { unternehmen: -8 }, probleme: { soziale_spaltung: -4 } }, verfassung: true },
+      { id: 'vermoegensabgabe', name: 'Einmalige Vermögensabgabe an den Bund (über 10 Jahre)', kosten: 8000000, wirkung: { gini: -0.4, wachstum: -0.08, gruppen: { unternehmen: -8 }, probleme: { soziale_spaltung: -4 } }, rechtsrisiko: { art: 'eigentum', chance: 0.4, quelle: 'Spielwert' } },
     ],
   },
   {

@@ -201,6 +201,14 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
 - Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
 
+## System: Verfassungsrisiko für Steuern (Paket Klein, Feature 3, freigegeben 2026-10-24)
+- Dateien: `src/data/einnahmen.js` (`RECHTSARTEN`, Feld `rechtsrisiko` an Einnahmearten und Ausgestaltungen), `src/engine/einnahmen.js` (`rechtsrisiken`), `src/engine/verfahren.js` (`verfahrenAnlegen`, `verfahrenQuartal`). Zahlen: `config.verfassungsrisiko`. Alle Chancen sind Spielwerte, keine Rechtsauskunft.
+- Arten: Eingriff in das Eigentum (Art. 14 GG): Vermögensteuer erhöhen 35 %, einmalige Vermögensabgabe 40 %. Gleichbehandlung (Art. 3 GG): Entlastung für Mittelstand und Handwerk, ermäßigter Satz Gastronomie, Industriestrom, Agrardiesel je 10 %. Rückwirkung: nicht anwendbar, das Spiel kennt keine rückwirkenden Änderungen. Ersetzt das frühere Ja/Nein-Merkmal `verfassung` (nur Warnhinweis).
+- Ablauf: Ein beschlossener Haushalt mit Erhöhung einer riskanten Einnahmeart oder neu eingeschalteter riskanter Ausgestaltung legt je Änderung ein Verfahren an. Nach 4 Quartalen entscheidet das Gericht per Seed-Zufall. Gekippt: Änderung zurückgenommen (Einnahmeausfall ab dann), Kanzlerpartei −0,3 (in der Umfrage-Bilanz). Bestätigt: bleibt.
+- Anzeige: Haushalt → Einnahmen (Risiko je Art und Schalter mit Erklärung im Tooltip), Übersicht (Risiken des Entwurfs vor dem Beschluss, anhängige Verfahren mit Restzeit), Meldung beim Urteil.
+- Spielstand-Version 16: `verfahren` (alte Stände: leer).
+- Messung: Simulation unverändert (keine Strategie nutzt riskante Steuern); geprüft über Tests.
+
 ## System: Zinsaufschlag (Paket Klein, Feature 2, freigegeben 2026-10-24)
 - Dateien: `src/engine/wirtschaft.js` (`zinsaufschlagZiel`, Jahresschritt), `src/engine/haushalt.js` (`zinsen`, Prognose). Zahlen: `config.haushalt.zinsaufschlag` (alle Spielwerte).
 - Zinsen = Zinsen 2026 × Schulden / Schulden 2025 × (1 + Zinsaufschlag). Kein Zinsmarkt.
