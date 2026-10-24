@@ -32,7 +32,7 @@ const S = {
 };
 const ergebnis = {};
 for (const [name, f] of Object.entries(S)) {
-  let abgelehnt = 0, versuche = 0, quoteEnde = 0, quoteMax = 0, n = 0, endeJahr = [];
+  let abgelehnt = 0, versuche = 0, quoteEnde = 0, quoteMax = 0, n = 0, endeJahr = [], aufschlagMax = 0, aufschlagEnde = 0;
   const N = 50;
   for (let seed = 1; seed <= N; seed++) {
     let z = neuesSpiel('union', seed); let maxq = 0; const pfad = [];
@@ -56,12 +56,13 @@ for (const [name, f] of Object.entries(S)) {
       } else break;
       z = r.state;
       if (z.land) maxq = Math.max(maxq, z.land.schuldenquote);
+      if (z.land) aufschlagMax = Math.max(aufschlagMax, z.land.zinsaufschlag ?? 0);
     }
-    quoteEnde += z.land.schuldenquote; quoteMax += maxq; n++;
+    quoteEnde += z.land.schuldenquote; quoteMax += maxq; n++; aufschlagEnde += z.land.zinsaufschlag ?? 0;
     if (seed === 1) endeJahr = pfad.map((q) => Math.round(q * 10) / 10);
   }
-  ergebnis[name] = { quoteEnde: +(quoteEnde / n).toFixed(1), quoteMax: +(quoteMax / n).toFixed(1), abgelehnt, versuche, pfadSeed1: endeJahr, nan: !Number.isFinite(quoteEnde) };
-  console.log(`${name}: Ø Quote Ende ${(quoteEnde / n).toFixed(1)} %, Ø Maximum ${(quoteMax / n).toFixed(1)} %, abgelehnt ${abgelehnt} von ${versuche} Haushalten; Pfad Seed 1: ${endeJahr.join(' → ')}`);
+  ergebnis[name] = { quoteEnde: +(quoteEnde / n).toFixed(1), quoteMax: +(quoteMax / n).toFixed(1), abgelehnt, versuche, pfadSeed1: endeJahr, zinsaufschlagEnde: +(aufschlagEnde / n).toFixed(3), zinsaufschlagMax: +aufschlagMax.toFixed(3), nan: !Number.isFinite(quoteEnde) };
+  console.log(`${name}: Ø Quote Ende ${(quoteEnde / n).toFixed(1)} %, Ø Maximum ${(quoteMax / n).toFixed(1)} %, abgelehnt ${abgelehnt} von ${versuche} Haushalten, Zinsaufschlag Ø Ende ${(aufschlagEnde / n).toFixed(3)} max ${aufschlagMax.toFixed(3)}; Pfad Seed 1: ${endeJahr.join(' → ')}`);
 }
 
 (await import('node:fs')).writeFileSync(new URL(`./${process.argv[2] ?? 'extrem'}-extrem.json`, import.meta.url), JSON.stringify(ergebnis, null, 1));

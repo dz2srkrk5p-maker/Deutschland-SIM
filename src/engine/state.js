@@ -6,16 +6,17 @@ import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen
 import { config } from '../data/config.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 14; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 15; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
 // 12: Problem-Engine: probleme { id: { wert, verlauf } }, loesungen, runde, aktionenImQuartal, jahresWirkung (statt reformen, reformImQuartal);
 // 13: reformwege { wegId: { status: umsetzung | beschlossen | gescheitert, fertig } } (System 1)
 // 14: umfrageBilanz [{ zeit, posten: [{ ursache, partei, wert, rest? }] }] (Paket Klein, Feature 1)
+// 15: land.zinsaufschlag (Anteil auf die Zinslast, Feature 2)
 
 // Neue Felder ab Version 10, auch für die Migration alter Spielstände
-const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip, preise: 1 });
+const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip, preise: 1, zinsaufschlag: 0 });
 // Einnahmen (System 2): Stufen je Einnahmeart, aktive Ausgestaltungen; altFaktor überträgt Steueränderungen alter Spielstände
 const einnahmenStart = (altFaktor = 1) => ({ stufen: {}, ausgestaltung: [], altFaktor });
 const gruppenStart = () => Object.fromEntries(gruppen.map((g) => [g.id, 50]));
@@ -126,6 +127,7 @@ const MIGRATIONEN = {
   },
   12: (z) => ({ ...z, version: 13, reformwege: {} }),
   13: (z) => ({ ...z, version: 14, umfrageBilanz: [] }),
+  14: (z) => ({ ...z, version: 15, land: { ...z.land, zinsaufschlag: 0 } }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

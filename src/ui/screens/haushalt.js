@@ -5,6 +5,7 @@ import { config } from '../../data/config.js';
 import { gruppen as gruppenListe } from '../../data/kennzahlen.js';
 import { festeAusgaben2026 } from '../../data/haushalt.js';
 import { vorschau, mrd, prognose, kuerzungsVorschlag } from '../../engine/haushalt.js';
+import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { gegenfinanzierung } from '../../engine/einnahmen.js';
 import { haushaltsQuartal } from '../../engine/regierung.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
@@ -157,6 +158,9 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       </div>`, { titel: 'Feste Ausgaben' });
   }
 
+  const za = hh.zinsaufschlag;
+  const hinweisZins = `Die Zinslast steigt mit einem Aufschlag, wenn die Schuldenquote über ${zahl(za.quoteAb)} % liegt oder der Bund mehr als ${zahl(za.defizitAb, 1)} % des BIP neu leiht. Der Aufschlag nähert sich jedes Jahr nur zu ${zahl(za.anpassung * 100)} % seinem Ziel und ist bei ${zahl(za.max * 100)} % gedeckelt (Spielwerte).`;
+
   function schuldenTab(v) {
     const b = v.bilanz;
     const l = zustand.land;
@@ -167,7 +171,10 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       <span>Neuverschuldung Bund (Entwurf)</span><span>${euro(b.neueSchulden)}</span>
       <span>Neue Schulden seit Spielbeginn</span><span>${euro(zustand.haushalt.neueSchuldenSeitStart)}</span>
       <span>Zinsausgaben des Bundes</span><span>${euro(b.zinsen)}</span>
-    </div>`, { titel: 'Schuldenstand' })
+      <span>davon Zinsaufschlag</span><span>${zahl((l.zinsaufschlag ?? 0) * 100, 1)} % auf die Zinslast</span>
+      <span>Ziel des Aufschlags nach diesem Entwurf</span><span>${zahl(zinsaufschlagZiel(l.schuldenquote, (mrd(b.neueSchulden) / l.bip) * 100) * 100, 1)} %</span>
+    </div>
+    <p class="klein">${hinweisZins}</p>`, { titel: 'Schuldenstand' })
       + karte(`<p>Die Schuldenbremse begrenzt die Neuverschuldung des Bundes ohne Verteidigungsausgaben über ${euro(hh.verteidigungsFreigrenze)}.
         Die Grenze wächst mit dem BIP; in schwachen Jahren erlaubt die Konjunkturkomponente mehr Kredit (${euro(hh.konjunkturJePunkt)} je Prozentpunkt Wachstum unter 0,2 %).</p>
         <div class="bilanz"><span>Grenze dieses Jahr</span><span>${euro(b.grenze)}</span><span>Zählt zur Schuldenbremse</span><span>${status(b.eingehalten ? 'ok' : 'rot', euro(b.schuldenbremse))}</span></div>
@@ -181,8 +188,8 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
     const zelle = (p) => `${euro(p.saldo, 1)} ${p.eingehalten ? '✓' : '<span class="rot">✗</span>'}`;
     return karte(`
       <p class="klein">Ohne Zufall, ohne neue Reformen und Probleme. ${geaendert ? 'Vergleich: beschlossener Stand gegen deinen Entwurf.' : 'Ändere Einnahmen oder Ausgaben, um einen Entwurf zu vergleichen.'}</p>
-      <table><thead><tr><th scope="col">Jahr</th><th scope="col">Saldo Plan</th>${geaendert ? '<th scope="col">Saldo Entwurf</th>' : ''}<th scope="col">Schuldenquote Plan</th>${geaendert ? '<th scope="col">Entwurf</th>' : ''}<th scope="col">Wachstum ${geaendert ? 'Entwurf' : ''}</th></tr></thead>
-      <tbody>${plan.map((p, i) => `<tr><th scope="row">+${i}</th><td>${zelle(p)}</td>${geaendert ? `<td>${zelle(neu[i])}</td>` : ''}<td>${zahl(p.schuldenquote, 1)} %</td>${geaendert ? `<td>${zahl(neu[i].schuldenquote, 1)} %</td>` : ''}<td>${zahl((geaendert ? neu[i] : p).wachstum, 1)} %</td></tr>`).join('')}</tbody></table>
+      <table><thead><tr><th scope="col">Jahr</th><th scope="col">Saldo Plan</th>${geaendert ? '<th scope="col">Saldo Entwurf</th>' : ''}<th scope="col">Schuldenquote Plan</th>${geaendert ? '<th scope="col">Entwurf</th>' : ''}<th scope="col">Wachstum ${geaendert ? 'Entwurf' : ''}</th><th scope="col" title="${hinweisZins}">Zinsaufschlag ${geaendert ? 'Entwurf' : ''}</th></tr></thead>
+      <tbody>${plan.map((p, i) => `<tr><th scope="row">+${i}</th><td>${zelle(p)}</td>${geaendert ? `<td>${zelle(neu[i])}</td>` : ''}<td>${zahl(p.schuldenquote, 1)} %</td>${geaendert ? `<td>${zahl(neu[i].schuldenquote, 1)} %</td>` : ''}<td>${zahl((geaendert ? neu[i] : p).wachstum, 1)} %</td><td>${zahl((geaendert ? neu[i] : p).zinsaufschlag * 100, 1)} %</td></tr>`).join('')}</tbody></table>
       <p class="klein">✓ / ✗: Schuldenbremse eingehalten. Saldo negativ = Neuverschuldung.</p>`, { titel: 'Mehrjahresprognose (5 Jahre)' });
   }
 

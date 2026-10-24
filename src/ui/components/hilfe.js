@@ -53,8 +53,8 @@ export function hilfeHtml() {
       <li><strong>Haushalte von Ländern und Gemeinden</strong> fehlen. Gespielt wird nur der Bund. Gewerbe-, Erbschaft- und
         Vermögensteuer lassen sich ändern, ihr Aufkommen fließt aber nicht in den Bundeshaushalt; das Defizit der übrigen
         Ebenen ist ein fester Anteil des BIP.</li>
-      <li><strong>Zinsmarkt</strong> fehlt. Zinsen wachsen mit dem Schuldenstand zu festem Satz, ohne Risikoaufschlag. Hohe
-        Schulden sind im Spiel deshalb billiger als in der Wirklichkeit.</li>
+      <li><strong>Zinsmarkt</strong> fehlt. Zinsen wachsen mit dem Schuldenstand, dazu kommt ein gedämpfter Zinsaufschlag bei
+        hoher Schuldenquote oder hoher Neuverschuldung (höchstens 30 %, Spielwerte). Eine Zinskurve oder Reaktionen der Märkte gibt es nicht.</li>
       <li><strong>Vermittlungsausschuss</strong> fehlt. Ohne Mehrheit im Bundesrat lässt sich ein Zustimmungsgesetz nicht beschließen; es gibt keine Kompromissrunde.</li>
     </ul>`)}`;
 }

@@ -25,6 +25,12 @@ export const skaliert = (wirkung, f) => {
 
 // Ein Haushaltsjahr: Kennzahlen bewegen sich zur Basis zurück, dazu die Wirkungen des Jahres und zufällige Schwankung.
 // neueSchuldenMrd: Neuverschuldung des Bundes. mitZufall = false für die Prognose.
+// Zinsaufschlag (Feature 2): Ziel aus Schuldenquote und Neuverschuldung des Bundes (% BIP), höchstens max
+export function zinsaufschlagZiel(schuldenquote, defizitBip) {
+  const z = config.haushalt.zinsaufschlag;
+  return Math.min(z.max, z.jePunktQuote * Math.max(0, schuldenquote - z.quoteAb) + z.jePunktDefizit * Math.max(0, defizitBip - z.defizitAb));
+}
+
 export function jahresSchritt(land, wirkung, neueSchuldenMrd, rngZustand, mitZufall = true) {
   let zufallW = 0, zufallI = 0;
   if (mitZufall) {
@@ -41,11 +47,14 @@ export function jahresSchritt(land, wirkung, neueSchuldenMrd, rngZustand, mitZuf
   const gini = begrenzt(land.gini + (w.giniBasis - land.gini) * w.rueckkehr + wirkung.gini, 20, 45);
   const bip = land.bip * (1 + (wachstum + inflation) / 100);
   const schulden = land.schulden + neueSchuldenMrd + (w.uebrigesDefizitBip / 100) * bip;
+  const alt = land.zinsaufschlag ?? 0;
+  const ziel = zinsaufschlagZiel((schulden / bip) * 100, (neueSchuldenMrd / bip) * 100);
   return {
     land: {
       wachstum: r2(wachstum), inflation: r2(inflation), arbeitslosigkeit: r2(arbeitslosigkeit), gini: r2(gini),
       bip: Math.round(bip), schulden: Math.round(schulden), schuldenquote: r2((schulden / bip) * 100),
       preise: (land.preise ?? 1) * (1 + inflation / 100),
+      zinsaufschlag: Math.round((alt + (ziel - alt) * config.haushalt.zinsaufschlag.anpassung) * 1000) / 1000 + 0,
     },
     rngZustand,
   };

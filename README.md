@@ -26,13 +26,13 @@ Diese Teile fehlen absichtlich, damit das Modell überschaubar bleibt:
 - **Haushalte von Ländern und Gemeinden.** Gespielt wird nur der Bund. Gewerbe-, Erbschaft- und Vermögensteuer lassen sich
   per Bundesgesetz ändern, ihr Aufkommen fließt aber nicht in den Bundeshaushalt; sie wirken nur über Gruppen, Verteilung
   und Probleme. Das Defizit der übrigen Ebenen ist ein fester Anteil des BIP (`config.wirtschaft.uebrigesDefizitBip`).
-- **Zinsmarkt.** Die Zinsausgaben wachsen mit dem Schuldenstand zu einem festen Satz. Es gibt keine Risikoaufschläge,
-  keine Zinswende und keine Reaktion der Märkte auf hohe Schulden.
+- **Zinsmarkt.** Es gibt keinen Kapitalmarkt (keine Zinskurve, keine Anleihen, keine Zinswende). Die Zinsausgaben wachsen
+  mit dem Schuldenstand; dazu kommt seit Paket Klein ein gedämpfter **Zinsaufschlag** (`config.haushalt.zinsaufschlag`,
+  Spielwerte): Er steigt, wenn die Schuldenquote über 70 % liegt oder der Bund mehr als 1,5 % des BIP neu leiht, passt sich
+  je Jahr nur zu 30 % an, sinkt wieder, wenn sich die Lage bessert, und ist bei 30 % auf die Zinslast gedeckelt.
 - **Vermittlungsausschuss.** Fehlt im Bundesrat die Mehrheit für ein Zustimmungsgesetz, ist das Vorhaben gescheitert;
   es gibt keine Kompromissrunde.
 
-Mögliche Verzerrung (Empfehlung, nicht umgesetzt): Weil hohe Schulden keine steigenden Zinsen auslösen, ist Verschuldung
-im Spiel billiger als in der Wirklichkeit. Besonders sichtbar bei Verteidigungsausgaben über der Freigrenze, die nicht
-zur Schuldenbremse zählen: Jährlich maximal erhöht steigt die Schuldenquote in 12 Jahren auf über 90 %, ohne dass die
-Zinslast überproportional wächst. Ein Zinsaufschlag ab einer Schuldenquote (oder eine Obergrenze für die Ausnahme)
-würde das Balancing realistischer machen.
+Verbleibende Verzerrung: Verteidigungsausgaben über der Freigrenze zählen weiter nicht zur Schuldenbremse. Der
+Zinsaufschlag verteuert diesen Weg inzwischen (Messung: Schuldenquote nach 12 Jahren im Mittel 82 % statt 84 %, Aufschlag
+bis 28 %), eine Obergrenze für die Ausnahme gibt es aber nicht.

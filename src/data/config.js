@@ -125,6 +125,11 @@ export const config = {
     // Konjunkturkomponente erlaubt je Prozentpunkt Wachstum unter dem Startwert 2025 (0,2 %) so viel mehr Kredit (Spielwert,
     // Größenordnung: konjunkturbedingte Bundeseinnahmen rund 1 % je Prozentpunkt). Im Start steckt sie in den 40,39 Mrd.
     konjunkturJePunkt: 4000000,
+    // Zinsaufschlag (Paket Klein, Feature 2, Spielwerte): Die Zinslast steigt um einen Aufschlag, wenn die Schuldenquote
+    // über quoteAb liegt und wenn der Bund mehr als defizitAb % des BIP neu leiht (Haushaltsdisziplin). Der Aufschlag
+    // nähert sich je Haushaltsjahr nur um den Anteil anpassung seinem Ziel (gedämpft), sinkt ebenso wieder, wenn die Lage
+    // sich bessert (Abklingen), und ist bei max gedeckelt (keine Todesspirale). Kein Zinsmarkt.
+    zinsaufschlag: { quoteAb: 70, jePunktQuote: 0.01, defizitAb: 1.5, jePunktDefizit: 0.04, max: 0.3, anpassung: 0.3 },
     // Wirkung auf die Umfrage der Partei, die das Ministerium hält, in Prozentpunkten je Mrd. Euro
     wirkungMehrausgabeProMrd: 0.02,
     wirkungKuerzungProMrd: 0.05, // Balancing 2026-10-21 (vorher 0,03): Kürzungen bei Partnern sollen die Koalition gefährden

@@ -201,6 +201,15 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
 - Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
 
+## System: Zinsaufschlag (Paket Klein, Feature 2, freigegeben 2026-10-24)
+- Dateien: `src/engine/wirtschaft.js` (`zinsaufschlagZiel`, Jahresschritt), `src/engine/haushalt.js` (`zinsen`, Prognose). Zahlen: `config.haushalt.zinsaufschlag` (alle Spielwerte).
+- Zinsen = Zinsen 2026 × Schulden / Schulden 2025 × (1 + Zinsaufschlag). Kein Zinsmarkt.
+- Ziel des Aufschlags je Haushaltsjahr: 0,01 je Prozentpunkt Schuldenquote über 70 % plus 0,04 je Prozentpunkt Neuverschuldung des Bundes über 1,5 % des BIP (Haushaltsdisziplin, inklusive Verteidigungsausnahme), höchstens 0,3.
+- Dämpfung und Abklingen: Der Aufschlag nähert sich je Jahr nur um 30 % dem Ziel, in beide Richtungen.
+- Anzeige: Haushalt → Schulden (Aufschlag, Ziel nach dem Entwurf, Erklärung), Prognose (Spalte Zinsaufschlag).
+- Spielstand-Version 15: `land.zinsaufschlag` (alte Stände: 0).
+- Messung (qa/f2-zins.json, qa/f2-zins-extrem.json): keine Eskalation; Extremstrategien Schuldenquote Ende 74,6 % (vorher 74,3 %), Verteidigung maximal 82,1 % (vorher 83,7 %), Aufschlag höchstens 0,28; Siegquoten meist 1–3 Punkte niedriger.
+
 ## Oberfläche: Umfrage-Bilanz (Paket Klein, Feature 1, freigegeben 2026-10-24)
 - Dateien: `src/engine/umfragebilanz.js` (`umfrageBuchen`), `src/ui/components/umfragebilanz.js`; Zahl: `config.umfrageBilanz.runden` (8, Spielwert, reine Anzeige).
 - Keine neue Berechnung: Jede Aktion, die Umfragen ändert (Wahlkampf, Haushalt, Quartal mit Problemen und Lösungen, Reformwege, Ereignisse, Zugeständnis), bucht ihre festen Teilbeiträge mit Ursache. Der Rest der tatsächlichen Änderung (Zufall, Verschiebung durch andere Parteien, Rundung) wird als eigener Posten gebucht; die Summe ergibt immer die tatsächliche Änderung.

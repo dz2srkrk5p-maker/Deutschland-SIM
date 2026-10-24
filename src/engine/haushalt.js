@@ -24,7 +24,8 @@ const MRD = 1e6; // tausend Euro je Mrd.
 export const mrd = (tausend) => tausend / MRD;
 
 // Zinsausgaben (Epl. 32 Bundesschuld) wachsen mit dem Schuldenstand des Staates (System 2)
-export const zinsen = (zustand) => Math.round((festeAusgaben2026.bundesschuld * zustand.land.schulden) / startSchulden);
+// Zinsen wachsen mit dem Schuldenstand, dazu der Zinsaufschlag (Feature 2)
+export const zinsen = (zustand) => Math.round(((festeAusgaben2026.bundesschuld * zustand.land.schulden) / startSchulden) * (1 + (zustand.land.zinsaufschlag ?? 0)));
 
 // Grenze der Schuldenbremse: wächst mit dem nominalen BIP, plus Konjunkturkomponente (mehr Kredit in schwachen Jahren)
 const startWachstum = kennzahlen.find((k) => k.id === 'wachstum').start;
@@ -95,7 +96,7 @@ export function prognose(zustand, entwurf = {}, jahre = 5) {
     const w = jahresSchritt(z.land, v.kennzahlWirkung, mrd(v.bilanz.neueSchulden), 0, false);
     zeilen.push({ jahr: i + 1, einnahmen: v.bilanz.einnahmen, ausgaben: v.bilanz.ausgaben, saldo: -v.bilanz.neueSchulden,
       schuldenbremse: v.bilanz.schuldenbremse, grenze: v.bilanz.grenze, eingehalten: v.bilanz.eingehalten,
-      wachstum: w.land.wachstum, schuldenquote: w.land.schuldenquote });
+      wachstum: w.land.wachstum, schuldenquote: w.land.schuldenquote, zinsaufschlag: w.land.zinsaufschlag, zinsen: v.bilanz.zinsen });
     z = { ...z, land: w.land, haushalt: { ...z.haushalt, etats: v.etats, einnahmen: einnahmenUebernehmen(z, e) } };
     e = {};
   }

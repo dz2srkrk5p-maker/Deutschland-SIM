@@ -1,0 +1,65 @@
+{
+ "unverändert": {
+  "quoteEnde": 74.6,
+  "quoteMax": 74.6,
+  "abgelehnt": 188,
+  "versuche": 408,
+  "pfadSeed1": [
+   65.1,
+   66.6,
+   68.3,
+   69.4,
+   70.1,
+   71,
+   72.2,
+   73.6,
+   75.2,
+   77,
+   78.3,
+   79.3
+  ],
+  "zinsaufschlagEnde": 0.049,
+  "zinsaufschlagMax": 0.224,
+  "nan": false
+ },
+ "alles maximal, Steuern minimal": {
+  "quoteEnde": 74.6,
+  "quoteMax": 74.6,
+  "abgelehnt": 356,
+  "versuche": 408,
+  "pfadSeed1": [
+   65.1,
+   66.6,
+   68.3,
+   69.4,
+   70.1,
+   71,
+   72.2,
+   73.6,
+   75.2,
+   77,
+   78.3,
+   79.3
+  ],
+  "zinsaufschlagEnde": 0.049,
+  "zinsaufschlagMax": 0.22,
+  "nan": false
+ },
+ "Verteidigung maximal (ausgenommen)": {
+  "quoteEnde": 82.1,
+  "quoteMax": 82.1,
+  "abgelehnt": 216,
+  "versuche": 402,
+  "pfadSeed1": [
+   65.4,
+   67.3,
+   69.3,
+   70.7,
+   72.3,
+   74.1
+  ],
+  "zinsaufschlagEnde": 0.129,
+  "zinsaufschlagMax": 0.283,
+  "nan": false
+ }
+}
