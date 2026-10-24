@@ -13,7 +13,8 @@ import { loesungStarten, loesungSperre, erfolgschance, problemListe, loesung } f
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { bereiche, AUSRICHTUNGEN } from '../src/data/reformwege.js';
-import { wegSperre, wegVorschau, wegBeschliessen } from '../src/engine/reformwege.js';
+import { wegSperre, wegVorschau, wegBeschliessen, wegVektor } from '../src/engine/reformwege.js';
+import { parteiPosition, abstand } from '../src/engine/profil.js';
 
 const PARTIEN = 200;
 const MAX_ZUEGE = 8000; // Schutz gegen Endlosschleifen
@@ -200,6 +201,10 @@ const wegWahl = (passt) => (z) => alleWege
 const REFORM = {
   'keine Reformwege': () => null,
   ...Object.fromEntries(Object.keys(AUSRICHTUNGEN).map((r) => [r, wegWahl((w) => w.richtung === r)])),
+  // Wege nahe an der Position der Kanzlerpartei (Abstand bis 1), der nächste zuerst
+  passend: (z) => alleWege
+    .filter((w) => abstand(wegVektor(w), parteiPosition(z.kanzlerParteiId)) <= 1 && !z.reformwege[w.id] && !wegSperre(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision)
+    .sort((a, b) => abstand(wegVektor(a), parteiPosition(z.kanzlerParteiId)) - abstand(wegVektor(b), parteiPosition(z.kanzlerParteiId)))[0],
   beliebig: wegWahl(() => true),
 };
 const REFORM_PARTEIEN = ['union', 'spd', 'gruene'];
@@ -280,7 +285,7 @@ Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur
 ${loesungZeilen.join('\n')}
 
 ## Reformwege nach Ausrichtung (System 1)
-Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut Vorschau eine Mehrheit hat, sonst eine Lösung für das größte Problem. Maßstab: keine Ausrichtung dominiert klar, Reformen lohnen sich gegenüber „keine Reformwege“, die Schuldenquote läuft nicht davon.
+Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut Vorschau eine Mehrheit hat, sonst eine Lösung für das größte Problem. „passend“: Wege mit Abstand bis 1 zur eigenen Parteiposition. Maßstab: keine Ausrichtung dominiert klar, „passend“ liegt 3–8 Punkte über „keine Reformwege“, die Schuldenquote läuft nicht davon.
 
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|

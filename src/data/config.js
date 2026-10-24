@@ -23,6 +23,7 @@ export const config = {
     vetoAbstand: 1.7, // Koalitionspartner stimmt ab diesem Abstand mit Nein
     partnerUnmutJePunkt: 0.3, // Partner verliert je Abstandspunkt über 1 so viele Umfragepunkte beim Beschluss
     akteurGruppenJeHaltung: 1.5, // Akteure ziehen „ihre“ Gruppe je Haltungspunkt mit (zur Hälfte beim Beschluss)
+    beschlussBonus: 1.0, // Kanzlerpartei gewinnt beim Beschluss so viel × (1 − Abstand), wenn der Weg zu ihr passt (Block 1)
     revisionKapital: 25, // anderen Weg im selben Bereich beschließen: zusätzliches Kapital
     revisionUmfrage: 0.5, // und Glaubwürdigkeitsverlust der Kanzlerpartei
     verfassungsRisiko: 0.2, // zusätzliches Risiko, dass Karlsruhe einen umstrittenen Weg kippt

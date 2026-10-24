@@ -89,37 +89,40 @@ Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur
 | FDP | billigste zuerst | 1 % | 0 % | 0.4 | 43 | 0.0 | 64 % |
 
 ## Reformwege nach Ausrichtung (System 1)
-Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut Vorschau eine Mehrheit hat, sonst eine Lösung für das größte Problem. Maßstab: keine Ausrichtung dominiert klar, Reformen lohnen sich gegenüber „keine Reformwege“, die Schuldenquote läuft nicht davon.
+Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut Vorschau eine Mehrheit hat, sonst eine Lösung für das größte Problem. „passend“: Wege mit Abstand bis 1 zur eigenen Parteiposition. Maßstab: keine Ausrichtung dominiert klar, „passend“ liegt 3–8 Punkte über „keine Reformwege“, die Schuldenquote läuft nicht davon.
 
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
 | CDU/CSU | keine Reformwege | 66 % | 0 % | 0.0 | 0.0 | 0.1 | 70 % |
-| CDU/CSU | marktliberal | 54 % | 8 % | 5.0 | 1.0 | 0.1 | 70 % |
-| CDU/CSU | konservativ | 61 % | 7 % | 4.1 | 0.9 | 0.0 | 70 % |
+| CDU/CSU | marktliberal | 62 % | 8 % | 5.1 | 1.0 | 0.1 | 70 % |
+| CDU/CSU | konservativ | 67 % | 8 % | 4.1 | 0.9 | 0.1 | 70 % |
 | CDU/CSU | sozialdemokratisch | 62 % | 1 % | 2.5 | 0.5 | 0.1 | 71 % |
-| CDU/CSU | gruen | 59 % | 0 % | 2.4 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | gruen | 57 % | 0 % | 2.4 | 0.5 | 0.1 | 71 % |
 | CDU/CSU | links | 60 % | 1 % | 1.5 | 0.8 | 0.1 | 71 % |
-| CDU/CSU | national | 59 % | 17 % | 1.0 | 0.7 | 0.1 | 70 % |
-| CDU/CSU | pragmatisch | 62 % | 1 % | 3.5 | 0.8 | 0.0 | 70 % |
-| CDU/CSU | beliebig | 53 % | 7 % | 7.6 | 1.4 | 0.1 | 71 % |
+| CDU/CSU | national | 58 % | 17 % | 1.0 | 0.7 | 0.1 | 70 % |
+| CDU/CSU | pragmatisch | 68 % | 1 % | 3.5 | 0.8 | 0.0 | 71 % |
+| CDU/CSU | passend | 70 % | 8 % | 7.0 | 1.4 | 0.1 | 71 % |
+| CDU/CSU | beliebig | 68 % | 5 % | 7.9 | 1.5 | 0.1 | 71 % |
 | SPD | keine Reformwege | 25 % | 3 % | 0.0 | 0.0 | 0.0 | 67 % |
-| SPD | marktliberal | 22 % | 43 % | 3.2 | 0.7 | 0.0 | 67 % |
+| SPD | marktliberal | 24 % | 43 % | 3.2 | 0.7 | 0.0 | 67 % |
 | SPD | konservativ | 19 % | 44 % | 2.5 | 0.5 | 0.0 | 67 % |
-| SPD | sozialdemokratisch | 20 % | 3 % | 2.0 | 0.4 | 0.0 | 68 % |
-| SPD | gruen | 26 % | 11 % | 1.7 | 0.4 | 0.0 | 68 % |
-| SPD | links | 24 % | 6 % | 0.6 | 0.3 | 0.0 | 68 % |
+| SPD | sozialdemokratisch | 28 % | 5 % | 2.1 | 0.5 | 0.0 | 69 % |
+| SPD | gruen | 28 % | 13 % | 1.7 | 0.4 | 0.0 | 68 % |
+| SPD | links | 24 % | 7 % | 0.6 | 0.3 | 0.0 | 68 % |
 | SPD | national | 21 % | 28 % | 0.5 | 0.4 | 0.0 | 67 % |
-| SPD | pragmatisch | 16 % | 12 % | 2.4 | 0.6 | 0.0 | 67 % |
-| SPD | beliebig | 25 % | 38 % | 4.0 | 0.8 | 0.0 | 67 % |
+| SPD | pragmatisch | 21 % | 13 % | 2.5 | 0.6 | 0.0 | 67 % |
+| SPD | passend | 28 % | 22 % | 4.0 | 0.9 | 0.0 | 68 % |
+| SPD | beliebig | 21 % | 39 % | 4.0 | 0.8 | 0.0 | 67 % |
 | Grüne | keine Reformwege | 7 % | 2 % | 0.0 | 0.0 | 0.0 | 65 % |
 | Grüne | marktliberal | 7 % | 16 % | 1.0 | 0.2 | 0.0 | 65 % |
 | Grüne | konservativ | 6 % | 13 % | 0.9 | 0.2 | 0.0 | 65 % |
-| Grüne | sozialdemokratisch | 8 % | 4 % | 0.6 | 0.2 | 0.0 | 65 % |
-| Grüne | gruen | 6 % | 9 % | 0.6 | 0.1 | 0.0 | 65 % |
+| Grüne | sozialdemokratisch | 5 % | 4 % | 0.6 | 0.2 | 0.0 | 65 % |
+| Grüne | gruen | 7 % | 10 % | 0.6 | 0.2 | 0.0 | 65 % |
 | Grüne | links | 6 % | 3 % | 0.2 | 0.1 | 0.0 | 65 % |
 | Grüne | national | 5 % | 7 % | 0.2 | 0.2 | 0.0 | 65 % |
 | Grüne | pragmatisch | 8 % | 5 % | 0.8 | 0.2 | 0.0 | 65 % |
-| Grüne | beliebig | 4 % | 14 % | 1.3 | 0.2 | 0.0 | 65 % |
+| Grüne | passend | 11 % | 10 % | 1.2 | 0.2 | 0.0 | 65 % |
+| Grüne | beliebig | 4 % | 15 % | 1.3 | 0.2 | 0.0 | 65 % |
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
@@ -149,6 +152,7 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `reformwege.vetoAbstand` | 1.7 | System 1 |
 | `reformwege.partnerUnmutJePunkt` | 0.3 | System 1 |
 | `reformwege.akteurGruppenJeHaltung` | 1.5 | System 1 |
+| `reformwege.beschlussBonus` | 1 | System 1 |
 | `reformwege.revisionKapital` | 25 | System 1 |
 | `reformwege.revisionUmfrage` | 0.5 | System 1 |
 | `reformwege.verfassungsRisiko` | 0.2 | System 1 |

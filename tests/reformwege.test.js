@@ -81,6 +81,14 @@ test('Beschluss: Kapital, Aufmerksamkeit, Umsetzung, Kosten und Einnahmen mit He
   expect(laufendeKosten(wegBeschliessen(z, { wegId: 'r_kapital' }).state)).toBe(3000000);
 });
 
+test('Beschluss eines passenden Wegs: Kanzlerpartei gewinnt, zulasten der Opposition, nicht des Partners', () => {
+  const z = regierung();
+  const { state } = wegBeschliessen(z, { wegId: 'a_flex' });
+  expect(state.anteile.union).toBeGreaterThan(z.anteile.union);
+  expect(state.anteile.spd).toBeLessThanOrEqual(z.anteile.spd); // höchstens eigener Unmut, kein Abzug für den Bonus
+  expect(state.anteile.linke).toBeLessThan(z.anteile.linke);
+});
+
 test('Sperren: Folgeweg, Bundesrat, Haushalt, Revision kostet zusätzlich', () => {
   const z = regierung();
   expect(wegSperre(z, 'r_generationenkapital').grund).toContain('Aktienrente');

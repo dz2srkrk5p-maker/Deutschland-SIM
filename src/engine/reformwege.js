@@ -104,6 +104,7 @@ export function wegVorschau(zustand, wegId) {
     risiko: r2(w.risiko + (w.verfassung ? rw.verfassungsRisiko : 0)),
     kapital: w.kapital + (belegt ? rw.revisionKapital : 0),
     revision: belegt && belegt.id !== w.id ? belegt : null,
+    bonus: r2(Math.max(0, 1 - abstand(parteiPosition(zustand.kanzlerParteiId), wegVektor(w))) * rw.beschlussBonus),
     sperre: wegSperre(zustand, wegId),
   };
 }
@@ -135,6 +136,12 @@ export function wegBeschliessen(zustand, { wegId }) {
   }
   reformwege[w.id] = { status: 'umsetzung', fertig: zustand.runde + w.dauer };
   for (const p of v.partner) if (p.unmut) dazu(p.id, -p.unmut);
+  // Gegenstück zum Unmut: Weg nahe an der eigenen Linie bringt der Kanzlerpartei Glaubwürdigkeit
+  if (v.bonus > 0) {
+    dazu(zustand.kanzlerParteiId, v.bonus);
+    // zulasten der Opposition: Partner stehen mit festem Wert in der Umverteilung
+    for (const id of zustand.koalition.partner) dazu(id, 0);
+  }
 
   // Kurzwirkung: Gruppen und Probleme sofort, Kennzahlen im Jahresschritt; Akteure ziehen ihre Gruppen mit
   const gruppen = { ...zustand.gruppen };

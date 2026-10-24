@@ -50,6 +50,7 @@ function wegKarte(zustand, w) {
       <tr><th scope="row">Dauer</th><td>${w.dauer} Quartale</td></tr>
       <tr><th scope="row">Risiko des Scheiterns</th><td>${Math.round(v.risiko * 100)} %${w.verfassung ? ' <span class="gelb">⚠ verfassungsrechtlich umstritten</span>' : ''}</td></tr>
       <tr><th scope="row">Politisches Kapital</th><td>${v.kapital}${v.revision ? ` <span class="gelb">(davon ${config.reformwege.revisionKapital} für den Kurswechsel)</span>` : ''}</td></tr>
+      ${v.bonus ? `<tr><th scope="row">${partei(zustand.kanzlerParteiId).name}</th><td>${status('ok', `passt zur eigenen Linie, +${zahl(v.bonus, 2)} beim Beschluss`)}</td></tr>` : ''}
       <tr><th scope="row">Bundestag</th><td>${status(a.angenommen ? 'ok' : 'rot', `${a.ja} Ja, ${a.nein} Nein`)}</td></tr>
       ${v.bundesrat ? `<tr><th scope="row">Bundesrat</th><td>${status(v.bundesrat.mehrheit ? 'ok' : 'rot', `${v.bundesrat.ja} von ${v.bundesrat.noetig}`)}</td></tr>` : ''}
       ${w.haushalt ? '<tr><th scope="row">Haushalt</th><td>braucht Spielraum in der Schuldenbremse</td></tr>' : ''}
@@ -73,6 +74,7 @@ function dialogHtml(zustand, wegId) {
       <li>Kosten: ${w.kosten ? `${w.kosten > 0 ? '' : 'spart '}${euro(w.kosten)} je Jahr ab dem nächsten Haushalt` : 'keine laufenden Kosten'}</li>
       <li>Sofort: ${wirkungText(w.kurz)}</li>
       <li>Nach ${w.dauer} Quartalen: ${wirkungText(w.lang)}</li>
+      ${v.bonus ? `<li>${partei(zustand.kanzlerParteiId).name}: +${zahl(v.bonus, 2)} (passt zur eigenen Linie)</li>` : ''}
       <li>Risiko des Scheiterns: ${Math.round(v.risiko * 100)} %; politisches Kapital: ${v.kapital}</li>
       ${v.partner.filter((p) => p.unmut || p.veto).map((p) => `<li>${partei(p.id).name}: ${p.veto ? 'stimmt dagegen' : `Unmut −${zahl(p.unmut, 2)}`}</li>`).join('')}
     </ul>
