@@ -1,4 +1,5 @@
-// Hilfe (Block 4): was im Spiel empirisch belegt ist und was Spielwert ist. Inhalt aus den Feldern quelle der Datendateien.
+// Hilfe (Block 4/5): was im Spiel empirisch belegt ist und was Spielwert ist (aus den Feldern quelle der Datendateien),
+// dazu die bewussten Vereinfachungen.
 import { kennzahlen, gruppen, startQuellen } from '../../data/kennzahlen.js';
 import { einnahmearten } from '../../data/einnahmen.js';
 import { parteien } from '../../data/parteien.js';
@@ -47,5 +48,13 @@ export function hilfeHtml() {
       <li>Gruppenstimmung (${gruppen.map((g) => g.name).join(', ')}), Start 50</li>
       <li>Wirtschaftsdynamik (Rückkehr zum Potenzialwachstum, Okun, Zinsen), politisches Kapital, Koalitionsbruch, Wahlkampf</li>
       <li>Alle übrigen Konstanten in <code>src/data/config.js</code></li>
+    </ul>`)}
+    ${aufklapp('Bewusste Vereinfachungen', `<ul>
+      <li><strong>Haushalte von Ländern und Gemeinden</strong> fehlen. Gespielt wird nur der Bund. Gewerbe-, Erbschaft- und
+        Vermögensteuer lassen sich ändern, ihr Aufkommen fließt aber nicht in den Bundeshaushalt; das Defizit der übrigen
+        Ebenen ist ein fester Anteil des BIP.</li>
+      <li><strong>Zinsmarkt</strong> fehlt. Zinsen wachsen mit dem Schuldenstand zu festem Satz, ohne Risikoaufschlag. Hohe
+        Schulden sind im Spiel deshalb billiger als in der Wirklichkeit.</li>
+      <li><strong>Vermittlungsausschuss</strong> fehlt. Ohne Mehrheit im Bundesrat lässt sich ein Zustimmungsgesetz nicht beschließen; es gibt keine Kompromissrunde.</li>
     </ul>`)}`;
 }
