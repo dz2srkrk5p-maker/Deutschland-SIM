@@ -172,7 +172,8 @@ export function reformwegeQuartal(zustand) {
   let probleme = zustand.probleme;
   let gruppen = zustand.gruppen;
   let jahresWirkung = zustand.jahresWirkung;
-  let verlust = 0;
+  const umfrage = {};
+  const dazu = (id, x) => (umfrage[id] = (umfrage[id] ?? 0) + x);
   for (const [id, s] of Object.entries(zustand.reformwege)) {
     if (s.status !== 'umsetzung' || s.fertig > zustand.runde) continue;
     const w = weg(id);
@@ -183,7 +184,7 @@ export function reformwegeQuartal(zustand) {
     rngZustand = b.rngZustand;
     if (karlsruhe || b.wert < w.risiko) {
       reformwege[id] = { ...s, status: 'gescheitert' };
-      verlust += rw.fehlschlagUmfrage;
+      dazu(zustand.kanzlerParteiId, -rw.fehlschlagUmfrage);
       ereignisse.push(karlsruhe ? `Das Bundesverfassungsgericht kippt „${w.name}“.` : `Umsetzung gescheitert: „${w.name}“.`);
       continue;
     }
@@ -193,10 +194,18 @@ export function reformwegeQuartal(zustand) {
     gruppen = { ...gruppen };
     for (const [g, x] of Object.entries(w.lang?.gruppen ?? {})) gruppen[g] = Math.max(0, Math.min(100, r2(gruppen[g] + x)));
     jahresWirkung = wirkungSumme(jahresWirkung, { ...w.lang, gruppen: {}, probleme: {} });
+    // Erfolg wie bei Lösungen: Ressort und Regierung gewinnen je gesenktem Problempunkt
+    const senkung = Object.values(w.lang?.probleme ?? {}).reduce((sum, x) => sum + Math.max(0, -x), 0);
+    const pc = config.probleme;
+    const halter = zustand.kabinett.verteilung[w.bereich.ministerium];
+    if (halter) dazu(halter, senkung * pc.gewinnJeWertpunkt);
+    const regierung = [zustand.kanzlerParteiId, ...zustand.koalition.partner];
+    const summe = regierung.reduce((sum, p) => sum + zustand.anteile[p], 0);
+    for (const p of regierung) dazu(p, (senkung * pc.gewinnRegierungJeWertpunkt * zustand.anteile[p]) / summe);
     ereignisse.push(`Reform umgesetzt: „${w.name}“`);
   }
   let state = { ...zustand, rngZustand, reformwege, probleme, gruppen, jahresWirkung };
-  if (verlust) state = mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, { [zustand.kanzlerParteiId]: -verlust })) });
+  if (Object.keys(umfrage).length) state = mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) });
   return { state, ereignisse };
 }
 

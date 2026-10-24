@@ -105,6 +105,8 @@ test('Umsetzung: nach der Dauer Erfolg oder Scheitern, Langwirkung und Trends, R
   const ok = laeufe.filter((s) => s.reformwege.w_bauen.status === 'beschlossen');
   expect(ok.length).toBeGreaterThan(25);
   expect(laeufe.some((s) => s.reformwege.w_bauen.status === 'gescheitert')).toBe(true);
+  // Erfolg wird belohnt wie bei Lösungen
+  expect(ok[0].anteile.union).toBeGreaterThan(fertig.anteile.union);
   expect(ok[0].probleme.wohnungsnot.wert).toBe(Math.round((fertig.probleme.wohnungsnot.wert - 12) * 10) / 10);
   const p = probleme.find((x) => x.id === 'wohnungsnot');
   expect(ursachen(ok[0], p).find((u) => u.text.includes('Bauen erleichtern')).beitrag).toBe(-0.15);

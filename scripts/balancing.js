@@ -12,6 +12,8 @@ import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 import { loesungStarten, loesungSperre, erfolgschance, problemListe, loesung } from '../src/engine/probleme.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 import { ministerien } from '../src/data/ministerien.js';
+import { bereiche, AUSRICHTUNGEN } from '../src/data/reformwege.js';
+import { wegSperre, wegVorschau, wegBeschliessen } from '../src/engine/reformwege.js';
 
 const PARTIEN = 200;
 const MAX_ZUEGE = 8000; // Schutz gegen Endlosschleifen
@@ -189,10 +191,54 @@ const loesungZeilen = spielbar.flatMap((p) =>
   }),
 );
 
+// System 1: Reformwege nach Ausrichtung. Je Quartal zuerst ein Weg der Ausrichtung, der laut Vorschau angenommen wird
+// (Anschlussreformen vor Grundwegen), sonst eine Lösung für das größte Problem. „beliebig“: der Weg mit dem kleinsten Risiko.
+const alleWege = bereiche.flatMap((b) => b.wege);
+const wegWahl = (passt) => (z) => alleWege
+  .filter((w) => passt(w) && !z.reformwege[w.id] && !wegSperre(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision)
+  .sort((a, b) => !!b.braucht - !!a.braucht || a.risiko - b.risiko)[0];
+const REFORM = {
+  'keine Reformwege': () => null,
+  ...Object.fromEntries(Object.keys(AUSRICHTUNGEN).map((r) => [r, wegWahl((w) => w.richtung === r)])),
+  beliebig: wegWahl(() => true),
+};
+const REFORM_PARTEIEN = ['union', 'spd', 'gruene'];
+const reformZeilen = REFORM_PARTEIEN.flatMap((id) =>
+  Object.entries(REFORM).map(([name, wahl]) => {
+    let siege = 0, wege = 0, gescheitert = 0, krisen = 0, quote = 0, brueche = 0;
+    for (let seed = 1; seed <= PARTIEN; seed++) {
+      let z = neuesSpiel(id, seed), bruch = false;
+      for (let zug = 0; zug < MAX_ZUEGE; zug++) {
+        let r;
+        if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
+        else if (z.phase === 'koalition') r = KOALITION['Minderheit nur ohne Mehrheit'](z);
+        else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
+        else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
+        else if (z.phase === 'regierung' && haushaltsQuartal(z)) r = beschliessen(z, {});
+        else if (z.phase === 'regierung') {
+          const w = wahl(z);
+          r = w ? wegBeschliessen(z, { wegId: w.id }) : regierenMit(LOESUNG['größtes Problem zuerst'])(z);
+          if (w && r.state === z) r = quartalBeenden(z);
+        } else break;
+        if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
+        z = r.state;
+      }
+      if (z.phase === 'sieg') siege++;
+      if (bruch) brueche++;
+      wege += Object.values(z.reformwege).filter((w) => w.status === 'beschlossen').length;
+      gescheitert += Object.values(z.reformwege).filter((w) => w.status === 'gescheitert').length;
+      krisen += problemListe(z).filter((e) => e.stufe.id === 'krise').length;
+      quote += z.land.schuldenquote;
+    }
+    const n = (x, d = 1) => (x / PARTIEN).toFixed(d);
+    return `| ${parteien.find((p) => p.id === id).name} | ${name} | ${prozent(siege)} | ${prozent(brueche)} | ${n(wege)} | ${n(gescheitert)} | ${n(krisen)} | ${n(quote, 0)} % |`;
+  }),
+);
+
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2', reformwege: 'System 1' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
@@ -232,6 +278,13 @@ Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø erfolgreiche Lösungen | Ø Problemwert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
 ${loesungZeilen.join('\n')}
+
+## Reformwege nach Ausrichtung (System 1)
+Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut Vorschau eine Mehrheit hat, sonst eine Lösung für das größte Problem. Maßstab: keine Ausrichtung dominiert klar, Reformen lohnen sich gegenüber „keine Reformwege“, die Schuldenquote läuft nicht davon.
+
+| Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
+|---|---|---|---|---|---|---|---|
+${reformZeilen.join('\n')}
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.

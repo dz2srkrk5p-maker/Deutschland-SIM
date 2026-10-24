@@ -88,6 +88,39 @@ Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur
 | FDP | größtes Problem zuerst | 1 % | 1 % | 0.4 | 42 | 0.0 | 64 % |
 | FDP | billigste zuerst | 1 % | 0 % | 0.4 | 43 | 0.0 | 64 % |
 
+## Reformwege nach Ausrichtung (System 1)
+Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut Vorschau eine Mehrheit hat, sonst eine Lösung für das größte Problem. Maßstab: keine Ausrichtung dominiert klar, Reformen lohnen sich gegenüber „keine Reformwege“, die Schuldenquote läuft nicht davon.
+
+| Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
+|---|---|---|---|---|---|---|---|
+| CDU/CSU | keine Reformwege | 66 % | 0 % | 0.0 | 0.0 | 0.1 | 70 % |
+| CDU/CSU | marktliberal | 54 % | 8 % | 5.0 | 1.0 | 0.1 | 70 % |
+| CDU/CSU | konservativ | 61 % | 7 % | 4.1 | 0.9 | 0.0 | 70 % |
+| CDU/CSU | sozialdemokratisch | 62 % | 1 % | 2.5 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | gruen | 59 % | 0 % | 2.4 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | links | 60 % | 1 % | 1.5 | 0.8 | 0.1 | 71 % |
+| CDU/CSU | national | 59 % | 17 % | 1.0 | 0.7 | 0.1 | 70 % |
+| CDU/CSU | pragmatisch | 62 % | 1 % | 3.5 | 0.8 | 0.0 | 70 % |
+| CDU/CSU | beliebig | 53 % | 7 % | 7.6 | 1.4 | 0.1 | 71 % |
+| SPD | keine Reformwege | 25 % | 3 % | 0.0 | 0.0 | 0.0 | 67 % |
+| SPD | marktliberal | 22 % | 43 % | 3.2 | 0.7 | 0.0 | 67 % |
+| SPD | konservativ | 19 % | 44 % | 2.5 | 0.5 | 0.0 | 67 % |
+| SPD | sozialdemokratisch | 20 % | 3 % | 2.0 | 0.4 | 0.0 | 68 % |
+| SPD | gruen | 26 % | 11 % | 1.7 | 0.4 | 0.0 | 68 % |
+| SPD | links | 24 % | 6 % | 0.6 | 0.3 | 0.0 | 68 % |
+| SPD | national | 21 % | 28 % | 0.5 | 0.4 | 0.0 | 67 % |
+| SPD | pragmatisch | 16 % | 12 % | 2.4 | 0.6 | 0.0 | 67 % |
+| SPD | beliebig | 25 % | 38 % | 4.0 | 0.8 | 0.0 | 67 % |
+| Grüne | keine Reformwege | 7 % | 2 % | 0.0 | 0.0 | 0.0 | 65 % |
+| Grüne | marktliberal | 7 % | 16 % | 1.0 | 0.2 | 0.0 | 65 % |
+| Grüne | konservativ | 6 % | 13 % | 0.9 | 0.2 | 0.0 | 65 % |
+| Grüne | sozialdemokratisch | 8 % | 4 % | 0.6 | 0.2 | 0.0 | 65 % |
+| Grüne | gruen | 6 % | 9 % | 0.6 | 0.1 | 0.0 | 65 % |
+| Grüne | links | 6 % | 3 % | 0.2 | 0.1 | 0.0 | 65 % |
+| Grüne | national | 5 % | 7 % | 0.2 | 0.2 | 0.0 | 65 % |
+| Grüne | pragmatisch | 8 % | 5 % | 0.8 | 0.2 | 0.0 | 65 % |
+| Grüne | beliebig | 4 % | 14 % | 1.3 | 0.2 | 0.0 | 65 % |
+
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
 
@@ -98,7 +131,7 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | SPD | 20.0 % | mittel | mittel | passt |
 | Grüne | 4.5 % | schwer | schwer | passt |
 | Linke | 0.0 % | fast unmöglich | fast unmöglich | passt |
-| BSW | 0.0 % | fast unmöglich | schwer | **anpassen** |
+| BSW | 0.0 % | fast unmöglich | fast unmöglich | passt |
 | FDP | 0.5 % | fast unmöglich | fast unmöglich | passt |
 
 ## Alle Konstanten (`src/data/config.js`)
@@ -111,22 +144,22 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `kapital.start` | 50 | Erweiterung |
 | `kapital.max` | 100 | Erweiterung |
 | `kapital.jeQuartal` | 8 | Erweiterung |
-| `reformwege.jaAbstand` | 0.9 | M1/M3 (Quelle in config.js) |
-| `reformwege.enthaltungAbstand` | 1.5 | M1/M3 (Quelle in config.js) |
-| `reformwege.vetoAbstand` | 1.7 | M1/M3 (Quelle in config.js) |
-| `reformwege.partnerUnmutJePunkt` | 0.3 | M1/M3 (Quelle in config.js) |
-| `reformwege.akteurGruppenJeHaltung` | 1.5 | M1/M3 (Quelle in config.js) |
-| `reformwege.revisionKapital` | 25 | M1/M3 (Quelle in config.js) |
-| `reformwege.revisionUmfrage` | 0.5 | M1/M3 (Quelle in config.js) |
-| `reformwege.verfassungsRisiko` | 0.2 | M1/M3 (Quelle in config.js) |
-| `reformwege.fehlschlagUmfrage` | 0.3 | M1/M3 (Quelle in config.js) |
-| `reformwege.abgelehntKapitalAnteil` | 0.5 | M1/M3 (Quelle in config.js) |
-| `reformwege.profil.wachstumJePunkt` | 0.08 | M1/M3 (Quelle in config.js) |
-| `reformwege.profil.giniJePunkt` | 0.15 | M1/M3 (Quelle in config.js) |
-| `reformwege.profil.euKritisch` | -1 | M1/M3 (Quelle in config.js) |
-| `reformwege.profil.euWachstum` | 0.15 | M1/M3 (Quelle in config.js) |
-| `reformwege.profil.partnerJePunkt` | 0.15 | M1/M3 (Quelle in config.js) |
-| `reformwege.profil.kanzlerJePunkt` | 0.1 | M1/M3 (Quelle in config.js) |
+| `reformwege.jaAbstand` | 0.9 | System 1 |
+| `reformwege.enthaltungAbstand` | 1.5 | System 1 |
+| `reformwege.vetoAbstand` | 1.7 | System 1 |
+| `reformwege.partnerUnmutJePunkt` | 0.3 | System 1 |
+| `reformwege.akteurGruppenJeHaltung` | 1.5 | System 1 |
+| `reformwege.revisionKapital` | 25 | System 1 |
+| `reformwege.revisionUmfrage` | 0.5 | System 1 |
+| `reformwege.verfassungsRisiko` | 0.2 | System 1 |
+| `reformwege.fehlschlagUmfrage` | 0.3 | System 1 |
+| `reformwege.abgelehntKapitalAnteil` | 0.5 | System 1 |
+| `reformwege.profil.wachstumJePunkt` | 0.08 | System 1 |
+| `reformwege.profil.giniJePunkt` | 0.15 | System 1 |
+| `reformwege.profil.euKritisch` | -1 | System 1 |
+| `reformwege.profil.euWachstum` | 0.15 | System 1 |
+| `reformwege.profil.partnerJePunkt` | 0.15 | System 1 |
+| `reformwege.profil.kanzlerJePunkt` | 0.1 | System 1 |
 | `wirtschaft.potenzialWachstum` | 0.8 | System 2 |
 | `wirtschaft.zielInflation` | 2 | System 2 |
 | `wirtschaft.natArbeitslosigkeit` | 5.5 | System 2 |

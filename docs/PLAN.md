@@ -37,3 +37,8 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | F14 | Ereignisse in der Regierungszeit (Spielstand-Version 9) | fertig (2026-10-22) |
 | F15 | Nachrichtenticker aus dem Spielstand | fertig (2026-10-22) |
 | UI | Umbau der Oberfläche: App-Shell, Navigation, Design-System, Dark Mode | fertig (2026-10-22) |
+| E1 | Erweiterung: Grundlagen (Kennzahlen, Gruppen, Kapital, CHES-Achsen, Migrationen; Spielstand-Version 10) | fertig (2026-10-23) |
+| E2 | Erweiterung System 2: differenzierte Einnahmen, Wirtschaft, Schulden, Haushalt mit 5 Reitern (Version 11) | fertig (2026-10-23) |
+| E3 | Erweiterung System 3: Problem-Engine mit 25 Bereichen, Lösungen, Beobachtungsliste (Version 12; F13/F14 aufgegangen) | fertig (2026-10-24) |
+| E4 | Erweiterung System 1: Reformwege mit Ausrichtung, Richtungsprofil, Abstimmung nach Inhalt (Version 13) | fertig (2026-10-24) |
+| E5 | Erweiterung: Verknüpfungen, UI-Integration, Balancing nach Ausrichtung | fertig (2026-10-24) |
