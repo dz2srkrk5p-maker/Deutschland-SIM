@@ -5,6 +5,7 @@ import { probleme } from '../data/probleme.js';
 import { zufall } from './rng.js';
 import { umverteilen, runden } from './wahlkampf.js';
 import { mitVerlauf } from './state.js';
+import { richtungsprofil } from './profil.js';
 
 const ereignis = (id) => ereignisse.find((e) => e.id === id);
 const name = (id) => parteien.find((p) => p.id === id).name;
@@ -27,8 +28,9 @@ export function folgen(zustand, ereignisId, wahl) {
 export function ereignisZiehen(zustand) {
   const ob = zufall(zustand.rngZustand);
   if (ob.wert >= config.ereignisse.chanceJeQuartal) return { state: { ...zustand, rngZustand: ob.rngZustand }, ereignisse: [] };
-  // nur Ereignisse, deren Problem spürbar ist (System 3), dazu eigene Bedingungen
-  const moeglich = ereignisse.filter((e) => !zustand.ereignisseWahlperiode.includes(e.id) && (!e.problem || zustand.probleme[e.problem].wert >= 30) && (!e.bedingung || e.bedingung(zustand)));
+  // nur Ereignisse, deren Problem spürbar ist (System 3), dazu eigene Bedingungen; kontext.profil: Richtungsprofil (System 1)
+  const kontext = { profil: richtungsprofil(zustand) };
+  const moeglich = ereignisse.filter((e) => !zustand.ereignisseWahlperiode.includes(e.id) && (!e.problem || zustand.probleme[e.problem].wert >= 30) && (!e.bedingung || e.bedingung(zustand, kontext)));
   if (!moeglich.length) return { state: { ...zustand, rngZustand: ob.rngZustand }, ereignisse: [] };
   const welches = zufall(ob.rngZustand);
   const e = moeglich[Math.floor(welches.wert * moeglich.length)];

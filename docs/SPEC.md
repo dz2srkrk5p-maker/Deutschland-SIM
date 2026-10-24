@@ -185,6 +185,19 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Balancing (`docs/BALANCING.md`, Abschnitt Probleme und Lösungen): ohne Lösungen im Mittel 1,6 Krisen am Ende, mit Lösungen 0,1–0,5; CDU/CSU gewinnt mit Lösungen 60–66 % statt 51 %, keine Lösungsstrategie dominiert.
 - Nicht enthalten (bewusst): Probleme der Länder, Krisen über mehrere Ereignisketten, Lösungen mit Bundestagsabstimmung (das sind die Reformwege).
 
+## System: Reformwege mit politischer Ausrichtung (System 1, freigegeben automatisch nach Empfehlung 2026-10-24)
+- Dateien: `src/data/reformwege.js` (Ausrichtungen, Akteure, 10 Bereiche mit Wegen), `src/engine/reformwege.js` (Sperren, Vorschau, Beschluss, Umsetzung, Kosten, Einnahmen, Trends, Profilwirkung), `src/engine/profil.js` (CHES-Achsen, Abstand, Richtungsprofil), Oberfläche `src/ui/screens/reformen.js` und `src/ui/components/profil.js`. Zahlen: `config.reformwege`.
+- Bereiche: Rente, Steuern, Gesundheit, Bildung, Arbeit, Energie, Migration, Verteidigung, Wohnen, Digitales; je 3–5 Grundwege mit mindestens drei Ausrichtungen (marktliberal, konservativ, sozialdemokratisch, grün, links, national, pragmatisch). Je Weg: Text, Ausrichtung (Vektor auf den vier Achsen), laufende Kosten, Einnahmeänderungen, Sofort- und Langwirkung (Kennzahlen, Gruppen, Problemwerte, dauerhafte Problemtrends), Dauer, Risiko, politisches Kapital, Voraussetzungen (Bundesrat, Haushaltsspielraum, Grundweg).
+- Pfadabhängigkeit: Anschlussreformen (Generationenkapital, Mindestrente, Einheitskasse, Wasserstoff, kleine Reaktoren, EU-Rüstung, Bodenfonds) nur nach dem passenden Grundweg.
+- Beschluss ist verbindlich: Bundestag stimmt nach Inhalt ab (Opposition Ja bis Abstand 0,9, Enthaltung bis 1,5; Koalitionspartner Veto ab 1,7, sonst Unmut 0,3 je Punkt Abstand; Brandmauer bleibt). Abgelehnt: die Hälfte des Kapitals ist trotzdem verbraucht. Kurswechsel in einem Bereich: +25 Kapital, Kanzlerpartei −0,5, alter Weg und seine Anschlussreformen fallen weg.
+- Umsetzung: nach der Dauer Erfolg oder Scheitern nach Risiko (verfassungsrechtlich umstrittene Wege +0,2, Karlsruhe); bei Erfolg Langwirkung und Trends, beim Scheitern Kanzlerpartei −0,3.
+- Reaktionen: Koalitionspartner (Unmut/Veto), Opposition (Abstimmung), Verbände, Gewerkschaften, Umwelt- und Sozialverbände, Bauernverband und EU (Haltung nach Abstand; bewegen die Gruppenstimmung), Bundesverfassungsgericht (Warnung und Risiko).
+- Richtungsprofil: Mittel der Vektoren aller Wege in Umsetzung oder beschlossen, gedämpft mit n/(n+2). Wirkt je Haushaltsjahr auf Wachstum und Gini, EU-kritischer Kurs auf Wachstum, Partner und Kanzlerpartei nach Abstand, auf die Erfolgschance von Lösungen (±0,15) und auf profilabhängige Ereignisse (EU-Verfahren, Investoren, Generalstreik, Klimaklage, Rating).
+- Lösungen und Reformwege teilen sich Kapital und Aufmerksamkeit (2 Vorhaben je Quartal). Kosten und Einnahmen der Wege erscheinen im Haushalt mit Herleitung („Reform: …“).
+- Oberfläche: Menüpunkt Reformen (Übersicht mit Status offen/in Umsetzung/beschlossen und Richtungsprofil, Wegevergleich nebeneinander, Bestätigungsdialog), Richtungsprofil auf der Lage, Problem-Detail verweist auf passende Reformbereiche, Parlament mit Reiter „Verbände und EU“.
+- Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
+- Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
+
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).

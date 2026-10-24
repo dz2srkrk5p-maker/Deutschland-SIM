@@ -1,5 +1,6 @@
 import { config } from '../data/config.js';
 import { problemeQuartal } from './probleme.js';
+import { reformwegeQuartal } from './reformwege.js';
 import { ereignisZiehen } from './ereignisse.js';
 
 const letztes = config.regierung.quartaleJeJahr;
@@ -15,9 +16,10 @@ export function quartalBeenden(zustand) {
   if (zustand.offenesEreignis) throw new Error('Erst auf das Ereignis reagieren');
   // Probleme (System 3) entwickeln sich, Lösungen werden fertig; danach vielleicht ein Ereignis (F14)
   const entwicklung = problemeQuartal(zustand);
-  const neu = ereignisZiehen({ ...entwicklung.state, quartal: zustand.quartal + 1 });
+  const umsetzung = reformwegeQuartal(entwicklung.state);
+  const neu = ereignisZiehen({ ...umsetzung.state, quartal: zustand.quartal + 1 });
   return {
     state: neu.state,
-    ereignisse: [`Haushaltsjahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal} vorbei`, ...entwicklung.ereignisse, ...neu.ereignisse],
+    ereignisse: [`Haushaltsjahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal} vorbei`, ...entwicklung.ereignisse, ...umsetzung.ereignisse, ...neu.ereignisse],
   };
 }

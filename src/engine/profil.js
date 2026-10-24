@@ -1,5 +1,6 @@
 import { parteien } from '../data/parteien.js';
 import { achsen } from '../data/kennzahlen.js';
+import { bereiche, AUSRICHTUNGEN } from '../data/reformwege.js';
 
 // Positionen auf den Spielachsen (−2 … +2), umgerechnet aus den CHES-Skalen (parteien.js):
 // wirtschaft + = marktliberal, gesellschaft + = konservativ, oekologie + = ökologisch, eu + = EU-orientiert
@@ -18,13 +19,15 @@ export const parteiPosition = (id) => {
   return p?.ches ? chesAufAchsen(p.ches) : null;
 };
 
-// Richtungsprofil des Landes aus den beschlossenen Reformwegen (System 1, Schritt 4). Ohne Reformwege neutral.
-// wegAusrichtung: Funktion wegId → Ausrichtung; wird von reformwege.js gesetzt, damit profil.js keine Inhalte importiert.
-let wegAusrichtung = () => null;
-export const setzeWegAusrichtung = (fn) => (wegAusrichtung = fn);
+// Richtungsprofil des Landes aus den Reformwegen in Umsetzung oder beschlossen (System 1). Ohne Reformwege neutral.
+const alleWege = bereiche.flatMap((b) => b.wege);
+const wegAusrichtung = (id) => {
+  const w = alleWege.find((x) => x.id === id);
+  return w ? { ...AUSRICHTUNGEN[w.richtung].vektor, ...(w.vektor ?? {}) } : null;
+};
 export function richtungsprofil(zustand) {
   const leer = Object.fromEntries(achsen.map((a) => [a.id, 0]));
-  const wege = Object.values(zustand.reformwege ?? {}).filter((b) => b.status === 'beschlossen' || b.status === 'umsetzung').map((b) => wegAusrichtung(b.weg)).filter(Boolean);
+  const wege = Object.entries(zustand.reformwege ?? {}).filter(([, s]) => s.status === 'beschlossen' || s.status === 'umsetzung').map(([id]) => wegAusrichtung(id)).filter(Boolean);
   if (!wege.length) return leer;
   // Mittel über alle Wege, gedämpft bei wenigen Wegen (ein einzelner Weg prägt das Land noch nicht ganz)
   const daempfung = wege.length / (wege.length + 2);

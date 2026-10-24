@@ -3,7 +3,7 @@
 //   kanzler: Kanzlerpartei; partner: jede Partnerpartei; ministerium: { ministeriumId: Wert } für die Partei, die es hält;
 //   probleme: { problemId: Wert } (System 3).
 // problem: zugehöriges Problem; das Ereignis kommt nur, wenn dieses Problem mindestens bei 30 liegt (System 3).
-// bedingung: (zustand) => boolean, sonst jederzeit möglich.
+// bedingung: (zustand, { profil }) => boolean, sonst jederzeit möglich; profil = Richtungsprofil des Landes (System 1).
 export const ereignisse = [
   {
     id: 'mieten',
@@ -85,6 +85,57 @@ export const ereignisse = [
     moeglichkeiten: [
       { text: 'Digitalpaket für die Verwaltung', folgen: { ministerium: { digitales: 0.15, inneres: -0.05 } } },
       { text: 'Vorfall herunterspielen', folgen: { kanzler: -0.2 } },
+    ],
+  },
+  // Reaktionen auf das Richtungsprofil (System 1)
+  {
+    id: 'eu_verfahren',
+    titel: 'EU-Kommission leitet Vertragsverletzungsverfahren ein',
+    text: 'Brüssel sieht in mehreren Gesetzen Verstöße gegen europäisches Recht.',
+    bedingung: (z, k) => k.profil.eu < -0.8,
+    moeglichkeiten: [
+      { text: 'Gesetze anpassen', folgen: { kanzler: -0.1, probleme: { geopolitik: -3 } } },
+      { text: 'Auf nationaler Souveränität bestehen', folgen: { kanzler: 0.1, probleme: { geopolitik: 5, rezession: 2 } } },
+    ],
+  },
+  {
+    id: 'investoren',
+    titel: 'Investoren kündigen Großprojekte an',
+    text: 'Mehrere Konzerne wollen nach dem Reformkurs wieder in Deutschland bauen.',
+    bedingung: (z, k) => k.profil.wirtschaft > 0.8,
+    moeglichkeiten: [
+      { text: 'Erfolg der Reformen herausstellen', folgen: { kanzler: 0.2, probleme: { rezession: -4 } } },
+      { text: 'Standortgarantien mit Tarifbindung verknüpfen', folgen: { ministerium: { arbeit: 0.1 }, probleme: { rezession: -2, soziale_spaltung: -2 } } },
+    ],
+  },
+  {
+    id: 'generalstreik',
+    titel: 'Gewerkschaften rufen zum Großstreik auf',
+    text: 'Gegen den Abbau von Arbeitnehmerrechten stehen Bahnen, Kliniken und Kitas still.',
+    bedingung: (z, k) => k.profil.wirtschaft > 1,
+    moeglichkeiten: [
+      { text: 'Zugeständnisse machen', folgen: { kanzler: -0.1, probleme: { soziale_spaltung: -4 } } },
+      { text: 'Hart bleiben', folgen: { kanzler: -0.2, probleme: { rezession: 3, polarisierung: 3 } } },
+    ],
+  },
+  {
+    id: 'klimaklage',
+    titel: 'Klimaklage vor dem Bundesverfassungsgericht',
+    text: 'Junge Kläger sehen ihre Freiheitsrechte durch fehlenden Klimaschutz verletzt.',
+    bedingung: (z, k) => k.profil.oekologie < -0.7,
+    moeglichkeiten: [
+      { text: 'Klimaziele freiwillig nachschärfen', folgen: { ministerium: { wirtschaft: -0.1 }, probleme: { klimafolgen: -4 } } },
+      { text: 'Das Urteil abwarten', folgen: { kanzler: -0.2, probleme: { vertrauensverlust: 3 } } },
+    ],
+  },
+  {
+    id: 'rating',
+    titel: 'Ratingagentur warnt vor dem Ausgabenkurs',
+    text: 'Die Bonität Deutschlands wird mit negativem Ausblick versehen.',
+    bedingung: (z, k) => k.profil.wirtschaft < -1,
+    moeglichkeiten: [
+      { text: 'Sparsignal senden', folgen: { kanzler: -0.1, probleme: { staatsverschuldung: -4 } } },
+      { text: 'Kurs halten: Investitionen zahlen sich aus', folgen: { probleme: { staatsverschuldung: 5 } } },
     ],
   },
 ];

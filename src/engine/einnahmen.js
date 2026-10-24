@@ -1,6 +1,7 @@
 import { einnahmearten } from '../data/einnahmen.js';
 import { startBip } from '../data/kennzahlen.js';
 import { wirkungSumme, skaliert } from './wirtschaft.js';
+import { wegEinnahmen } from './reformwege.js';
 
 export const einnahmeart = (id) => einnahmearten.find((e) => e.id === id);
 
@@ -35,7 +36,7 @@ const aktiv = (zustand, entwurf, schalterId) => entwurf.ausgestaltung?.[schalter
 
 // Aufstellung aller Einnahmearten mit Herleitung (für Haushalt, Vorschau und Prognose). Beträge in tausend €.
 // reformPosten: { artId: [{ quelle, betrag }] } aus beschlossenen Reformwegen
-export function aufstellung(zustand, entwurf = {}, reformPosten = {}) {
+export function aufstellung(zustand, entwurf = {}, reformPosten = wegEinnahmen(zustand)) {
   const e = zustand.haushalt.einnahmen;
   const faktor = basisFaktor(zustand);
   const zeilen = einnahmearten.map((art) => {

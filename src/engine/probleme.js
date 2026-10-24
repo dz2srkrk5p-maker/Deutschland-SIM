@@ -9,6 +9,7 @@ import { umverteilen, runden } from './wahlkampf.js';
 import { mitVerlauf } from './state.js';
 import { richtungsprofil, abstand } from './profil.js';
 import { wirkungSumme, skaliert } from './wirtschaft.js';
+import { wegTrends } from './reformwege.js';
 
 // Problem-Engine (System 3): Probleme entstehen und eskalieren aus dem Zustand des Landes, Lösungen senken sie.
 const pc = config.probleme;
@@ -46,6 +47,7 @@ export function ursachen(zustand, p) {
       liste.push({ text: `Richtungsprofil: ${achsen.find((a) => a.id === t.profil).name}`, beitrag: t.gewicht * richtungsprofil(zustand)[t.profil] });
     }
   }
+  liste.push(...wegTrends(zustand, p.id));
   return liste.map((u) => ({ ...u, beitrag: r2(u.beitrag) }));
 }
 export const trend = (zustand, p) => r2(ursachen(zustand, p).reduce((s, u) => s + u.beitrag, 0));

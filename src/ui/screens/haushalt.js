@@ -110,7 +110,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
           <span>Ministerien</span><span>${euro(etatSumme, 1)}</span>
           <span>Zinsen</span><span>${euro(b.zinsen, 1)}</span>
           <span>Feste Posten</span><span>${euro(feste, 1)}</span>
-          ${b.reformen ? `<span>Laufende Reformen</span><span>${euro(b.reformen, 1)}</span>` : ''}
+          ${b.reformen ? `<span>Lösungen und Reformen</span><span>${euro(b.reformen, 1)}</span>` : ''}
           <span><strong>Ausgaben</strong></span><span><strong>${euro(b.ausgaben)}</strong></span></div>`, { titel: 'Ausgaben' })}
       </div>
       ${karte(`<div class="bilanz">
@@ -153,7 +153,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         <span>Zinsen (Bundesschuld, wächst mit dem Schuldenstand)</span><span>${euro(b.zinsen)}</span>
         <span>Allgemeine Finanzverwaltung</span><span>${euro(festeAusgaben2026.finanzverwaltung)}</span>
         <span>Kanzleramt und Verfassungsorgane</span><span>${euro(festeAusgaben2026.verfassungsorgane)}</span>
-        ${b.reformen ? `<span>Laufende Reformen</span><span>${euro(b.reformen)}</span>` : ''}
+        ${b.reformen ? `<span>Laufende Lösungen und Reformen</span><span>${euro(b.reformen)}</span>` : ''}
       </div>`, { titel: 'Feste Ausgaben' });
   }
 

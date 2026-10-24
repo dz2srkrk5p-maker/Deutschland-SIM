@@ -9,7 +9,11 @@ import { abstimmung, abstimmen } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
 import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
-import { laufendeKosten, jahresFolgen } from './probleme.js';
+import { laufendeKosten as loesungsKosten, jahresFolgen } from './probleme.js';
+import { wegKosten, profilWirkung } from './reformwege.js';
+
+// Laufende Kosten von Lösungen (System 3) und Reformwegen (System 1)
+export const laufendeKosten = (zustand) => loesungsKosten(zustand) + wegKosten(zustand);
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
 import { jahresSchritt, gruppenSchritt, lageUmfrage, wirkungSumme } from './wirtschaft.js';
 
@@ -138,8 +142,10 @@ export function haushaltBeschliessen(zustand, params = {}) {
     : { etats: v.etats, einnahmen: einnahmenUebernehmen(zustand, params), neueSchulden: v.bilanz.neueSchulden };
 
   // Wirtschaft: ein Jahr weiter mit den Wirkungen des Haushalts; die Lage wirkt auf die Kanzlerpartei
-  // dazu die Folgen der Probleme und die Wirkungen aus dem Jahr (System 3)
-  const kw = wirkungSumme(gescheitert ? entwurfWirkung(zustand, {}).wirkung : v.kennzahlWirkung, jahresFolgen(zustand));
+  // dazu die Folgen der Probleme, die Wirkungen aus dem Jahr (System 3) und das Richtungsprofil (System 1)
+  const profil = profilWirkung(zustand);
+  for (const [id, x] of Object.entries(profil.umfrage)) if (x) wirkung[id] = (wirkung[id] ?? 0) + x;
+  const kw = wirkungSumme(gescheitert ? entwurfWirkung(zustand, {}).wirkung : v.kennzahlWirkung, jahresFolgen(zustand), profil.wirkung);
   const w = jahresSchritt(zustand.land, kw, mrd(gilt.neueSchulden), bundestag.rngZustand);
   const gruppen = gruppenSchritt(zustand.gruppen, kw.gruppen);
   const lage = lageUmfrage(zustand.land, w.land, gruppen);

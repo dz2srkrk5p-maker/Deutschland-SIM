@@ -11,6 +11,7 @@ const partei = (id) => parteien.find((p) => p.id === id);
 export const BEREICHE = [
   { id: 'lage', text: 'Lage' },
   { id: 'probleme', text: 'Probleme' },
+  { id: 'reformen', text: 'Reformen' },
   { id: 'haushalt', text: 'Haushalt' },
   { id: 'parlament', text: 'Parlament' },
   { id: 'chronik', text: 'Chronik' },

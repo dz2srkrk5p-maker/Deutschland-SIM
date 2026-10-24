@@ -2,6 +2,7 @@ import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
 import { koalitionsParteien } from './kabinett.js';
 import { zufall } from './rng.js';
+import { parteiPosition, abstand as abstandPos } from './profil.js';
 
 const bt = config.bundestag;
 const platz = (id) => parteien.find((p) => p.id === id).sitzordnung;
@@ -19,18 +20,27 @@ function zaehlen(vorlage, fraktionen) {
 
 // Abstimmung im Bundestag über eine Vorlage (z. B. 'haushalt'). Ohne Zufall, damit das Ergebnis vorher sichtbar ist.
 // Koalition stimmt geschlossen Ja, die Opposition nach Abstand zur nächsten Koalitionspartei. AfD-Stimmen für andere zählen mit.
+// vorlage: Name (z. B. 'haushalt') oder { id, vektor } für einen Reformweg: dann stimmen die Fraktionen nach dem Abstand ihrer
+// Position (CHES) zum Weg; Koalitionspartner legen ab dem Veto-Abstand ein Nein ein (System 1).
 export function abstimmung(zustand, vorlage) {
   const koalition = koalitionsParteien(zustand);
   const gesperrt = brandmauerRegierung(koalition);
+  const vektor = typeof vorlage === 'object' ? vorlage.vektor : null;
+  const rw = config.reformwege;
+  const nachInhalt = (id) => {
+    const d = abstandPos(parteiPosition(id), vektor);
+    return d <= rw.jaAbstand ? 'ja' : d <= rw.enthaltungAbstand ? 'enthaltung' : 'nein';
+  };
   // Minderheitsregierung im Amt: Opposition eine Stufe strenger (F11)
   const regel = zustand.koalition.minderheit ? bt.stimmeNachAbstandMinderheit : bt.stimmeNachAbstand;
   const fraktionen = parteien
     .filter((p) => zustand.sitze[p.id] > 0)
     .map((p) => {
-      const stimme = koalition.includes(p.id) ? 'ja' : gesperrt ? 'nein' : (regel[abstand(p.id, koalition)] ?? bt.stimmeWeit);
+      const veto = vektor && p.id !== zustand.spielerParteiId && abstandPos(parteiPosition(p.id), vektor) > rw.vetoAbstand;
+      const stimme = koalition.includes(p.id) ? (veto ? 'nein' : 'ja') : gesperrt ? 'nein' : vektor ? nachInhalt(p.id) : (regel[abstand(p.id, koalition)] ?? bt.stimmeWeit);
       return { id: p.id, sitze: zustand.sitze[p.id], stimme };
     });
-  return zaehlen(vorlage, fraktionen);
+  return zaehlen(vektor ? vorlage.id : vorlage, fraktionen);
 }
 
 // Die echte Abstimmung: wie die Vorschau, nur bei einer Brandmauer-Regierung stimmt jeder Abgeordnete einer Nachbarfraktion

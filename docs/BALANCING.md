@@ -111,6 +111,22 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `kapital.start` | 50 | Erweiterung |
 | `kapital.max` | 100 | Erweiterung |
 | `kapital.jeQuartal` | 8 | Erweiterung |
+| `reformwege.jaAbstand` | 0.9 | M1/M3 (Quelle in config.js) |
+| `reformwege.enthaltungAbstand` | 1.5 | M1/M3 (Quelle in config.js) |
+| `reformwege.vetoAbstand` | 1.7 | M1/M3 (Quelle in config.js) |
+| `reformwege.partnerUnmutJePunkt` | 0.3 | M1/M3 (Quelle in config.js) |
+| `reformwege.akteurGruppenJeHaltung` | 1.5 | M1/M3 (Quelle in config.js) |
+| `reformwege.revisionKapital` | 25 | M1/M3 (Quelle in config.js) |
+| `reformwege.revisionUmfrage` | 0.5 | M1/M3 (Quelle in config.js) |
+| `reformwege.verfassungsRisiko` | 0.2 | M1/M3 (Quelle in config.js) |
+| `reformwege.fehlschlagUmfrage` | 0.3 | M1/M3 (Quelle in config.js) |
+| `reformwege.abgelehntKapitalAnteil` | 0.5 | M1/M3 (Quelle in config.js) |
+| `reformwege.profil.wachstumJePunkt` | 0.08 | M1/M3 (Quelle in config.js) |
+| `reformwege.profil.giniJePunkt` | 0.15 | M1/M3 (Quelle in config.js) |
+| `reformwege.profil.euKritisch` | -1 | M1/M3 (Quelle in config.js) |
+| `reformwege.profil.euWachstum` | 0.15 | M1/M3 (Quelle in config.js) |
+| `reformwege.profil.partnerJePunkt` | 0.15 | M1/M3 (Quelle in config.js) |
+| `reformwege.profil.kanzlerJePunkt` | 0.1 | M1/M3 (Quelle in config.js) |
 | `wirtschaft.potenzialWachstum` | 0.8 | System 2 |
 | `wirtschaft.zielInflation` | 2 | System 2 |
 | `wirtschaft.natArbeitslosigkeit` | 5.5 | System 2 |

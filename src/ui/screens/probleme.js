@@ -5,6 +5,7 @@ import { ministerien } from '../../data/ministerien.js';
 import { achsen, gruppen, kennzahlen } from '../../data/kennzahlen.js';
 import { problemListe, ursachen, loesungSperre, erfolgschance, problem as problemVon } from '../../engine/probleme.js';
 import { mrd } from '../../engine/haushalt.js';
+import { bereiche } from '../../data/reformwege.js';
 import { karte, badge, balken, zahl, plusMinus, leer, aufklapp } from '../components/basis.js';
 
 const gName = (id) => gruppen.find((g) => g.id === id)?.name ?? id;
@@ -82,11 +83,13 @@ function detail(zustand, id) {
         ...['wachstum', 'inflation', 'arbeitslosigkeit', 'gini'].filter((k) => p.folgen[k]).map((k) => `${kName(k)} ${plusMinus(p.folgen[k])}`),
         ...Object.entries(p.folgen.gruppen ?? {}).map(([g, v]) => `${gName(g)} ${plusMinus(v, 0)}`),
       ].join(' · ') || 'keine'}.</p>`, { titel: 'Ursachen und Wechselwirkungen' })}
-    ${karte(loesungen, { titel: 'Lösungsoptionen' })}`;
+    ${karte(loesungen, { titel: 'Lösungsoptionen' })}
+    ${bereiche.some((b) => b.probleme.includes(p.id)) ? karte(`<p>Dauerhaft wirken Reformwege: ${bereiche.filter((b) => b.probleme.includes(p.id)).map((b) => `<button data-reformbereich="${b.id}">${b.name}</button>`).join(' ')}</p>
+      <p class="klein">Lösungen helfen schnell; Reformwege verändern den Trend dauerhaft und prägen das Richtungsprofil.</p>`, { titel: 'Reformen' }) : ''}`;
 }
 
 // Probleme (System 3): Liste nach Schweregrad mit Filter, Detail mit Ursachen, Verlauf, Wechselwirkungen und Lösungen
-export function problemeScreen(el, zustand, { auswahl, filter, onAuswahl, onFilter, onLoesung }) {
+export function problemeScreen(el, zustand, { auswahl, filter, onAuswahl, onFilter, onLoesung, onReformbereich }) {
   const liste = problemListe(zustand);
   const gefiltert = liste.filter((e) => !filter || e.problem.kategorie === filter);
   const prominent = gefiltert.filter((e) => e.prominent);
@@ -106,6 +109,7 @@ export function problemeScreen(el, zustand, { auswahl, filter, onAuswahl, onFilt
   el.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => onFilter(b.dataset.filter || null)));
   el.querySelector('#zurueck')?.addEventListener('click', () => onAuswahl(null));
   el.querySelectorAll('[data-loesung]').forEach((b) => b.addEventListener('click', () => onLoesung({ loesungId: b.dataset.loesung })));
+  el.querySelectorAll('[data-reformbereich]').forEach((b) => b.addEventListener('click', () => onReformbereich(b.dataset.reformbereich)));
 }
 
 // Für Lage und Kopfzeile: Top-Probleme und Zahl der ernsten Probleme

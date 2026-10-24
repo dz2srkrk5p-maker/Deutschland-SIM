@@ -18,6 +18,10 @@ import { koalitionScreen } from './screens/koalition.js';
 import { kabinettScreen } from './screens/kabinett.js';
 import { lageScreen } from './screens/lage.js';
 import { problemeScreen, warnZahl } from './screens/probleme.js';
+import { reformenScreen } from './screens/reformen.js';
+import { wegBeschliessen, richtungsprofil } from '../engine/reformwege.js';
+import { profilHtml } from './components/profil.js';
+import { karte } from './components/basis.js';
 import { haushaltScreen } from './screens/haushalt.js';
 import { parlamentScreen } from './screens/parlament.js';
 import { chronikScreen } from './screens/chronik.js';
@@ -32,6 +36,7 @@ const ui = {
   bereich: 'lage',
   problem: null, // geöffnetes Problem im Bereich Probleme
   kategorie: null, // Filter im Bereich Probleme
+  reformBereich: null, // geöffneter Bereich unter Reformen
   parlament: 'bundestag',
   chronik: 'verlauf',
   seite: 0,
@@ -93,11 +98,17 @@ function zeichne() {
   if (ui.bereich === 'lage') {
     // „Zum Haushalt“ führt immer auf den Überblick mit dem Knopf zum Einbringen
     const onBereich = (b) => (b === 'haushalt' && (ui.entwurf.tab = 'ueberblick'), wechseln(b));
-    return lageScreen(a, zustand, { onWeiter: ausfuehren(quartalBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onBereich });
+    // Richtungsprofil auf dem Dashboard (System 1)
+    const zusatz = karte(`${profilHtml(richtungsprofil(zustand))}<div class="knoepfe"><button data-gehe="reformen">Zu den Reformen</button></div>`, { titel: 'Richtungsprofil' });
+    return lageScreen(a, zustand, { onWeiter: ausfuehren(quartalBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onBereich, zusatz });
+  }
+  if (ui.bereich === 'reformen') {
+    return reformenScreen(a, zustand, { auswahl: ui.reformBereich, onBeschliessen: ausfuehren(wegBeschliessen), onAuswahl: (b) => ((ui.reformBereich = b), zeichne(), fokusOben()) });
   }
   if (ui.bereich === 'probleme') {
     return problemeScreen(a, zustand, {
       auswahl: ui.problem, filter: ui.kategorie, onLoesung: ausfuehren(loesungStarten),
+      onReformbereich: (b) => (wechseln('reformen'), (ui.reformBereich = b), zeichne(), fokusOben()),
       onAuswahl: (p) => ((ui.problem = p), zeichne(), fokusOben()),
       onFilter: (k) => ((ui.kategorie = k), zeichne(), fokusAuf(`[data-filter="${k ?? ''}"]`)),
     });
@@ -119,7 +130,8 @@ function fokusOben() {
 
 function wechseln(bereich) {
   ui.bereich = bereich;
-  ui.problem = null; // Probleme beginnen über die Navigation immer mit der Liste
+  ui.problem = null; // Probleme und Reformen beginnen über die Navigation immer mit der Übersicht
+  ui.reformBereich = null;
   ui.meldung = null;
   zeichne();
   fokusOben();

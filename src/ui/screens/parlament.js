@@ -6,13 +6,18 @@ import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { bundestagSvg } from '../components/bundestag.js';
 import { bundesratHtml } from '../components/bundesrat.js';
 import { koalitionslageHtml } from '../components/koalitionslage.js';
-import { karte, tabs, punkt, badge } from '../components/basis.js';
+import { karte, tabs, punkt, badge, status } from '../components/basis.js';
+import { akteure } from '../../data/reformwege.js';
+import { richtungsprofil } from '../../engine/reformwege.js';
+import { abstand } from '../../engine/profil.js';
+import { profilHtml } from '../components/profil.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const TABS = [
   { id: 'bundestag', text: 'Bundestag' },
   { id: 'koalition', text: 'Koalition' },
   { id: 'bundesrat', text: 'Bundesrat' },
+  { id: 'akteure', text: 'Verbände und EU' },
 ];
 
 // Parlament (nur Nachschlagen): Sitze, Koalition mit Kabinett, Bundesrat.
@@ -30,6 +35,15 @@ export function parlamentScreen(el, zustand, { tab, onTab }) {
         ${ministerien.map((m) => `<tr><th scope="row" title="${m.name}">${m.kurz}</th><td>${punkt(partei(zustand.kabinett.verteilung[m.id]).farbe)}${partei(zustand.kabinett.verteilung[m.id]).name}</td></tr>`).join('')}
       </tbody></table>`, { titel: 'Kabinett' }),
     bundesrat: () => karte(bundesratHtml(bundesratAbstimmung(regierung)), { titel: 'Länder' }),
+    // Haltung der Akteure zum Kurs des Landes (System 1): 2 − 2 × Abstand zum Richtungsprofil
+    akteure: () => {
+      const p = richtungsprofil(zustand);
+      return karte(`${profilHtml(p)}<table><thead><tr><th scope="col">Akteur</th><th scope="col">Haltung zum Kurs</th></tr></thead><tbody>${akteure.map((a) => {
+        // ohne beschlossene Wege gibt es noch keinen Kurs, den man bewerten könnte
+        const h = Object.keys(zustand.reformwege).length ? Math.max(-2, Math.min(2, 2 - 2 * abstand(a.vektor, p))) : 0;
+        return `<tr><th scope="row">${a.name}</th><td>${h >= 0.5 ? status('ok', 'zufrieden') : h <= -0.5 ? status('rot', 'unzufrieden') : '<span class="klein">abwartend</span>'}</td></tr>`;
+      }).join('')}</tbody></table><p class="klein">Zu jedem einzelnen Reformweg steht die Reaktion im Wegevergleich unter Reformen.</p>`, { titel: 'Verbände und EU' });
+    },
   }[tab];
   el.innerHTML = `<div class="ansicht"><h1>Parlament</h1>${tabs(TABS, tab, 'Parlament')}${inhalt()}</div>`;
   el.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => onTab(t.dataset.tab)));

@@ -15,6 +15,23 @@ export const config = {
   // für Reformwege und Problemlösungen, wächst je beendetem Quartal nach. Spielwerte.
   kapital: { start: 50, max: 100, jeQuartal: 8 },
 
+  // Reformwege (System 1, freigegeben automatisch nach Empfehlung 2026-10-24). Spielwerte; Inhalte in src/data/reformwege.js.
+  reformwege: {
+    // Abstimmung nach Inhalt: Abstand der Parteiposition (CHES) zum Weg, Mittel der Achsen 0–4
+    jaAbstand: 0.9, // Opposition stimmt zu bis zu diesem Abstand
+    enthaltungAbstand: 1.5, // darüber Nein, dazwischen Enthaltung
+    vetoAbstand: 1.7, // Koalitionspartner stimmt ab diesem Abstand mit Nein
+    partnerUnmutJePunkt: 0.3, // Partner verliert je Abstandspunkt über 1 so viele Umfragepunkte beim Beschluss
+    akteurGruppenJeHaltung: 1.5, // Akteure ziehen „ihre“ Gruppe je Haltungspunkt mit (zur Hälfte beim Beschluss)
+    revisionKapital: 25, // anderen Weg im selben Bereich beschließen: zusätzliches Kapital
+    revisionUmfrage: 0.5, // und Glaubwürdigkeitsverlust der Kanzlerpartei
+    verfassungsRisiko: 0.2, // zusätzliches Risiko, dass Karlsruhe einen umstrittenen Weg kippt
+    fehlschlagUmfrage: 0.3, // gescheiterte Umsetzung: Kanzlerpartei verliert
+    abgelehntKapitalAnteil: 0.5, // im Bundestag abgelehnt: so viel des Kapitals ist trotzdem verbraucht
+    // Richtungsprofil je Haushaltsjahr: Wirtschaft (Wachstum, Gini), EU-Kurs, Partner und Kanzlerpartei
+    profil: { wachstumJePunkt: 0.08, giniJePunkt: 0.15, euKritisch: -1, euWachstum: 0.15, partnerJePunkt: 0.15, kanzlerJePunkt: 0.1 },
+  },
+
   // Wirtschaftsdynamik je Haushaltsjahr (System 2, freigegeben automatisch nach Empfehlung 2026-10-23). Spielwerte.
   wirtschaft: {
     potenzialWachstum: 0.8, // % je Jahr, dahin kehrt das Wachstum ohne Eingriffe zurück
