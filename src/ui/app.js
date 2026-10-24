@@ -5,7 +5,7 @@ import { verhandeln, minderheitAntreten } from '../engine/koalition.js';
 import { bestaetigen } from '../engine/kabinett.js';
 import { haushaltBeschliessen } from '../engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../engine/regierung.js';
-import { reformEinbringen } from '../engine/reformen.js';
+import { loesungStarten } from '../engine/probleme.js';
 import { ereignisEntscheiden } from '../engine/ereignisse.js';
 import { spielSichern, spielLaden, spielLoeschen, hinweiseSetzen, hinweiseAn } from '../storage/speicher.js';
 import { shellHtml } from './shell.js';
@@ -17,7 +17,7 @@ import { wahlabendScreen } from './screens/wahlabend.js';
 import { koalitionScreen } from './screens/koalition.js';
 import { kabinettScreen } from './screens/kabinett.js';
 import { lageScreen } from './screens/lage.js';
-import { reformenScreen } from './screens/reformen.js';
+import { problemeScreen, warnZahl } from './screens/probleme.js';
 import { haushaltScreen } from './screens/haushalt.js';
 import { parlamentScreen } from './screens/parlament.js';
 import { chronikScreen } from './screens/chronik.js';
@@ -30,7 +30,8 @@ let protokoll = [];
 // Zustand der Oberfläche (nicht gespeichert, nicht im Spielstand): Bereich, Unterbereiche, Rückmeldung, Haushaltsentwurf
 const ui = {
   bereich: 'lage',
-  problem: null,
+  problem: null, // geöffnetes Problem im Bereich Probleme
+  kategorie: null, // Filter im Bereich Probleme
   parlament: 'bundestag',
   chronik: 'verlauf',
   seite: 0,
@@ -62,7 +63,8 @@ function zeichne() {
     });
   }
   const regiert = zustand.phase === 'regierung';
-  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', haushalt: haushaltsQuartal(zustand) ? badge('fällig', 'gelb') : '' } : {};
+  const ernst = regiert ? warnZahl(zustand) : 0;
+  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: haushaltsQuartal(zustand) ? badge('fällig', 'gelb') : '' } : {};
   el.innerHTML = shellHtml(zustand, { aktiv: regiert ? ui.bereich : null, badges });
   el.querySelector('#meldung').innerHTML = meldungHtml(ui.meldung);
   menueBinden();
@@ -93,8 +95,12 @@ function zeichne() {
     const onBereich = (b) => (b === 'haushalt' && (ui.entwurf.tab = 'ueberblick'), wechseln(b));
     return lageScreen(a, zustand, { onWeiter: ausfuehren(quartalBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onBereich });
   }
-  if (ui.bereich === 'reformen') {
-    return reformenScreen(a, zustand, { problem: ui.problem, onReform: ausfuehren(reformEinbringen), onProblem: (p) => ((ui.problem = p), zeichne(), fokusOben()) });
+  if (ui.bereich === 'probleme') {
+    return problemeScreen(a, zustand, {
+      auswahl: ui.problem, filter: ui.kategorie, onLoesung: ausfuehren(loesungStarten),
+      onAuswahl: (p) => ((ui.problem = p), zeichne(), fokusOben()),
+      onFilter: (k) => ((ui.kategorie = k), zeichne(), fokusAuf(`[data-filter="${k ?? ''}"]`)),
+    });
   }
   if (ui.bereich === 'haushalt') return haushaltScreen(a, zustand, { entwurf: ui.entwurf, onBeschliessen: ausfuehren(haushaltBeschliessen) });
   if (ui.bereich === 'parlament') return parlamentScreen(a, zustand, { tab: ui.parlament, onTab: (t) => ((ui.parlament = t), zeichne(), fokusAuf(`[data-tab="${t}"]`)) });
@@ -113,7 +119,7 @@ function fokusOben() {
 
 function wechseln(bereich) {
   ui.bereich = bereich;
-  ui.problem = null; // Reformen beginnen über die Navigation immer mit der Problemliste
+  ui.problem = null; // Probleme beginnen über die Navigation immer mit der Liste
   ui.meldung = null;
   zeichne();
   fokusOben();

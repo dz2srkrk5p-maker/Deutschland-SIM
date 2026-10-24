@@ -4,7 +4,7 @@ import { zufall } from './rng.js';
 
 const w = config.wirtschaft;
 const begrenzt = (x, min, max) => Math.max(min, Math.min(max, x));
-const r2 = (x) => Math.round(x * 100) / 100;
+const r2 = (x) => Math.round(x * 100) / 100 + 0;
 
 // Summe mehrerer Wirkungen { wachstum, inflation, arbeitslosigkeit, gini, gruppen: {}, probleme: {} }
 export function wirkungSumme(...liste) {

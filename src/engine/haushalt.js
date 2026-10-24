@@ -9,9 +9,9 @@ import { abstimmung, abstimmen } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
 import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
-import { reformKosten } from './reformen.js';
+import { laufendeKosten, jahresFolgen } from './probleme.js';
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
-import { jahresSchritt, gruppenSchritt, lageUmfrage } from './wirtschaft.js';
+import { jahresSchritt, gruppenSchritt, lageUmfrage, wirkungSumme } from './wirtschaft.js';
 
 const hh = config.haushalt;
 const festeOhneZinsen = Object.values(festeAusgaben2026).reduce((s, x) => s + x, 0) - festeAusgaben2026.bundesschuld;
@@ -27,7 +27,7 @@ export const schuldenbremseGrenze = (zustand) =>
   Math.round(hh.schuldenbremseGrenze * (zustand.land.bip / startBip) + hh.konjunkturJePunkt * (startWachstum - zustand.land.wachstum));
 
 // Einnahmen, Ausgaben und Schuldenbremse für einen Haushalt (Beträge in tausend Euro).
-// einnahmen: Einnahmen des Kernhaushalts; reformen: laufende Reformkosten; zinsAusgaben: Bundesschuld; grenze: Schuldenbremse
+// einnahmen: Einnahmen des Kernhaushalts; reformen: laufende Kosten von Lösungen und Reformen; zinsAusgaben: Bundesschuld; grenze: Schuldenbremse
 export function bilanz(etats, einnahmen, reformen = 0, zinsAusgaben = festeAusgaben2026.bundesschuld, grenze = hh.schuldenbremseGrenze) {
   const ausgaben = Object.values(etats).reduce((s, x) => s + x, 0) + festeOhneZinsen + zinsAusgaben + reformen;
   const neueSchulden = ausgaben - einnahmen;
@@ -71,7 +71,7 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   // Der Haushalt braucht die einfache Mehrheit im Bundestag (F10); mit Koalitionsmehrheit immer erfüllt
   const bundestag = abstimmung(zustand, 'haushalt');
   return {
-    etats, einnahmen: einnahmenNeu, bilanz: bilanz(etats, einnahmenNeu.kern, reformKosten(zustand), zinsen(zustand), schuldenbremseGrenze(zustand)),
+    etats, einnahmen: einnahmenNeu, bilanz: bilanz(etats, einnahmenNeu.kern, laufendeKosten(zustand), zinsen(zustand), schuldenbremseGrenze(zustand)),
     wirkung, kennzahlWirkung: ew.wirkung, verfassung: ew.verfassung, bundesrat, bundestag,
     // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
     anteile: runden(umverteilen(zustand.anteile, wirkung)),
@@ -134,11 +134,12 @@ export function haushaltBeschliessen(zustand, params = {}) {
   const alt = zustand.haushalt;
   const wirkung = gescheitert ? { [zustand.kanzlerParteiId]: -config.minderheit.umfrageVerlustHaushaltGescheitert } : { ...v.wirkung };
   const gilt = gescheitert
-    ? { etats: alt.etats, einnahmen: alt.einnahmen, neueSchulden: bilanz(alt.etats, aufstellung(zustand).kern, reformKosten(zustand), zinsen(zustand)).neueSchulden }
+    ? { etats: alt.etats, einnahmen: alt.einnahmen, neueSchulden: bilanz(alt.etats, aufstellung(zustand).kern, laufendeKosten(zustand), zinsen(zustand)).neueSchulden }
     : { etats: v.etats, einnahmen: einnahmenUebernehmen(zustand, params), neueSchulden: v.bilanz.neueSchulden };
 
   // Wirtschaft: ein Jahr weiter mit den Wirkungen des Haushalts; die Lage wirkt auf die Kanzlerpartei
-  const kw = gescheitert ? entwurfWirkung(zustand, {}).wirkung : v.kennzahlWirkung;
+  // dazu die Folgen der Probleme und die Wirkungen aus dem Jahr (System 3)
+  const kw = wirkungSumme(gescheitert ? entwurfWirkung(zustand, {}).wirkung : v.kennzahlWirkung, jahresFolgen(zustand));
   const w = jahresSchritt(zustand.land, kw, mrd(gilt.neueSchulden), bundestag.rngZustand);
   const gruppen = gruppenSchritt(zustand.gruppen, kw.gruppen);
   const lage = lageUmfrage(zustand.land, w.land, gruppen);
@@ -157,7 +158,7 @@ export function haushaltBeschliessen(zustand, params = {}) {
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1 });
+  const state = mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme() });
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

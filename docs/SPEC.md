@@ -129,7 +129,7 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Neues Zustandsfeld: `quartal` (Spielstand-Version 7); bei Wahlkampf und nach jedem Haushalt 1.
 - Nicht enthalten (bewusst): Monate, Wirkung der Zeit auf Umfragen.
 
-## System: Probleme und Reformen (F13, freigegeben automatisch nach Empfehlung 2026-10-22)
+## System: Probleme und Reformen (F13, freigegeben automatisch nach Empfehlung 2026-10-22; seit 2026-10-24 in der Problem-Engine aufgegangen, siehe dort)
 - Dateien: `src/data/probleme.js` (Probleme, Reformen), `src/engine/reformen.js` (Aktion `reformEinbringen`, `reformVorschau`, `sperrgrund`, `reformKosten`, `druckSteigt`), Anzeige im Regierungsbildschirm (`src/ui/screens/regierung.js`). Zahlen: `config.reformen`.
 - Probleme (reale Baustellen, Werte sind Spielwerte ohne Quelle): Mieten und Wohnraum (Bauen, Start-Druck 60), Pflege (Gesundheit, 55), Bahn und Schiene (Verkehr, 50). Druck 0–100.
 - Druck steigt bei jedem beendeten Quartal um 1 (höchstens 100), also 3 je Haushaltsjahr. Ab Druck 70 kostet jedes Problem die Kanzlerpartei 0,1 Punkte je beendetem Quartal (über `umverteilen`, ohne Schwankung).
@@ -172,6 +172,18 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 11: `haushalt.einnahmen` statt `haushalt.steuern` (alte Steueränderungen als Faktor übernommen), `land.preise`.
 - Balancing: Ein unveränderter Haushalt hält die Schuldenbremse in 93 % der Partien über 12 Jahre; sonst muss gegenfinanziert werden. Siegquoten CDU/CSU 36–68 % je Wahlkampf-Strategie.
 - Nicht enthalten (bewusst): eigene Haushalte der Länder und Gemeinden, Zinsänderungen am Markt, Steuerschätzung mit Abweichungen, Sondervermögen außer KTF.
+
+## System: Problem-Engine (System 3, freigegeben automatisch nach Empfehlung 2026-10-23/24; ersetzt die F13-Probleme)
+- Dateien: `src/data/probleme.js` (25 Problembereiche mit Kategorie, Startwert, Grundtrend, Treibern, Schocks, Folgen, 2–3 Lösungen), `src/engine/probleme.js` (Ursachen, Trend, Liste, Quartalsschritt, Lösungen, Jahresfolgen, laufende Kosten), Oberfläche `src/ui/screens/probleme.js`. Alle Schwellen und Gewichte: `config.probleme`.
+- Problembereiche: Fachkräftemangel, Wohnungsnot, Pflegenotstand, Rentenlücke, Energiepreise, Klimafolgen, Infrastruktur, Bildungskrise, Digitalisierung, Inflation, Rezession, Staatsverschuldung, Cyberangriffe, Migration, soziale Spaltung, Polarisierung, Kriminalität, Ärztemangel, Bundeswehr, Geopolitik, Landwirtschaftsproteste, Kommunalfinanzen, Vertrauensverlust, Pandemie, Demografie.
+- Wert 0–100, Stufen: ruhig, angespannt ab 40, ernst ab 60, Krise ab 80. Je beendetem Quartal: Wert + Grundtrend + Treiber (Kennzahlen, andere Probleme als Wechselwirkung, Gruppenstimmung, Etatkürzungen gegenüber 2026, Richtungsprofil) ± Zufall 1; seltene Schocks (Pandemie, Cyberangriffe, Geopolitik, Energie, Extremwetter). Eskalationen auf „ernst“/„Krise“ werden gemeldet.
+- Höchstens 6 Probleme ab „angespannt“ sind prominent, der Rest steht auf der Beobachtungsliste (Frühwarnung ab 32 bei steigendem Trend). Prominente ernste Probleme kosten die Kanzlerpartei 0,02, Krisen 0,05 Punkte je Quartal. Folgen je Haushaltsjahr (Kennzahlen, Gruppen) mit 25/60/100 % je Stufe.
+- Lösungen: Regierungsprogramme ohne Bundestagsabstimmung. Kosten politisches Kapital und Aufmerksamkeit (zusammen mit Reformwegen höchstens 2 Vorhaben je Quartal, nicht im Haushaltsquartal), laufende Kosten im Haushalt solange sie laufen oder wirken, Dauer in Quartalen. Danach Erfolg nach Erfolgschance (± 0,15 je nach Nähe zum Richtungsprofil, 5–95 %): Problem sinkt um die Wirkung, Nebenwirkungen greifen, die Partei des zuständigen Ministeriums gewinnt 0,01 und die Regierung 0,015 je Punkt (nach Umfrageanteil verteilt). Fehlschlag: nur 30 % der Wirkung, Kanzlerpartei −0,2, Kosten enden.
+- Ressourcen: politisches Kapital (+8 je Quartal, höchstens 100), Aufmerksamkeit (2 Vorhaben je Quartal), Haushalt (laufende Kosten).
+- F13 geht darin auf: Wohnen/Pflege/Schiene sind jetzt Wohnungsnot/Pflegenotstand/Infrastruktur; die sechs F13-Reformen sind Lösungen mit gleicher ID und gleichen Kosten. F14-Ereignisse sind an Probleme gebunden (kommen nur ab Problemwert 30) und wirken auf Problemwerte.
+- Spielstand-Version 12: `probleme` { wert, verlauf }, `loesungen`, `runde`, `aktionenImQuartal`, `jahresWirkung`; Migration von F13 (Druck → Wert, beschlossene Reformen → erfolgreiche Lösungen).
+- Balancing (`docs/BALANCING.md`, Abschnitt Probleme und Lösungen): ohne Lösungen im Mittel 1,6 Krisen am Ende, mit Lösungen 0,1–0,5; CDU/CSU gewinnt mit Lösungen 60–66 % statt 51 %, keine Lösungsstrategie dominiert.
+- Nicht enthalten (bewusst): Probleme der Länder, Krisen über mehrere Ereignisketten, Lösungen mit Bundestagsabstimmung (das sind die Reformwege).
 
 ## System: Spielende (freigegeben 2026-10-21, M10)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.

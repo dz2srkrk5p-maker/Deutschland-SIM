@@ -9,8 +9,7 @@ import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minde
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen, kuerzungsVorschlag } from '../src/engine/haushalt.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
-import { reformEinbringen, reformVorschau, sperrgrund } from '../src/engine/reformen.js';
-import { reformen } from '../src/data/probleme.js';
+import { loesungStarten, loesungSperre, erfolgschance, problemListe, loesung } from '../src/engine/probleme.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 import { ministerien } from '../src/data/ministerien.js';
 
@@ -147,17 +146,23 @@ function beschliessen(z, p) {
   return haushaltBeschliessen(z, kuerzungsVorschlag(z, p) ?? p);
 }
 
-const REFORM = {
-  'keine Reformen': (z) => (haushaltsQuartal(z) ? beschliessen(z, {}) : quartalBeenden(z)),
-  'mit Reformen': (z) => {
-    if (haushaltsQuartal(z)) return beschliessen(z, {});
-    const r = reformen.find((r) => !sperrgrund(z, r.id) && reformVorschau(z, r.id).abstimmung.angenommen);
-    return r ? reformEinbringen(z, { reformId: r.id }) : quartalBeenden(z);
-  },
+// System 3: Lösungsstrategien. Je Quartal so viele Lösungen wie Aufmerksamkeit und Kapital erlauben.
+// „größtes Problem“: für das Problem mit dem höchsten Wert die Lösung mit der besten Erfolgschance.
+// „billigste“: unter allen startbaren Lösungen die mit den niedrigsten laufenden Kosten.
+const startbar = (z) => problemListe(z).flatMap((e) => e.problem.loesungen.filter((l) => !loesungSperre(z, l.id)).map((l) => ({ e, l })));
+const LOESUNG = {
+  'keine Lösungen': () => null,
+  'größtes Problem zuerst': (z) => startbar(z).filter((x) => x.e.prominent).sort((a, b) => b.e.wert - a.e.wert || erfolgschance(z, b.l) - erfolgschance(z, a.l))[0]?.l,
+  'billigste zuerst': (z) => startbar(z).sort((a, b) => a.l.kosten - b.l.kosten)[0]?.l,
 };
-const reformZeilen = spielbar.flatMap((p) =>
-  Object.entries(REFORM).map(([name, rz]) => {
-    let siege = 0, anzahl = 0, druck = 0, brueche = 0;
+const regierenMit = (wahl) => (z) => {
+  if (haushaltsQuartal(z)) return beschliessen(z, {});
+  const l = wahl(z);
+  return l ? loesungStarten(z, { loesungId: l.id }) : quartalBeenden(z);
+};
+const loesungZeilen = spielbar.flatMap((p) =>
+  Object.entries(LOESUNG).map(([name, wahl]) => {
+    let siege = 0, erfolge = 0, wert = 0, krisen = 0, quote = 0, brueche = 0;
     for (let seed = 1; seed <= PARTIEN; seed++) {
       let z = neuesSpiel(p.id, seed), bruch = false;
       for (let zug = 0; zug < MAX_ZUEGE; zug++) {
@@ -166,24 +171,28 @@ const reformZeilen = spielbar.flatMap((p) =>
         else if (z.phase === 'koalition') r = KOALITION['Minderheit nur ohne Mehrheit'](z);
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
         else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
-        else if (z.phase === 'regierung') r = rz(z);
+        else if (z.phase === 'regierung') r = regierenMit(wahl)(z);
         else break;
         if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
         z = r.state;
       }
       if (z.phase === 'sieg') siege++;
       if (bruch) brueche++;
-      anzahl += z.reformen.length;
-      druck += Object.values(z.probleme).reduce((s, d) => s + d, 0) / Object.keys(z.probleme).length;
+      erfolge += Object.values(z.loesungen).filter((l) => l.status === 'erfolg').length;
+      const liste = problemListe(z);
+      wert += liste.reduce((s2, e) => s2 + e.wert, 0) / liste.length;
+      krisen += liste.filter((e) => e.stufe.id === 'krise').length;
+      quote += z.land.schuldenquote;
     }
-    return `| ${p.name} | ${name} | ${prozent(siege)} | ${prozent(brueche)} | ${(anzahl / PARTIEN).toFixed(1)} | ${(druck / PARTIEN).toFixed(0)} |`;
+    const n = (x, d = 1) => (x / PARTIEN).toFixed(d);
+    return `| ${p.name} | ${name} | ${prozent(siege)} | ${prozent(brueche)} | ${n(erfolge)} | ${n(wert, 0)} | ${n(krisen)} | ${n(quote, 0)} % |`;
   }),
 );
 
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', reformen: 'F13', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
@@ -217,12 +226,12 @@ Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Parti
 |---|---|---|---|---|
 ${minderheitZeilen.join('\n')}
 
-## Reformen (F13)
-Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit. „mit Reformen“: je Quartal die erste Reform mit Mehrheit, im Haushalt Etats kürzen (Partner zuerst), bis die Schuldenbremse hält. Druck: Durchschnitt der Probleme am Partieende.
+## Probleme und Lösungen (System 3)
+Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur wenn nötig. Je Quartal bis zu ${config.probleme.aktionenJeQuartal} Lösungen nach Strategie (siehe Skript). Werte am Partieende: Problemwert im Mittel über alle Bereiche, Zahl der Krisen, Schuldenquote.
 
-| Partei | Strategie | Sieg | Koalitionsbruch | Ø Reformen | Ø Druck am Ende |
-|---|---|---|---|---|---|
-${reformZeilen.join('\n')}
+| Partei | Strategie | Sieg | Koalitionsbruch | Ø erfolgreiche Lösungen | Ø Problemwert | Ø Krisen | Ø Schuldenquote |
+|---|---|---|---|---|---|---|---|
+${loesungZeilen.join('\n')}
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus \`config.schwierigkeit\`, eingetragen in \`src/data/parteien.js\`.

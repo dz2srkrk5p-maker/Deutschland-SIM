@@ -1,5 +1,5 @@
 import { config } from '../data/config.js';
-import { druckSteigt } from './reformen.js';
+import { problemeQuartal } from './probleme.js';
 import { ereignisZiehen } from './ereignisse.js';
 
 const letztes = config.regierung.quartaleJeJahr;
@@ -13,11 +13,11 @@ export function quartalBeenden(zustand) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
   if (haushaltsQuartal(zustand)) throw new Error('Im letzten Quartal wird der Haushalt beschlossen');
   if (zustand.offenesEreignis) throw new Error('Erst auf das Ereignis reagieren');
-  // Probleme (F13): Druck steigt, brennende Probleme kosten die Kanzlerpartei; danach vielleicht ein Ereignis (F14)
-  const druck = druckSteigt(zustand);
-  const neu = ereignisZiehen({ ...druck.state, quartal: zustand.quartal + 1 });
+  // Probleme (System 3) entwickeln sich, Lösungen werden fertig; danach vielleicht ein Ereignis (F14)
+  const entwicklung = problemeQuartal(zustand);
+  const neu = ereignisZiehen({ ...entwicklung.state, quartal: zustand.quartal + 1 });
   return {
     state: neu.state,
-    ereignisse: [`Haushaltsjahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal} vorbei`, ...druck.ereignisse, ...neu.ereignisse],
+    ereignisse: [`Haushaltsjahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal} vorbei`, ...entwicklung.ereignisse, ...neu.ereignisse],
   };
 }

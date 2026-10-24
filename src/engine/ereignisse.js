@@ -6,14 +6,13 @@ import { zufall } from './rng.js';
 import { umverteilen, runden } from './wahlkampf.js';
 import { mitVerlauf } from './state.js';
 
-const rf = config.reformen;
 const ereignis = (id) => ereignisse.find((e) => e.id === id);
 const name = (id) => parteien.find((p) => p.id === id).name;
 const zahl = (x) => (x > 0 ? '+' : '−') + Math.abs(x).toLocaleString('de-DE', { maximumFractionDigits: 2 });
 
 export const offenesEreignis = (zustand) => (zustand.offenesEreignis ? ereignis(zustand.offenesEreignis) : null);
 
-// Folgen einer Möglichkeit, aufgelöst auf Parteien: { parteien: { parteiId: Punkte }, druck: { problemId: Punkte } }
+// Folgen einer Möglichkeit, aufgelöst auf Parteien: { parteien: { parteiId: Punkte }, probleme: { problemId: Punkte } }
 export function folgen(zustand, ereignisId, wahl) {
   const f = ereignis(ereignisId).moeglichkeiten[wahl].folgen;
   const wirkung = {};
@@ -21,14 +20,15 @@ export function folgen(zustand, ereignisId, wahl) {
   if (f.kanzler) dazu(zustand.kanzlerParteiId, f.kanzler);
   if (f.partner) zustand.koalition.partner.forEach((id) => dazu(id, f.partner));
   for (const [ministerium, wert] of Object.entries(f.ministerium ?? {})) dazu(zustand.kabinett.verteilung[ministerium], wert);
-  return { parteien: wirkung, druck: f.druck ?? {} };
+  return { parteien: wirkung, probleme: f.probleme ?? {} };
 }
 
 // Beim Quartalswechsel (F14): mit fester Chance ein noch nicht dagewesenes, passendes Ereignis ziehen.
 export function ereignisZiehen(zustand) {
   const ob = zufall(zustand.rngZustand);
   if (ob.wert >= config.ereignisse.chanceJeQuartal) return { state: { ...zustand, rngZustand: ob.rngZustand }, ereignisse: [] };
-  const moeglich = ereignisse.filter((e) => !zustand.ereignisseWahlperiode.includes(e.id) && (!e.bedingung || e.bedingung(zustand)));
+  // nur Ereignisse, deren Problem spürbar ist (System 3), dazu eigene Bedingungen
+  const moeglich = ereignisse.filter((e) => !zustand.ereignisseWahlperiode.includes(e.id) && (!e.problem || zustand.probleme[e.problem].wert >= 30) && (!e.bedingung || e.bedingung(zustand)));
   if (!moeglich.length) return { state: { ...zustand, rngZustand: ob.rngZustand }, ereignisse: [] };
   const welches = zufall(ob.rngZustand);
   const e = moeglich[Math.floor(welches.wert * moeglich.length)];
@@ -41,13 +41,13 @@ export function ereignisEntscheiden(zustand, { wahl }) {
   if (!e) throw new Error('Kein offenes Ereignis');
   if (!e.moeglichkeiten[wahl]) throw new Error(`Ungültige Wahl: ${wahl}`);
   const f = folgen(zustand, e.id, wahl);
-  const druck = { ...zustand.probleme };
-  for (const [id, d] of Object.entries(f.druck)) druck[id] = Math.max(0, Math.min(rf.druckMax, druck[id] + d));
-  const basis = { ...zustand, probleme: druck, offenesEreignis: null, ereignisseWahlperiode: [...zustand.ereignisseWahlperiode, e.id] };
+  const neu = { ...zustand.probleme };
+  for (const [id, d] of Object.entries(f.probleme)) neu[id] = { ...neu[id], wert: Math.max(0, Math.min(100, neu[id].wert + d)) };
+  const basis = { ...zustand, probleme: neu, offenesEreignis: null, ereignisseWahlperiode: [...zustand.ereignisseWahlperiode, e.id] };
   const state = Object.keys(f.parteien).length ? mitVerlauf({ ...basis, anteile: runden(umverteilen(zustand.anteile, f.parteien)) }) : basis;
   const teile = [
     ...Object.entries(f.parteien).map(([id, w]) => `${name(id)} ${zahl(w)}`),
-    ...Object.entries(f.druck).map(([id, d]) => `Druck ${probleme.find((p) => p.id === id).name} ${zahl(d)}`),
+    ...Object.entries(f.probleme).map(([id, d]) => `${probleme.find((p) => p.id === id).name} ${zahl(d)}`),
   ];
   return { state, ereignisse: [`${e.titel}: „${e.moeglichkeiten[wahl].text}“${teile.length ? ` (${teile.join(', ')})` : ''}`] };
 }

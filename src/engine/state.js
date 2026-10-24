@@ -1,14 +1,16 @@
 import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
-import { probleme } from '../data/probleme.js';
+import { startProbleme } from './probleme.js';
+import { wirkungSumme } from './wirtschaft.js';
 import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen.js';
 import { config } from '../data/config.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 11; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 12; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
-// 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise
+// 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
+// 12: Problem-Engine: probleme { id: { wert, verlauf } }, loesungen, runde, aktionenImQuartal, jahresWirkung (statt reformen, reformImQuartal)
 
 // Neue Felder ab Version 10, auch für die Migration alter Spielstände
 const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip, preise: 1 });
@@ -44,10 +46,12 @@ export function neuesSpiel(spielerParteiId, seed) {
     haushalt: { jahr: 1, etats: { ...etats2026 }, einnahmen: einnahmenStart(), neueSchuldenSeitStart: 0 },
     // für Sieg und Endbildschirm; besteWahl = bester Stimmanteil der Spielerpartei bei einer Wahl
     quartal: 1, // Quartal im laufenden Regierungsjahr (F12); Haushalt im letzten
-    // Problemdruck 0–100 je Problem und beschlossene Reformen (F13); gelten über Wahlperioden hinweg weiter
-    probleme: Object.fromEntries(probleme.map((p) => [p.id, p.startDruck])),
-    reformen: [],
-    reformImQuartal: false, // in diesem Quartal schon eine Reform eingebracht
+    // Probleme 0–100 mit Verlauf und gestartete Lösungen (System 3); gelten über Wahlperioden hinweg weiter
+    probleme: startProbleme(),
+    loesungen: {}, // { loesungId: { status: 'laufend' | 'erfolg' | 'gescheitert', fertig: Runde } }
+    runde: 0, // gezählte Quartale in der Regierung (für Dauer von Lösungen und Reformen)
+    aktionenImQuartal: 0, // gestartete Lösungen und Reformwege in diesem Quartal (Aufmerksamkeit)
+    jahresWirkung: wirkungSumme(), // Wirkungen im laufenden Jahr, fließen in den nächsten Jahresschritt
     offenesEreignis: null, // Ereignis, auf das der Spieler noch reagieren muss (F14)
     ereignisseWahlperiode: [], // schon dagewesene Ereignisse dieser Wahlperiode
     land: landStart(), // Landeskennzahlen (data/kennzahlen.js), Schulden und BIP in Mrd. €
@@ -82,7 +86,7 @@ export function zurueckInDenWahlkampf(zustand) {
     kabinett: null,
     haushalt: { ...zustand.haushalt, jahr: 1 },
     quartal: 1,
-    reformImQuartal: false,
+    aktionenImQuartal: 0,
     ereignisseWahlperiode: [],
   };
 }
@@ -105,6 +109,16 @@ const MIGRATIONEN = {
   10: (z) => {
     const { steuern, ...haushalt } = z.haushalt;
     return { ...z, version: 11, land: { preise: 1, ...z.land }, haushalt: { ...haushalt, einnahmen: einnahmenStart(steuern / steuern2026) } };
+  },
+  // F13-Probleme gehen in der Problem-Engine auf: Druck → Wert, beschlossene Reformen → erfolgreiche Lösungen (gleiche IDs)
+  11: (z) => {
+    const { reformen = [], reformImQuartal, ...rest } = z;
+    const probleme = startProbleme();
+    for (const [alt, neu] of [['wohnen', 'wohnungsnot'], ['pflege', 'pflegenotstand'], ['schiene', 'infrastruktur']]) {
+      if (typeof z.probleme?.[alt] === 'number') probleme[neu] = { wert: z.probleme[alt], verlauf: [z.probleme[alt]] };
+    }
+    const loesungen = Object.fromEntries(reformen.map((id) => [id, { status: 'erfolg', fertig: 0 }]));
+    return { ...rest, version: 12, probleme, loesungen, runde: 0, aktionenImQuartal: reformImQuartal ? 1 : 0, jahresWirkung: wirkungSumme() };
   },
 };
 

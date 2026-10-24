@@ -32,13 +32,26 @@ export const config = {
     umfrage: { wachstum: 0.15, arbeitslosigkeit: 0.3, inflationUeber: 3, inflation: 0.15, gruppen: 0.06 },
   },
 
-  // Probleme und Reformen (F13, freigegeben automatisch nach Empfehlung 2026-10-22). Druck 0–100, Werte in Punkten.
-  reformen: {
-    druckAnstiegJeQuartal: 1, // jedes Problem, bei jedem beendeten Quartal (nicht im Haushaltsquartal)
-    druckMax: 100,
-    druckSchwelle: 70, // ab hier schadet das Problem der Kanzlerpartei
-    verlustJeQuartal: 0.1, // Umfrageverlust der Kanzlerpartei je Problem über der Schwelle, je beendetem Quartal
-    gewinnJeDruckpunkt: 0.01, // Umfragegewinn der Partei des zuständigen Ministeriums je gesenktem Druckpunkt
+  // Problem-Engine (System 3, freigegeben automatisch nach Empfehlung 2026-10-23; ersetzt die F13-Probleme). Alle Schwellen
+  // und Gewichte, Spielwerte. Inhalte (Treiber, Folgen, Lösungen je Problem) stehen in src/data/probleme.js.
+  probleme: {
+    stufen: [
+      { id: 'ruhig', name: 'ruhig', ab: 0, folgen: 0 },
+      { id: 'angespannt', name: 'angespannt', ab: 40, folgen: 0.25 },
+      { id: 'ernst', name: 'ernst', ab: 60, folgen: 0.6 },
+      { id: 'krise', name: 'Krise', ab: 80, folgen: 1 },
+    ],
+    maxAktiv: 6, // so viele Probleme ab „angespannt“ stehen prominent, der Rest auf der Beobachtungsliste
+    fruehwarnungAb: 32, // Beobachtungsliste: Frühwarnung ab diesem Wert bei steigendem Trend
+    umfrageJeQuartal: { ernst: 0.02, krise: 0.05 }, // Verlust der Kanzlerpartei je Quartal und prominentem Problem
+    schwankung: 1, // zufällig ± je Quartal und Problem
+    aktionenJeQuartal: 2, // Aufmerksamkeit: Lösungen und Reformwege zusammen je Quartal
+    fehlschlagWirkung: 0.3, // gescheiterte Lösung senkt das Problem nur um diesen Anteil
+    fehlschlagUmfrage: 0.2, // und kostet die Kanzlerpartei so viele Punkte
+    gewinnJeWertpunkt: 0.01, // Umfragegewinn der Ministeriumspartei je gesenktem Punkt (wie F13)
+    gewinnRegierungJeWertpunkt: 0.015, // dazu für die Regierung, verteilt nach Umfrageanteil der Koalitionsparteien; Balancing 2026-10-24
+    passungBonus: 0.15, // Erfolgschance ± je nach Nähe der Lösung zum Richtungsprofil (System 1)
+    verlaufLaenge: 16, // so viele Quartale Verlauf je Problem
   },
 
   // Ereignisse (F14, freigegeben automatisch nach Empfehlung 2026-10-22): Chance je beendetem Quartal, höchstens eines;

@@ -10,7 +10,7 @@ const partei = (id) => parteien.find((p) => p.id === id);
 // Bereiche der Regierung (Hauptnavigation)
 export const BEREICHE = [
   { id: 'lage', text: 'Lage' },
-  { id: 'reformen', text: 'Reformen' },
+  { id: 'probleme', text: 'Probleme' },
   { id: 'haushalt', text: 'Haushalt' },
   { id: 'parlament', text: 'Parlament' },
   { id: 'chronik', text: 'Chronik' },
@@ -45,6 +45,7 @@ function kopfHtml(z) {
         <div><dt>Zeit</dt><dd>${zeitText(z)}</dd></div>
         <div><dt>Umfrage</dt><dd>${prozent(z.anteile[p.id])} ${trend(umfrageTrend(z))}</dd></div>
         <div><dt>Kanzlerjahre</dt><dd>${zahl(z.statistik.jahreKanzler)} von ${config.spielende.siegJahreKanzler}</dd></div>
+        ${z.phase === 'regierung' ? `<div><dt>Kapital</dt><dd>${z.kapital}</dd></div>` : ''}
       </dl>
       <button id="menue-auf" aria-haspopup="dialog">☰ Spiel</button>
     </div></header>`;

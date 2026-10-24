@@ -22,17 +22,18 @@ test('F15: Spielbeginn: BSW knapp an der Hürde, sonst nichts', () => {
 test('F15: Regierung: Koalitionsunruhe, brennende Probleme (höchster zuerst), Minderheit; höchstens 3, keine doppelten', () => {
   const z = regierung({
     anteile: { ...neuesSpiel('union', 1).anteile, spd: 15.4, sonstige: 5.519 },
-    probleme: { wohnen: 75, pflege: 90, schiene: 40 },
+    probleme: { ...neuesSpiel('union', 1).probleme, wohnungsnot: { wert: 75, verlauf: [75] }, pflegenotstand: { wert: 90, verlauf: [90] } },
   });
   const liste = schlagzeilen(z);
   expect(liste).toEqual([
     'Unruhe bei SPD: Basis zweifelt an der Koalition',
-    'Pflege: Druck auf die Bundesregierung wächst (90 von 100)',
-    'Mieten und Wohnraum: Druck auf die Bundesregierung wächst (75 von 100)',
+    'Pflegenotstand: Druck auf die Bundesregierung wächst (90 von 100)',
+    'Wohnungsnot und Mietenkrise: Druck auf die Bundesregierung wächst (75 von 100)',
   ]);
   expect(liste).toHaveLength(config.ticker.anzahl);
   const minderheit = regierung({ koalition: { partner: [], startAnteile: {}, minderheit: true, fehlschlaege: 0 } });
-  expect(schlagzeilen(minderheit)[0]).toContain('Minderheitsregierung: CDU/CSU');
+  // Start: Wohnungsnot (60) ist schon ernst und steht davor
+  expect(schlagzeilen(minderheit).some((s) => s.startsWith('Minderheitsregierung: CDU/CSU'))).toBe(true);
 });
 
 test('F15: Umfragetrend der eigenen Partei, gleicher Zustand gleiche Schlagzeilen', () => {

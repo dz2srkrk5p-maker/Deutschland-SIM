@@ -1,6 +1,6 @@
 # Balancing-Bericht
 
-Erzeugt mit `npm run balancing` am 2026-10-23. 200 Partien je Partei und Strategie (Seeds 1–200).
+Erzeugt mit `npm run balancing` am 2026-10-24. 200 Partien je Partei und Strategie (Seeds 1–200).
 
 ## Strategien der Simulation
 - Wahlkampf: jede Woche Plakate und Werbung (Hauptergebnisse); weitere Wahlkampf-Strategien siehe eigener Abschnitt.
@@ -13,16 +13,16 @@ Erzeugt mit `npm run balancing` am 2026-10-23. 200 Partien je Partei und Strateg
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |
 |---|---|---|---|---|---|
-| Haushalt unverändert | CDU/CSU | 100 % | 0 % | 36 % | 6.9 |
+| Haushalt unverändert | CDU/CSU | 100 % | 2 % | 27 % | 6.5 |
 | Haushalt unverändert | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Haushalt unverändert | SPD | 36 % | 0 % | 5 % | 2.1 |
+| Haushalt unverändert | SPD | 36 % | 0 % | 2 % | 2.1 |
 | Haushalt unverändert | Grüne | 9 % | 0 % | 0 % | 0.4 |
 | Haushalt unverändert | Linke | 1 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | BSW | 0 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | FDP | 2 % | 0 % | 0 % | 0.1 |
-| Partner kürzen | CDU/CSU | 100 % | 36 % | 28 % | 6.5 |
+| Partner kürzen | CDU/CSU | 100 % | 36 % | 14 % | 6.1 |
 | Partner kürzen | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Partner kürzen | SPD | 36 % | 34 % | 9 % | 2.4 |
+| Partner kürzen | SPD | 36 % | 35 % | 1 % | 2.0 |
 | Partner kürzen | Grüne | 9 % | 6 % | 0 % | 0.3 |
 | Partner kürzen | Linke | 1 % | 1 % | 0 % | 0.0 |
 | Partner kürzen | BSW | 0 % | 0 % | 0 % | 0.0 |
@@ -33,66 +33,73 @@ Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit d
 
 | Partei | immer Plakate | immer Kundgebung | immer Angriff (Stärkster) | abwechselnd | klug |
 |---|---|---|---|---|---|
-| CDU/CSU | 36.0 | 39.0 | 35.5 | 54.0 | **68.0** |
+| CDU/CSU | 26.5 | 26.0 | 17.5 | 50.5 | **54.0** |
 | AfD | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
-| SPD | 4.5 | 9.5 | 13.0 | **22.0** | 20.5 |
-| Grüne | 0.0 | 0.0 | 1.5 | **7.0** | 4.0 |
-| Linke | 0.0 | 0.0 | 0.0 | **0.5** | **0.5** |
-| BSW | 0.0 | 0.0 | 0.0 | **1.5** | 0.5 |
-| FDP | 0.0 | 0.0 | 0.0 | 0.0 | **1.5** |
+| SPD | 2.0 | 6.5 | 4.0 | **20.0** | 14.0 |
+| Grüne | 0.0 | 0.0 | 0.0 | **4.5** | 1.5 |
+| Linke | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| BSW | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| FDP | 0.0 | 0.0 | 0.0 | 0.0 | **0.5** |
 
 ## Minderheitsregierung (F11)
 Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Partien mit mindestens einer Minderheitsregierung. „Gescheitert“: Zahl der Partien, die durch gescheiterte Haushalte einer Minderheitsregierung enden.
 
 | Partei | Regierungsbildung | Minderheit | Gescheitert | Sieg |
 |---|---|---|---|---|
-| CDU/CSU | Minderheit nur ohne Mehrheit | 54 % | 92 | 54 % |
+| CDU/CSU | Minderheit nur ohne Mehrheit | 53 % | 99 | 51 % |
 | CDU/CSU | Minderheit wenn möglich | 100 % | 200 | 0 % |
 | AfD | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
 | AfD | Minderheit wenn möglich | 0 % | 0 | 0 % |
-| SPD | Minderheit nur ohne Mehrheit | 16 % | 31 | 22 % |
-| SPD | Minderheit wenn möglich | 35 % | 70 | 3 % |
-| Grüne | Minderheit nur ohne Mehrheit | 1 % | 2 | 7 % |
-| Grüne | Minderheit wenn möglich | 5 % | 9 | 4 % |
-| Linke | Minderheit nur ohne Mehrheit | 0 % | 0 | 1 % |
-| Linke | Minderheit wenn möglich | 0 % | 0 | 1 % |
-| BSW | Minderheit nur ohne Mehrheit | 0 % | 0 | 2 % |
-| BSW | Minderheit wenn möglich | 0 % | 0 | 2 % |
+| SPD | Minderheit nur ohne Mehrheit | 8 % | 16 | 20 % |
+| SPD | Minderheit wenn möglich | 21 % | 42 | 7 % |
+| Grüne | Minderheit nur ohne Mehrheit | 1 % | 1 | 5 % |
+| Grüne | Minderheit wenn möglich | 3 % | 5 | 3 % |
+| Linke | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
+| Linke | Minderheit wenn möglich | 0 % | 0 | 0 % |
+| BSW | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
+| BSW | Minderheit wenn möglich | 0 % | 0 | 0 % |
 | FDP | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
 | FDP | Minderheit wenn möglich | 0 % | 0 | 0 % |
 
-## Reformen (F13)
-Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit. „mit Reformen“: je Quartal die erste Reform mit Mehrheit, im Haushalt Etats kürzen (Partner zuerst), bis die Schuldenbremse hält. Druck: Durchschnitt der Probleme am Partieende.
+## Probleme und Lösungen (System 3)
+Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur wenn nötig. Je Quartal bis zu 2 Lösungen nach Strategie (siehe Skript). Werte am Partieende: Problemwert im Mittel über alle Bereiche, Zahl der Krisen, Schuldenquote.
 
-| Partei | Strategie | Sieg | Koalitionsbruch | Ø Reformen | Ø Druck am Ende |
-|---|---|---|---|---|---|
-| CDU/CSU | keine Reformen | 54 % | 0 % | 0.0 | 74 |
-| CDU/CSU | mit Reformen | 62 % | 11 % | 4.5 | 50 |
-| AfD | keine Reformen | 0 % | 0 % | 0.0 | 55 |
-| AfD | mit Reformen | 0 % | 0 % | 0.0 | 55 |
-| SPD | keine Reformen | 22 % | 0 % | 0.0 | 65 |
-| SPD | mit Reformen | 19 % | 10 % | 2.8 | 48 |
-| Grüne | keine Reformen | 7 % | 0 % | 0.0 | 58 |
-| Grüne | mit Reformen | 6 % | 2 % | 1.0 | 52 |
-| Linke | keine Reformen | 1 % | 0 % | 0.0 | 55 |
-| Linke | mit Reformen | 0 % | 1 % | 0.1 | 54 |
-| BSW | keine Reformen | 2 % | 0 % | 0.0 | 56 |
-| BSW | mit Reformen | 1 % | 1 % | 0.2 | 54 |
-| FDP | keine Reformen | 0 % | 0 % | 0.0 | 55 |
-| FDP | mit Reformen | 0 % | 1 % | 0.2 | 54 |
+| Partei | Strategie | Sieg | Koalitionsbruch | Ø erfolgreiche Lösungen | Ø Problemwert | Ø Krisen | Ø Schuldenquote |
+|---|---|---|---|---|---|---|---|
+| CDU/CSU | keine Lösungen | 51 % | 4 % | 0.0 | 51 | 1.6 | 75 % |
+| CDU/CSU | größtes Problem zuerst | 66 % | 0 % | 21.4 | 36 | 0.1 | 70 % |
+| CDU/CSU | billigste zuerst | 60 % | 0 % | 19.5 | 38 | 0.5 | 74 % |
+| AfD | keine Lösungen | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
+| AfD | größtes Problem zuerst | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
+| AfD | billigste zuerst | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
+| SPD | keine Lösungen | 20 % | 1 % | 0.0 | 46 | 0.6 | 69 % |
+| SPD | größtes Problem zuerst | 25 % | 3 % | 10.6 | 38 | 0.0 | 67 % |
+| SPD | billigste zuerst | 21 % | 2 % | 8.8 | 40 | 0.1 | 68 % |
+| Grüne | keine Lösungen | 5 % | 1 % | 0.0 | 44 | 0.2 | 65 % |
+| Grüne | größtes Problem zuerst | 7 % | 2 % | 3.2 | 42 | 0.0 | 65 % |
+| Grüne | billigste zuerst | 8 % | 0 % | 2.7 | 42 | 0.0 | 65 % |
+| Linke | keine Lösungen | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
+| Linke | größtes Problem zuerst | 0 % | 1 % | 0.3 | 43 | 0.0 | 64 % |
+| Linke | billigste zuerst | 0 % | 0 % | 0.3 | 43 | 0.0 | 64 % |
+| BSW | keine Lösungen | 0 % | 1 % | 0.0 | 43 | 0.0 | 64 % |
+| BSW | größtes Problem zuerst | 1 % | 1 % | 0.5 | 43 | 0.0 | 64 % |
+| BSW | billigste zuerst | 1 % | 0 % | 0.4 | 43 | 0.0 | 64 % |
+| FDP | keine Lösungen | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
+| FDP | größtes Problem zuerst | 1 % | 1 % | 0.4 | 42 | 0.0 | 64 % |
+| FDP | billigste zuerst | 1 % | 0 % | 0.4 | 43 | 0.0 | 64 % |
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
 
 | Partei | Siege | gemessen | eingetragen | Abgleich |
 |---|---|---|---|---|
-| CDU/CSU | 68.0 % | leicht | leicht | passt |
+| CDU/CSU | 54.0 % | leicht | leicht | passt |
 | AfD | 0.0 % | fast unmöglich | fast unmöglich | passt |
-| SPD | 22.0 % | mittel | mittel | passt |
-| Grüne | 7.0 % | schwer | schwer | passt |
-| Linke | 0.5 % | fast unmöglich | fast unmöglich | passt |
-| BSW | 1.5 % | schwer | schwer | passt |
-| FDP | 1.5 % | schwer | fast unmöglich | **anpassen** |
+| SPD | 20.0 % | mittel | mittel | passt |
+| Grüne | 4.5 % | schwer | schwer | passt |
+| Linke | 0.0 % | fast unmöglich | fast unmöglich | passt |
+| BSW | 0.0 % | fast unmöglich | schwer | **anpassen** |
+| FDP | 0.5 % | fast unmöglich | fast unmöglich | passt |
 
 ## Alle Konstanten (`src/data/config.js`)
 | Name | Wert | Freigegeben in |
@@ -120,11 +127,19 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `wirtschaft.umfrage.inflationUeber` | 3 | System 2 |
 | `wirtschaft.umfrage.inflation` | 0.15 | System 2 |
 | `wirtschaft.umfrage.gruppen` | 0.06 | System 2 |
-| `reformen.druckAnstiegJeQuartal` | 1 | F13 |
-| `reformen.druckMax` | 100 | F13 |
-| `reformen.druckSchwelle` | 70 | F13 |
-| `reformen.verlustJeQuartal` | 0.1 | F13 |
-| `reformen.gewinnJeDruckpunkt` | 0.01 | F13 |
+| `probleme.stufen` | [{"id":"ruhig","name":"ruhig","ab":0,"folgen":0},{"id":"angespannt","name":"angespannt","ab":40,"folgen":0.25},{"id":"ernst","name":"ernst","ab":60,"folgen":0.6},{"id":"krise","name":"Krise","ab":80,"folgen":1}] | System 3 |
+| `probleme.maxAktiv` | 6 | System 3 |
+| `probleme.fruehwarnungAb` | 32 | System 3 |
+| `probleme.umfrageJeQuartal.ernst` | 0.02 | System 3 |
+| `probleme.umfrageJeQuartal.krise` | 0.05 | System 3 |
+| `probleme.schwankung` | 1 | System 3 |
+| `probleme.aktionenJeQuartal` | 2 | System 3 |
+| `probleme.fehlschlagWirkung` | 0.3 | System 3 |
+| `probleme.fehlschlagUmfrage` | 0.2 | System 3 |
+| `probleme.gewinnJeWertpunkt` | 0.01 | System 3 |
+| `probleme.gewinnRegierungJeWertpunkt` | 0.015 | System 3 |
+| `probleme.passungBonus` | 0.15 | System 3 |
+| `probleme.verlaufLaenge` | 16 | System 3 |
 | `ereignisse.chanceJeQuartal` | 0.3 | F14 |
 | `ticker.anzahl` | 3 | F15 |
 | `ticker.trendSchritte` | 3 | F15 |

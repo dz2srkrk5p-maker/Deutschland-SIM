@@ -18,6 +18,19 @@ export const parteiPosition = (id) => {
   return p?.ches ? chesAufAchsen(p.ches) : null;
 };
 
+// Richtungsprofil des Landes aus den beschlossenen Reformwegen (System 1, Schritt 4). Ohne Reformwege neutral.
+// wegAusrichtung: Funktion wegId → Ausrichtung; wird von reformwege.js gesetzt, damit profil.js keine Inhalte importiert.
+let wegAusrichtung = () => null;
+export const setzeWegAusrichtung = (fn) => (wegAusrichtung = fn);
+export function richtungsprofil(zustand) {
+  const leer = Object.fromEntries(achsen.map((a) => [a.id, 0]));
+  const wege = Object.values(zustand.reformwege ?? {}).filter((b) => b.status === 'beschlossen' || b.status === 'umsetzung').map((b) => wegAusrichtung(b.weg)).filter(Boolean);
+  if (!wege.length) return leer;
+  // Mittel über alle Wege, gedämpft bei wenigen Wegen (ein einzelner Weg prägt das Land noch nicht ganz)
+  const daempfung = wege.length / (wege.length + 2);
+  return Object.fromEntries(achsen.map((a) => [a.id, Math.round((wege.reduce((s, w) => s + (w[a.id] ?? 0), 0) / wege.length) * daempfung * 100) / 100]));
+}
+
 // Abstand zweier Positionen: Mittel der Beträge je Achse (0 = gleich, 4 = maximal entgegengesetzt).
 // Achsen, die eine Seite nicht berührt (Wert fehlt), zählen nicht.
 export function abstand(a, b) {

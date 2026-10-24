@@ -7,12 +7,14 @@ import { mehrheit } from '../../engine/koalition.js';
 import { vorschau, mrd, bruchAbstand } from '../../engine/haushalt.js';
 import { haushaltsQuartal } from '../../engine/regierung.js';
 import { offenesEreignis, folgen } from '../../engine/ereignisse.js';
+import { problemListe } from '../../engine/probleme.js';
 import { tickerHtml } from '../components/ticker.js';
 import { bruchStufe } from '../components/koalitionslage.js';
-import { karte, kennzahl, status, zahl, plusMinus } from '../components/basis.js';
+import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const STUFE_TEXT = { ok: 'stabil', gelb: 'angespannt', rot: 'vor dem Bruch' };
+const pc = config.probleme;
 
 // Offenes Ereignis (F14): Kontext, Möglichkeiten und ihre Folgen vor dem Klick
 function ereignisHtml(zustand, e) {
@@ -20,32 +22,49 @@ function ereignisHtml(zustand, e) {
     const f = folgen(zustand, e.id, i);
     const teile = [
       ...Object.entries(f.parteien).map(([id, w]) => `${partei(id).name} ${plusMinus(w)}`),
-      ...Object.entries(f.druck).map(([id, d]) => `Druck ${probleme.find((p) => p.id === id).name} ${plusMinus(d, 0)}`),
+      ...Object.entries(f.probleme).map(([id, d]) => `${probleme.find((p) => p.id === id).name} ${plusMinus(d, 0)}`),
     ];
     return `<button data-wahl="${i}"><strong>${m.text}</strong><small>${teile.join(' · ') || 'keine Folgen'}</small></button>`;
   }).join('');
   return karte(`<span class="badge gelb">⚠ Entscheidung nötig</span><h2>${e.titel}</h2><p>${e.text}</p><div class="optionen">${optionen}</div>`, { klasse: 'ereignis' });
 }
 
-// Lage: Startseite jedes Quartals. Offenes Ereignis zuerst, dann Kennzahlen, Ticker und die Hauptaktion.
-export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich }) {
+// Wirtschaftslage: Wert, Bewertung mit Symbol
+function wirtschaftHtml(l) {
+  const zeile = (titel, wert, gut) => `<span>${titel}</span><span>${wert} ${gut === null ? '' : gut ? '<span class="ok">✓</span>' : '<span class="gelb">⚠</span>'}</span>`;
+  return `<div class="bilanz">
+    ${zeile('Wachstum', `${zahl(l.wachstum, 1)} %`, l.wachstum >= config.wirtschaft.potenzialWachstum)}
+    ${zeile('Inflation', `${zahl(l.inflation, 1)} %`, l.inflation <= 3)}
+    ${zeile('Arbeitslosenquote', `${zahl(l.arbeitslosigkeit, 1)} %`, l.arbeitslosigkeit <= 6)}
+    ${zeile('Schuldenquote', `${zahl(l.schuldenquote, 1)} %`, l.schuldenquote <= 65)}
+    ${zeile('Ungleichheit (Gini)', zahl(l.gini, 1), null)}
+  </div>`;
+}
+
+function topProblemeHtml(zustand) {
+  const liste = problemListe(zustand).slice(0, 4);
+  return `<ul class="liste">${liste.map((e) => `<li>
+    <span class="problem-kopf"><span>${e.problem.name} ${e.wert >= pc.stufen[2].ab ? badge(e.stufe.name, 'rot') : ''}</span><span class="zahl">${Math.round(e.wert)}</span></span>
+    ${balken(e.wert, e.wert >= pc.stufen[2].ab ? 'var(--gefahr)' : 'var(--warn)', { marke: pc.stufen[2].ab, label: `${e.problem.name}: ${Math.round(e.wert)} von 100` })}</li>`).join('')}</ul>
+    <div class="knoepfe"><button data-gehe="probleme">Alle Probleme und Lösungen</button></div>`;
+}
+
+// Lage: Dashboard jedes Quartals. Offenes Ereignis zuerst, dann Kennzahlen, Top-Probleme, Wirtschaft, Schlagzeilen, Hauptaktion.
+export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, zusatz = '' }) {
   const e = offenesEreignis(zustand);
   const regierung = koalitionsParteien(zustand);
   const sitze = regierung.reduce((s, id) => s + zustand.sitze[id], 0);
   const noetig = mehrheit(zustand.sitze);
   const b = vorschau(zustand, {}).bilanz;
-  const spielraum = config.haushalt.schuldenbremseGrenze - b.schuldenbremse;
+  const spielraum = b.grenze - b.schuldenbremse;
   const abstaende = bruchAbstand(zustand);
   const koalitionStufe = abstaende.map(bruchStufe).sort((x, y) => ['ok', 'gelb', 'rot'].indexOf(y) - ['ok', 'gelb', 'rot'].indexOf(x))[0];
-  const groesstes = [...probleme].sort((a, c) => zustand.probleme[c.id] - zustand.probleme[a.id])[0];
-  const druck = zustand.probleme[groesstes.id];
-  const druckStufe = druck >= config.reformen.druckSchwelle ? 'rot' : druck >= config.reformen.druckSchwelle - 10 ? 'gelb' : 'ok';
+  const frei = pc.aktionenJeQuartal - zustand.aktionenImQuartal;
 
   const hauptaktion = haushaltsQuartal(zustand)
     ? `<p>Im ${zustand.quartal}. Quartal wird der Haushalt für Jahr ${zustand.haushalt.jahr} eingebracht.</p>
        <div class="knoepfe"><button class="primaer" data-gehe="haushalt">Zum Haushalt</button></div>`
-    : `<p>${zustand.reformImQuartal ? status('ok', 'Reform dieses Quartals eingebracht.') : 'In diesem Quartal ist noch eine Reform möglich.'}
-         ${zustand.reformImQuartal ? '' : '<button data-gehe="reformen">Zu den Reformen</button>'}</p>
+    : `<p>${frei > 0 ? `Noch ${frei} von ${pc.aktionenJeQuartal} Vorhaben in diesem Quartal möglich (Lösungen und Reformen).` : status('ok', 'Alle Vorhaben für dieses Quartal sind gestartet.')}</p>
        <div class="knoepfe"><button class="primaer" id="weiter">${zustand.quartal + 1 === config.regierung.quartaleJeJahr ? 'Weiter ins Haushaltsquartal' : 'Nächstes Quartal'}</button></div>`;
 
   el.innerHTML = `<div class="ansicht">
@@ -57,10 +76,15 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich }) {
         regierung.map((id) => partei(id).name).join(', '))}
       ${kennzahl('Mehrheit im Bundestag', `${sitze} <small>von ${noetig}</small>`, sitze >= noetig ? status('ok', 'eigene Mehrheit') : status('gelb', 'Stimmen der Opposition nötig'))}
       ${kennzahl('Schuldenbremse', `${zahl(mrd(spielraum), 1)} Mrd.`, spielraum >= 0 ? status('ok', 'Spielraum') : status('rot', 'überschritten – im Haushalt ausgleichen'))}
-      ${kennzahl('Größtes Problem', `${druck} <small>von 100</small>`, status(druckStufe, groesstes.name))}
+      ${kennzahl('Politisches Kapital', `${zustand.kapital} <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeQuartal} je Quartal`)}
     </div>
-    ${tickerHtml(zustand) ? karte(tickerHtml(zustand), { titel: 'Schlagzeilen' }) : ''}
     ${e ? '' : karte(hauptaktion, { titel: `Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} · Quartal ${zustand.quartal} von ${config.regierung.quartaleJeJahr}` })}
+    <div class="kennzahlen">
+      ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
+      ${karte(wirtschaftHtml(zustand.land), { titel: 'Wirtschaft (Vorjahr)' })}
+    </div>
+    ${zusatz}
+    ${tickerHtml(zustand) ? karte(tickerHtml(zustand), { titel: 'Schlagzeilen' }) : ''}
   </div>`;
 
   el.querySelector('#weiter')?.addEventListener('click', () => onWeiter());

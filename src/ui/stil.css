@@ -250,3 +250,10 @@ dialog .knoepfe { flex-direction: column; align-items: stretch; }
 .einnahme .posten { border-bottom: 0; }
 .einnahme details > summary { min-height: 36px; font-size: var(--t-klein); color: var(--text-2); }
 h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transform: uppercase; color: var(--text-2); }
+
+/* Probleme (System 3) */
+.problem-knopf { width: 100%; text-align: left; display: flex; flex-direction: column; gap: var(--a-halb); border: 0; background: none; padding: var(--a1) 0; }
+.problem-zeile { padding: 0; }
+.tabs button[aria-pressed="true"] { color: var(--akzent); border-bottom-color: var(--akzent); }
+.mini { vertical-align: middle; color: var(--akzent); }
+.mini .huerde-linie { stroke: var(--gefahr); stroke-dasharray: 3 2; stroke-width: 0.5; }

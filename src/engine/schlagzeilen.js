@@ -1,6 +1,6 @@
 import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
-import { probleme } from '../data/probleme.js';
+import { problemListe } from './probleme.js';
 import { bruchAbstand } from './haushalt.js';
 
 const tk = config.ticker;
@@ -18,11 +18,10 @@ export function schlagzeilen(zustand) {
     for (const a of bruchAbstand(zustand)) {
       if (a.verlust >= a.grenze * config.spielende.warnAnteil) liste.push(`Unruhe bei ${name(a.id)}: Basis zweifelt an der Koalition`);
     }
-    // brennende Probleme (F13), der höchste Druck zuerst
-    probleme
-      .filter((p) => zustand.probleme[p.id] >= config.reformen.druckSchwelle)
-      .sort((a, b) => zustand.probleme[b.id] - zustand.probleme[a.id])
-      .forEach((p) => liste.push(`${p.name}: Druck auf die Bundesregierung wächst (${zustand.probleme[p.id]} von 100)`));
+    // ernste Probleme und Krisen (System 3), das größte zuerst
+    problemListe(zustand)
+      .filter((e) => e.wert >= config.probleme.stufen[2].ab)
+      .forEach((e) => liste.push(`${e.problem.name}: Druck auf die Bundesregierung wächst (${Math.round(e.wert)} von 100)`));
     if (zustand.koalition.minderheit) liste.push(`Minderheitsregierung: ${name(zustand.kanzlerParteiId)} sucht für jedes Vorhaben Stimmen`);
   }
 

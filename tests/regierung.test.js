@@ -18,7 +18,7 @@ test('F12: Regierung beginnt in Quartal 1, Haushalt erst im letzten Quartal', ()
   for (let i = 1; i < q; i++) {
     const r = quartalBeenden(z);
     expect(r.ereignisse[0]).toContain(`Quartal ${i} vorbei`);
-    expect(r.state.anteile).toEqual(z.anteile); // Zeit allein ändert keine Umfragen (Druck unter der Schwelle)
+    expect(r.state.runde).toBe(z.runde + 1); // System 3: jedes Quartal zählt als Runde
     z = r.state.offenesEreignis ? ereignisEntscheiden(r.state, { wahl: 0 }).state : r.state; // F14
   }
   expect(haushaltsQuartal(z)).toBe(true);

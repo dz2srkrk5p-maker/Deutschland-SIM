@@ -4,7 +4,7 @@ import { ministerien } from '../src/data/ministerien.js';
 import { ereignisse } from '../src/data/ereignisse.js';
 import { neuesSpiel, zurueckInDenWahlkampf } from '../src/engine/state.js';
 import { quartalBeenden } from '../src/engine/regierung.js';
-import { reformEinbringen } from '../src/engine/reformen.js';
+import { loesungStarten } from '../src/engine/probleme.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { ereignisZiehen, ereignisEntscheiden, folgen } from '../src/engine/ereignisse.js';
 
@@ -36,7 +36,7 @@ test('F14: keine Wiederholung je Wahlperiode, Bedingungen gelten, Wahlkampf setz
   for (let seed = 1; seed <= 300; seed++) {
     expect(ereignisZiehen(regierung({ rngZustand: seed, ereignisseWahlperiode: alle })).state.offenesEreignis).toBeNull();
     // ohne Partner kein Koalitionsstreit, unter Druck 50 keine Mieten-Meldung
-    const allein = regierung({ rngZustand: seed, koalition: { partner: [], startAnteile: {} }, probleme: { wohnen: 40, pflege: 55, schiene: 50 } });
+    const allein = regierung({ rngZustand: seed, koalition: { partner: [], startAnteile: {} }, probleme: { ...neuesSpiel('union', 1).probleme, wohnungsnot: { wert: 40, verlauf: [40] } } });
     expect(['koalitionsstreit', 'mieten']).not.toContain(ereignisZiehen(allein).state.offenesEreignis);
   }
   expect(zurueckInDenWahlkampf(regierung({ ereignisseWahlperiode: alle })).ereignisseWahlperiode).toEqual([]);
@@ -44,11 +44,11 @@ test('F14: keine Wiederholung je Wahlperiode, Bedingungen gelten, Wahlkampf setz
 
 test('F14: Folgen gehen an die Partei, die das Ministerium hält; Entscheidung wendet sie an', () => {
   const z = regierung({ offenesEreignis: 'pflegestreik' });
-  expect(folgen(z, 'pflegestreik', 0)).toEqual({ parteien: { spd: 0.1 - 0.2 }, druck: { pflege: -8 } });
+  expect(folgen(z, 'pflegestreik', 0)).toEqual({ parteien: { spd: 0.1 - 0.2 }, probleme: { pflegenotstand: -8 } });
   const { state, ereignisse: text } = ereignisEntscheiden(z, { wahl: 0 });
   expect(state.offenesEreignis).toBeNull();
   expect(state.ereignisseWahlperiode).toEqual(['pflegestreik']);
-  expect(state.probleme.pflege).toBe(47);
+  expect(state.probleme.pflegenotstand.wert).toBe(47);
   expect(state.anteile.spd).toBeCloseTo(z.anteile.spd - 0.1, 2);
   expect(state.rngZustand).toBe(z.rngZustand);
   expect(text[0]).toContain('Lohnzusagen');
@@ -59,7 +59,7 @@ test('F14: Folgen gehen an die Partei, die das Ministerium hält; Entscheidung w
 test('F14: solange ein Ereignis offen ist, geht nichts anderes', () => {
   const z = regierung({ offenesEreignis: 'hochwasser' });
   expect(() => quartalBeenden(z)).toThrow('Ereignis');
-  expect(() => reformEinbringen(z, { reformId: 'wohnen1' })).toThrow('Ereignis');
+  expect(() => loesungStarten(z, { loesungId: 'wohnen1' })).toThrow('Ereignis');
   expect(() => haushaltBeschliessen({ ...z, quartal: config.regierung.quartaleJeJahr }, {})).toThrow('Ereignis');
   expect(() => ereignisEntscheiden(z, { wahl: 5 })).toThrow();
   expect(() => ereignisEntscheiden(regierung(), { wahl: 0 })).toThrow('Kein offenes');
