@@ -5,6 +5,7 @@ import { hinweiseAn } from '../storage/speicher.js';
 import { zahl, prozent, trend, punkt } from './components/basis.js';
 import { teilenHtml } from './components/teilen.js';
 import { koalitionsWarnung } from './components/koalitionslage.js';
+import { hilfeHtml } from './components/hilfe.js';
 import { status } from './components/basis.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -55,19 +56,25 @@ function kopfHtml(z) {
     </div></header>`;
 }
 
-// Spielmenü als Modal: Chronik, Teilen, Hinweise, Neues Spiel (mit Bestätigung)
+// Spielmenü als Modal: Chronik, Hilfe, Teilen, Hinweise, Neues Spiel (mit Bestätigung)
 function menueHtml(z, phaseMitNavi) {
   return `
     <dialog id="menue" aria-labelledby="menue-titel">
       <h2 id="menue-titel">Spiel</h2>
       <div class="knoepfe">
         ${phaseMitNavi ? '' : '<button data-menue="chronik">Chronik (Verlauf, Protokoll)</button>'}
+        <button data-menue="hilfe">Hilfe: Herkunft der Werte</button>
         <button data-menue="hinweise">${hinweiseAn() ? 'Hinweise ausblenden' : 'Hinweise einblenden'}</button>
         <button data-menue="neu" class="gefahr">Neues Spiel …</button>
         <button data-menue="zu" class="primaer">Schließen</button>
       </div>
       <h3>Partie teilen</h3>
       ${teilenHtml(z, 'menue-teilen')}
+    </dialog>
+    <dialog id="hilfe" class="breit" aria-labelledby="hilfe-titel">
+      <h2 id="hilfe-titel">Hilfe: Herkunft der Werte</h2>
+      ${hilfeHtml()}
+      <div class="knoepfe"><button data-menue="hilfe-zu" class="primaer">Schließen</button></div>
     </dialog>
     <dialog id="neu-bestaetigen" aria-labelledby="neu-titel">
       <h2 id="neu-titel">Neues Spiel beginnen?</h2>

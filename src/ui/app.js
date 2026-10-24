@@ -150,6 +150,8 @@ function menueBinden() {
     if (was === 'hinweise') return (hinweiseSetzen(!hinweiseAn()), zeichne(), fokusOben());
     if (was === 'neu') return (menue.close(), bestaetigen.showModal());
     if (was === 'neu-nein') return bestaetigen.close();
+    if (was === 'hilfe') return (menue.close(), el.querySelector('#hilfe').showModal());
+    if (was === 'hilfe-zu') return el.querySelector('#hilfe').close();
     if (was === 'neu-ja') return neuesSpielStarten();
   }));
 }

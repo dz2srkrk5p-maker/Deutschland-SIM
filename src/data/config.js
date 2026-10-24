@@ -173,3 +173,11 @@ export const config = {
     zugestaendnisKanzler: 0.2, // Kanzlerpartei verliert so viele
   },
 };
+
+// Herkunft der Konstanten (Block 4): nur die hier genannten Werte sind belegt, alle übrigen in config sind Spielwerte.
+export const quellen = {
+  sitzeBundestag: 'Quelle: Bundeswahlleiterin, 2025',
+  sperrklauselProzent: 'Quelle: § 6 BWahlG, 2025',
+  legislaturJahre: 'Quelle: Art. 39 GG, 2025',
+  'haushalt.schuldenbremseGrenze': 'Quelle: Bundestag, hib 622/2025, 2025',
+};

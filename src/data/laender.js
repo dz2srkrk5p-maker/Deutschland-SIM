@@ -6,22 +6,22 @@
 // geschaeftsfuehrend: Regierung hat bei der Landtagswahl im September 2026 ihre Mehrheit verloren und ist nur
 // noch geschäftsführend im Amt; sie stimmt im Bundesrat bis zur Neubildung trotzdem ab.
 export const laender = [
-  { id: 'bw', name: 'Baden-Württemberg', bundesratStimmen: 6, regierung: ['gruene', 'union'] },
-  { id: 'by', name: 'Bayern', bundesratStimmen: 6, regierung: ['union', 'fw'] },
-  { id: 'be', name: 'Berlin', bundesratStimmen: 4, regierung: ['union', 'spd'], geschaeftsfuehrend: true },
-  { id: 'bb', name: 'Brandenburg', bundesratStimmen: 4, regierung: ['spd', 'union'] },
-  { id: 'hb', name: 'Bremen', bundesratStimmen: 3, regierung: ['spd', 'gruene', 'linke'] },
-  { id: 'hh', name: 'Hamburg', bundesratStimmen: 3, regierung: ['spd', 'gruene'] },
-  { id: 'he', name: 'Hessen', bundesratStimmen: 5, regierung: ['union', 'spd'] },
-  { id: 'mv', name: 'Mecklenburg-Vorpommern', bundesratStimmen: 3, regierung: ['spd', 'linke'], geschaeftsfuehrend: true },
-  { id: 'ni', name: 'Niedersachsen', bundesratStimmen: 6, regierung: ['spd', 'gruene'] },
-  { id: 'nw', name: 'Nordrhein-Westfalen', bundesratStimmen: 6, regierung: ['union', 'gruene'] },
-  { id: 'rp', name: 'Rheinland-Pfalz', bundesratStimmen: 4, regierung: ['union', 'spd'] },
-  { id: 'sl', name: 'Saarland', bundesratStimmen: 3, regierung: ['spd'] },
-  { id: 'sn', name: 'Sachsen', bundesratStimmen: 4, regierung: ['union', 'spd'] },
-  { id: 'st', name: 'Sachsen-Anhalt', bundesratStimmen: 4, regierung: ['union', 'spd', 'fdp'], geschaeftsfuehrend: true },
-  { id: 'sh', name: 'Schleswig-Holstein', bundesratStimmen: 4, regierung: ['union', 'gruene'] },
-  { id: 'th', name: 'Thüringen', bundesratStimmen: 4, regierung: ['union', 'tg', 'spd'] },
+  { id: 'bw', name: 'Baden-Württemberg', bundesratStimmen: 6, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['gruene', 'union'] },
+  { id: 'by', name: 'Bayern', bundesratStimmen: 6, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'fw'] },
+  { id: 'be', name: 'Berlin', bundesratStimmen: 4, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'spd'], geschaeftsfuehrend: true },
+  { id: 'bb', name: 'Brandenburg', bundesratStimmen: 4, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['spd', 'union'] },
+  { id: 'hb', name: 'Bremen', bundesratStimmen: 3, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['spd', 'gruene', 'linke'] },
+  { id: 'hh', name: 'Hamburg', bundesratStimmen: 3, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['spd', 'gruene'] },
+  { id: 'he', name: 'Hessen', bundesratStimmen: 5, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'spd'] },
+  { id: 'mv', name: 'Mecklenburg-Vorpommern', bundesratStimmen: 3, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['spd', 'linke'], geschaeftsfuehrend: true },
+  { id: 'ni', name: 'Niedersachsen', bundesratStimmen: 6, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['spd', 'gruene'] },
+  { id: 'nw', name: 'Nordrhein-Westfalen', bundesratStimmen: 6, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'gruene'] },
+  { id: 'rp', name: 'Rheinland-Pfalz', bundesratStimmen: 4, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'spd'] },
+  { id: 'sl', name: 'Saarland', bundesratStimmen: 3, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['spd'] },
+  { id: 'sn', name: 'Sachsen', bundesratStimmen: 4, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'spd'] },
+  { id: 'st', name: 'Sachsen-Anhalt', bundesratStimmen: 4, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'spd', 'fdp'], geschaeftsfuehrend: true },
+  { id: 'sh', name: 'Schleswig-Holstein', bundesratStimmen: 4, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'gruene'] },
+  { id: 'th', name: 'Thüringen', bundesratStimmen: 4, quelle: 'Quelle: Wikipedia, Stimmenverteilung im Bundesrat, 2026', regierung: ['union', 'tg', 'spd'] },
 ];
 
 // Regierungsparteien in Ländern, die es im Spiel nicht gibt; nie Teil einer Bundeskoalition

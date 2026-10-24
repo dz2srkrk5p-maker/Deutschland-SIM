@@ -32,3 +32,11 @@ export const festeAusgaben2026 = {
 
 export const steuern2026 = 387210000; // Steuereinnahmen 387,21 Mrd.
 export const sonstigeEinnahmen2026 = 39360000; // sonstige Einnahmen 39,36 Mrd., im Spiel fest
+
+// Herkunft je Wert (Block 4)
+export const quellen = {
+  etats2026: 'Quelle: Haushaltsgesetz 2026, 2026',
+  festeAusgaben2026: 'Quelle: Haushaltsgesetz 2026, 2026',
+  steuern2026: 'Quelle: Bundestag, hib-Meldung zum Haushalt 2026, 2025',
+  sonstigeEinnahmen2026: 'Quelle: Bundestag, hib-Meldung zum Haushalt 2026, 2025',
+};

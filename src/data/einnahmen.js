@@ -13,6 +13,9 @@
 // Verteilung und Probleme. CO2-Preis: Erlöse fließen in den Klima- und Transformationsfonds (Sondervermögen, nicht im
 // Kernhaushalt; 2025 Planansatz national 15,4 Mrd., BT-Drs. 21/1664).
 //
+// quelle je Art (Block 4): start = Startbetrag, satz = Startwert des Parameters, wirkung = alle Werte je Stufe und Ausgestaltung.
+// Sozialversicherung: Startbetrag 0, weil die Beiträge an die Sozialkassen gehen (Spielmodell).
+//
 // Alles ab hier je Stufe sind Spielwerte (Größenordnung abgeschätzt, nicht amtlich):
 // aufkommenJeStufe: Änderung der Bundeseinnahme in tausend € je Stufe (bei Startniveau der Wirtschaft)
 // wirkungJeStufe: einmalige Wirkung bei Beschluss je Stufe auf Kennzahlen (Prozentpunkte) und Gruppen (Indexpunkte)
@@ -29,6 +32,7 @@ export const einnahmearten = [
     id: 'einkommensteuer', name: 'Einkommensteuer', gruppe: 'Einkommen', bundesrat: true,
     erklaerung: 'Lohn- und veranlagte Einkommensteuer (Bundesanteil 42,5 %) plus Solidaritätszuschlag.',
     start: anteil(105.79 + 31.81 + 12.63),
+    quelle: { start: 'Quelle: BMF-Kassenstatistik, 2024', satz: 'Spielwert', wirkung: 'Spielwert' },
     parameter: { name: 'Tarif (alle Stufen)', einheit: 'Pp', startwert: 0, schritt: 1, min: -3, max: 3, maxJeJahr: 2 },
     aufkommenJeStufe: 3000000, ausweichenAb: 2, ausweichen: 0.15, verzoegerung: 0.8,
     wirkungJeStufe: { wachstum: -0.06, gini: -0.15, gruppen: { arbeitnehmer: -3, familien: -2, unternehmen: -1 } },
@@ -43,6 +47,7 @@ export const einnahmearten = [
     id: 'kapitalertrag', name: 'Kapitalertragsteuer', gruppe: 'Einkommen', bundesrat: true,
     erklaerung: 'Abgeltungsteuer und nicht veranlagte Steuern vom Ertrag (Bundesanteil 44–50 %).',
     start: anteil(17.01 + 8.48),
+    quelle: { start: 'Quelle: BMF-Kassenstatistik, 2024', satz: 'Quelle: § 32d EStG, 2026', wirkung: 'Spielwert' },
     parameter: { name: 'Abgeltungsteuersatz', einheit: '%', startwert: 25, schritt: 2, min: 21, max: 35, maxJeJahr: 2 },
     aufkommenJeStufe: 900000, ausweichenAb: 1, ausweichen: 0.25, verzoegerung: 0.9,
     wirkungJeStufe: { wachstum: -0.02, gini: -0.1, gruppen: { unternehmen: -2, rentner: -1 } },
@@ -54,6 +59,7 @@ export const einnahmearten = [
     id: 'koerperschaft', name: 'Körperschaftsteuer', gruppe: 'Unternehmen', bundesrat: true,
     erklaerung: 'Steuer auf Gewinne von Kapitalgesellschaften (Bundesanteil 50 %).',
     start: anteil(19.88),
+    quelle: { start: 'Quelle: BMF-Kassenstatistik, 2024', satz: 'Quelle: § 23 KStG, 2026', wirkung: 'Spielwert' },
     parameter: { name: 'Körperschaftsteuersatz', einheit: '%', startwert: 15, schritt: 1, min: 10, max: 20, maxJeJahr: 2 },
     aufkommenJeStufe: 1200000, ausweichenAb: 1, ausweichen: 0.2, verzoegerung: 0.7,
     wirkungJeStufe: { wachstum: -0.07, gini: -0.05, gruppen: { unternehmen: -5, arbeitnehmer: 1 } },
@@ -66,6 +72,7 @@ export const einnahmearten = [
     id: 'umsatz', name: 'Umsatzsteuer', gruppe: 'Konsum', bundesrat: true,
     erklaerung: 'Mehrwert- und Einfuhrumsatzsteuer (Bundesanteil rund 48 %).',
     start: anteil(145.33),
+    quelle: { start: 'Quelle: BMF-Kassenstatistik, 2024', satz: 'Quelle: § 12 UStG, 2026', wirkung: 'Spielwert' },
     parameter: { name: 'Regelsatz', einheit: '%', startwert: 19, schritt: 1, min: 16, max: 22, maxJeJahr: 1 },
     aufkommenJeStufe: 7000000, ausweichenAb: 3, ausweichen: 0.05, verzoegerung: 1,
     wirkungJeStufe: { wachstum: -0.08, inflation: 0.35, gini: 0.12, gruppen: { geringverdiener: -4, familien: -3, rentner: -2 } },
@@ -78,6 +85,7 @@ export const einnahmearten = [
     id: 'gewerbe', name: 'Gewerbesteuer', gruppe: 'Unternehmen', bundesrat: true, keinBund: 'Gemeinden',
     erklaerung: 'Gemeindesteuer; der Bund regelt Bemessung und Mindesthebesatz. Wirkt auf die Kommunalfinanzen, nicht auf den Bundeshaushalt.',
     start: 0,
+    quelle: { start: 'Quelle: Art. 106 GG, 2026', satz: 'Quelle: § 11 GewStG, 2026', wirkung: 'Spielwert' },
     parameter: { name: 'Messzahl', einheit: '%', startwert: 3.5, schritt: 0.5, min: 2, max: 5, maxJeJahr: 1 },
     aufkommenJeStufe: 0, ausweichenAb: 2, ausweichen: 0.1, verzoegerung: 1,
     wirkungJeStufe: { wachstum: -0.04, gruppen: { unternehmen: -4 }, probleme: { kommunalfinanzen: -6 } },
@@ -87,6 +95,7 @@ export const einnahmearten = [
     id: 'energie', name: 'Energie- und Verbrauchsteuern', gruppe: 'Konsum', bundesrat: false,
     erklaerung: 'Bundessteuern: Energie-, Strom-, Tabak-, Versicherung-, Kfz-Steuer u. a.',
     start: anteil(90.91),
+    quelle: { start: 'Quelle: BMF-Kassenstatistik, 2024', satz: 'Spielwert', wirkung: 'Spielwert' },
     parameter: { name: 'Sätze', einheit: '%', startwert: 0, schritt: 5, min: -20, max: 20, maxJeJahr: 2 },
     aufkommenJeStufe: 3500000, ausweichenAb: 2, ausweichen: 0.1, verzoegerung: 1,
     wirkungJeStufe: { wachstum: -0.03, inflation: 0.12, gini: 0.05, gruppen: { geringverdiener: -2, landwirtschaft: -3, unternehmen: -1 }, probleme: { klimafolgen: -1 } },
@@ -99,6 +108,7 @@ export const einnahmearten = [
     id: 'erbschaft', name: 'Erbschaft- und Schenkungsteuer', gruppe: 'Vermögen', bundesrat: true, keinBund: 'Länder',
     erklaerung: 'Ländersteuer; der Bund regelt Sätze und Freibeträge. Wirkt auf Verteilung und Länder, nicht auf den Bundeshaushalt.',
     start: 0,
+    quelle: { start: 'Quelle: Art. 106 GG, 2026', satz: 'Spielwert', wirkung: 'Spielwert' },
     parameter: { name: 'Sätze', einheit: 'Stufe', startwert: 0, schritt: 1, min: -2, max: 3, maxJeJahr: 1 },
     aufkommenJeStufe: 0, ausweichenAb: 2, ausweichen: 0.2, verzoegerung: 1,
     wirkungJeStufe: { gini: -0.12, wachstum: -0.01, gruppen: { unternehmen: -2, familien: -1 }, probleme: { soziale_spaltung: -2 } },
@@ -110,6 +120,7 @@ export const einnahmearten = [
     id: 'vermoegen', name: 'Vermögensteuer', gruppe: 'Vermögen', bundesrat: true, keinBund: 'Länder', verfassung: true,
     erklaerung: 'Seit 1997 nicht erhoben. Wiedereinführung als Ländersteuer per Bundesgesetz; verfassungsrechtlich heikel (Bewertung).',
     start: 0,
+    quelle: { start: 'Quelle: Art. 106 GG, 2026', satz: 'Quelle: BVerfG, 2 BvL 37/91, 1995', wirkung: 'Spielwert' },
     parameter: { name: 'Satz auf große Vermögen', einheit: '%', startwert: 0, schritt: 0.5, min: 0, max: 2, maxJeJahr: 2 },
     aufkommenJeStufe: 0, ausweichenAb: 1, ausweichen: 0.3, verzoegerung: 0.5,
     wirkungJeStufe: { gini: -0.3, wachstum: -0.05, gruppen: { unternehmen: -6, geringverdiener: 2 }, probleme: { soziale_spaltung: -4, rezession: 2 } },
@@ -121,6 +132,7 @@ export const einnahmearten = [
     id: 'sozialversicherung', name: 'Sozialversicherungsbeiträge', gruppe: 'Sozialversicherung', bundesrat: false, keinBund: 'Sozialkassen',
     erklaerung: 'Beiträge fließen an die Rentenversicherung. Wirkung auf den Bund: ein höherer Beitrag senkt den nötigen Bundeszuschuss (rund 1,7 Mrd. je 0,1 Pp, Spielwert).',
     start: 0,
+    quelle: { start: 'Spielwert', satz: 'Quelle: BMAS, 2026', wirkung: 'Spielwert' },
     parameter: { name: 'Rentenbeitrag', einheit: '%', startwert: 18.6, schritt: 0.1, min: 17.5, max: 20.5, maxJeJahr: 5 },
     aufkommenJeStufe: 1700000, ausweichenAb: 99, ausweichen: 0, verzoegerung: 1,
     wirkungJeStufe: { wachstum: -0.02, gruppen: { arbeitnehmer: -1, unternehmen: -1, rentner: 0.5 }, probleme: { rentenluecke: -1.5, fachkraefte: 0.5 } },
@@ -130,6 +142,7 @@ export const einnahmearten = [
     id: 'co2', name: 'CO2-Bepreisung', gruppe: 'Klima', bundesrat: false, sondervermoegen: 'Klima- und Transformationsfonds',
     erklaerung: 'Nationaler CO2-Preis für Wärme und Verkehr. Erlöse sind zweckgebunden (Sondervermögen KTF) und zählen nicht zum Kernhaushalt.',
     start: 15400000,
+    quelle: { start: 'Quelle: BT-Drs. 21/1664, 2025', satz: 'Quelle: BEHG, 2026', wirkung: 'Spielwert' },
     parameter: { name: 'Preis je Tonne', einheit: '€', startwert: 55, schritt: 5, min: 30, max: 120, maxJeJahr: 3 },
     aufkommenJeStufe: 1400000, ausweichenAb: 6, ausweichen: 0.1, verzoegerung: 1,
     wirkungJeStufe: { inflation: 0.08, wachstum: -0.01, gini: 0.05, gruppen: { geringverdiener: -2, landwirtschaft: -1, arbeitnehmer: -1 }, probleme: { klimafolgen: -2, energiepreise: 1.5 } },
@@ -141,6 +154,7 @@ export const einnahmearten = [
     id: 'sonstige', name: 'Sonstige Einnahmen', gruppe: 'Sonstige', bundesrat: false,
     erklaerung: 'Verwaltungseinnahmen, Bundesbankgewinn, EU-Mittel, Beteiligungen (Haushalt 2026: 39,36 Mrd.). Privatisierungen wirken nur im Jahr des Verkaufs.',
     start: 39360000,
+    quelle: { start: 'Quelle: Bundestag, hib-Meldung zum Haushalt 2026, 2025', satz: 'Spielwert', wirkung: 'Spielwert' },
     parameter: { name: 'Privatisierungserlöse (einmalig)', einheit: 'Mrd.', startwert: 0, schritt: 2, min: 0, max: 8, maxJeJahr: 4, einmalig: true },
     aufkommenJeStufe: 2000000, ausweichenAb: 99, ausweichen: 0, verzoegerung: 1,
     wirkungJeStufe: { gruppen: { arbeitnehmer: -1 } },

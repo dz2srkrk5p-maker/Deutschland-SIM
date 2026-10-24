@@ -1,12 +1,12 @@
 // Ereignisse in der Regierungszeit (F14, freigegeben automatisch nach Empfehlung 2026-10-22). Eigene Texte, keine echten
-// Personen. Alle Zahlen sind Spielwerte. Folgen (Umfragepunkte bzw. Druckpunkte):
+// Personen. Alle Zahlen sind Spielwerte (Feld quelle, Block 4). Folgen (Umfragepunkte bzw. Druckpunkte):
 //   kanzler: Kanzlerpartei; partner: jede Partnerpartei; ministerium: { ministeriumId: Wert } für die Partei, die es hält;
 //   probleme: { problemId: Wert } (System 3).
 // problem: zugehöriges Problem; das Ereignis kommt nur, wenn dieses Problem mindestens bei 30 liegt (System 3).
 // bedingung: (zustand, { profil }) => boolean, sonst jederzeit möglich; profil = Richtungsprofil des Landes (System 1).
 export const ereignisse = [
   {
-    id: 'mieten',
+    id: 'mieten', quelle: 'Spielwert',
     titel: 'Mieten steigen in den Großstädten weiter',
     text: 'Neue Zahlen zeigen zweistellige Mietsteigerungen. Mieterverbände fordern sofortiges Handeln.',
     problem: 'wohnungsnot',
@@ -17,7 +17,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'pflegestreik',
+    id: 'pflegestreik', quelle: 'Spielwert',
     problem: 'pflegenotstand',
     titel: 'Warnstreik in Kliniken und Pflegeheimen',
     text: 'Pflegekräfte legen bundesweit die Arbeit nieder und verlangen mehr Personal und Lohn.',
@@ -27,7 +27,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'stellwerk',
+    id: 'stellwerk', quelle: 'Spielwert',
     problem: 'infrastruktur',
     titel: 'Stellwerksausfall legt den Bahnverkehr lahm',
     text: 'Ein veraltetes Stellwerk fällt aus, tausende Pendler stranden.',
@@ -38,7 +38,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'hochwasser',
+    id: 'hochwasser', quelle: 'Spielwert',
     problem: 'klimafolgen',
     titel: 'Hochwasser in mehreren Ländern',
     text: 'Flüsse treten über die Ufer, ganze Ortschaften stehen unter Wasser.',
@@ -48,7 +48,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'koalitionsstreit',
+    id: 'koalitionsstreit', quelle: 'Spielwert',
     titel: 'Öffentlicher Streit in der Koalition',
     text: 'Ein Partner kritisiert die Regierungslinie offen in den Medien.',
     bedingung: (z) => z.koalition.partner.length > 0,
@@ -58,7 +58,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'beratervertraege',
+    id: 'beratervertraege', quelle: 'Spielwert',
     problem: 'vertrauensverlust',
     titel: 'Fragwürdige Beraterverträge im Verteidigungsministerium',
     text: 'Der Rechnungshof rügt teure Aufträge ohne Ausschreibung.',
@@ -68,7 +68,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'konjunktur',
+    id: 'konjunktur', quelle: 'Spielwert',
     bedingung: (z) => z.probleme.rezession.wert < 45,
     titel: 'Wirtschaft wächst stärker als erwartet',
     text: 'Die Institute heben ihre Prognosen an.',
@@ -78,7 +78,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'cyberangriff',
+    id: 'cyberangriff', quelle: 'Spielwert',
     problem: 'cyberangriffe',
     titel: 'Cyberangriff auf Bundesbehörden',
     text: 'Mehrere Ämter sind tagelang nicht erreichbar.',
@@ -89,7 +89,7 @@ export const ereignisse = [
   },
   // Reaktionen auf das Richtungsprofil (System 1)
   {
-    id: 'eu_verfahren',
+    id: 'eu_verfahren', quelle: 'Spielwert',
     titel: 'EU-Kommission leitet Vertragsverletzungsverfahren ein',
     text: 'Brüssel sieht in mehreren Gesetzen Verstöße gegen europäisches Recht.',
     bedingung: (z, k) => k.profil.eu < -0.8,
@@ -99,7 +99,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'investoren',
+    id: 'investoren', quelle: 'Spielwert',
     titel: 'Investoren kündigen Großprojekte an',
     text: 'Mehrere Konzerne wollen nach dem Reformkurs wieder in Deutschland bauen.',
     bedingung: (z, k) => k.profil.wirtschaft > 0.8,
@@ -109,7 +109,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'generalstreik',
+    id: 'generalstreik', quelle: 'Spielwert',
     titel: 'Gewerkschaften rufen zum Großstreik auf',
     text: 'Gegen den Abbau von Arbeitnehmerrechten stehen Bahnen, Kliniken und Kitas still.',
     bedingung: (z, k) => k.profil.wirtschaft > 1,
@@ -119,7 +119,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'klimaklage',
+    id: 'klimaklage', quelle: 'Spielwert',
     titel: 'Klimaklage vor dem Bundesverfassungsgericht',
     text: 'Junge Kläger sehen ihre Freiheitsrechte durch fehlenden Klimaschutz verletzt.',
     bedingung: (z, k) => k.profil.oekologie < -0.7,
@@ -129,7 +129,7 @@ export const ereignisse = [
     ],
   },
   {
-    id: 'rating',
+    id: 'rating', quelle: 'Spielwert',
     titel: 'Ratingagentur warnt vor dem Ausgabenkurs',
     text: 'Die Bonität Deutschlands wird mit negativem Ausblick versehen.',
     bedingung: (z, k) => k.profil.wirtschaft < -1,
