@@ -12,13 +12,13 @@ import { laufendeKosten } from '../src/engine/haushalt.js';
 import { ursachen } from '../src/engine/probleme.js';
 import { richtungsprofil } from '../src/engine/profil.js';
 import {
-  weg, wegVektor, wegSperre, wegVorschau, wegBeschliessen, reformwegeQuartal, bereichStatus, gewinnerVerlierer, profilWirkung,
+  weg, wegVektor, wegSperre, wegVorschau, wegBeschliessen, reformwegeMonat, bereichStatus, gewinnerVerlierer, profilWirkung,
 } from '../src/engine/reformwege.js';
 
 const rw = config.reformwege;
 const SITZE = { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 };
 const regierung = (extra = {}) => ({
-  ...neuesSpiel('union', 1), phase: 'regierung', quartal: 1, kanzlerParteiId: 'union', sitze: SITZE, kapital: 100,
+  ...neuesSpiel('union', 1), phase: 'regierung', monat: 1, kanzlerParteiId: 'union', sitze: SITZE, kapital: 100,
   koalition: { partner: ['spd'], startAnteile: { spd: 16.4 }, minderheit: false, fehlschlaege: 0 },
   kabinett: { anspruch: {}, verteilung: Object.fromEntries(ministerien.map((m) => [m.id, 'union'])) },
   ...extra,
@@ -72,9 +72,9 @@ test('Beschluss: Kapital, Aufmerksamkeit, Umsetzung, Kosten und Einnahmen mit He
   const z = regierung({ koalition: { partner: ['spd', 'gruene'], startAnteile: { spd: 16.4, gruene: 11.6 }, minderheit: false, fehlschlaege: 0 } });
   const { state, ereignisse } = wegBeschliessen(z, { wegId: 'st_einfach' });
   expect(ereignisse[0]).toContain('Reform beschlossen');
-  expect(state.reformwege.st_einfach).toMatchObject({ status: 'umsetzung', fertig: z.runde + 4, start: z.runde, bundestag: { ja: expect.any(Number), nein: expect.any(Number) } });
+  expect(state.reformwege.st_einfach).toMatchObject({ status: 'umsetzung', fertig: z.runde + weg('st_einfach').dauer, start: z.runde, bundestag: { ja: expect.any(Number), nein: expect.any(Number) } });
   expect(state.kapital).toBe(100 - weg('st_einfach').kapital);
-  expect(state.aktionenImQuartal).toBe(1);
+  expect(state.aktionenImMonat).toBe(1);
   const ek = aufstellung(state).zeilen.find((x) => x.art.id === 'einkommensteuer');
   expect(ek.reformen).toEqual([{ quelle: 'Einfaches Steuerrecht mit Stufentarif', betrag: -12000000 }]);
   expect(bereichStatus(state, weg('st_einfach').bereich).status).toBe('umsetzung');
@@ -95,10 +95,10 @@ test('Sperren: Folgeweg, Bundesrat, Haushalt, Revision kostet zusätzlich', () =
   // Union + SPD hat 24 von 35 Bundesratsstimmen
   expect(wegSperre(z, 'r_buerger').grund).toContain('Bundesrat');
   const v = wegBeschliessen(z, { wegId: 'r_kapital' }).state;
-  const vor = wegVorschau({ ...v, aktionenImQuartal: 0 }, 'r_eintritt');
+  const vor = wegVorschau({ ...v, aktionenImMonat: 0 }, 'r_eintritt');
   expect(vor.revision.id).toBe('r_kapital');
   expect(vor.kapital).toBe(weg('r_eintritt').kapital + rw.revisionKapital);
-  const nach = wegBeschliessen({ ...v, aktionenImQuartal: 0 }, { wegId: 'r_eintritt' });
+  const nach = wegBeschliessen({ ...v, aktionenImMonat: 0 }, { wegId: 'r_eintritt' });
   expect(nach.state.reformwege.r_kapital).toBeUndefined();
   expect(nach.ereignisse.some((e) => e.includes('Kurswechsel'))).toBe(true);
   expect(wegSperre({ ...z, kapital: 3 }, 'a_flex').grund).toContain('Kapital');
@@ -108,8 +108,8 @@ test('Umsetzung: nach der Dauer Erfolg oder Scheitern, Langwirkung und Trends, R
   const z = regierung();
   const b = wegBeschliessen(z, { wegId: 'w_bauen' }).state;
   expect(richtungsprofil(b).wirtschaft).toBeCloseTo((AUSRICHTUNGEN.marktliberal.vektor.wirtschaft * 1) / 3, 2);
-  const fertig = { ...b, runde: 10 };
-  const laeufe = Array.from({ length: 40 }, (_, i) => reformwegeQuartal({ ...fertig, rngZustand: i * 13 + 1 }).state);
+  const fertig = { ...b, runde: b.reformwege.w_bauen.fertig }; // Umsetzungsdauer erreicht
+  const laeufe = Array.from({ length: 40 }, (_, i) => reformwegeMonat({ ...fertig, rngZustand: i * 13 + 1 }).state);
   const ok = laeufe.filter((s) => s.reformwege.w_bauen.status === 'beschlossen');
   expect(ok.length).toBeGreaterThan(25);
   expect(laeufe.some((s) => s.reformwege.w_bauen.status === 'gescheitert')).toBe(true);
@@ -117,7 +117,7 @@ test('Umsetzung: nach der Dauer Erfolg oder Scheitern, Langwirkung und Trends, R
   expect(ok[0].anteile.union).toBeGreaterThan(fertig.anteile.union);
   expect(ok[0].probleme.wohnungsnot.wert).toBe(Math.round((fertig.probleme.wohnungsnot.wert - 12) * 10) / 10);
   const p = probleme.find((x) => x.id === 'wohnungsnot');
-  expect(ursachen(ok[0], p).find((u) => u.text.includes('Bauen erleichtern')).beitrag).toBe(-0.15);
+  expect(ursachen(ok[0], p).find((u) => u.text.includes('Bauen erleichtern')).beitrag).toBeCloseTo(-0.15 * config.zeit.anteilJeMonat, 2); // Trend je Quartal geeicht, je Monat ein Viertel
 });
 
 test('Richtungsprofil wirkt: Partner mit großem Abstand verlieren, Kanzlerpartei gewinnt bei passendem Kurs', () => {

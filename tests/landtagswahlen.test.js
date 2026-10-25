@@ -4,8 +4,8 @@ import { laender } from '../src/data/laender.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { neuesSpiel, laden } from '../src/engine/state.js';
 import { bundesratAbstimmung } from '../src/engine/bundesrat.js';
-import { quartalBeenden } from '../src/engine/regierung.js';
-import { laenderStart, kalenderJahr, stimmung, wechselChance, wechsel, naechsteWahlen, landtagswahlenQuartal } from '../src/engine/landtagswahlen.js';
+import { monatBeenden } from '../src/engine/regierung.js';
+import { laenderStart, kalenderJahr, stimmung, wechselChance, wechsel, naechsteWahlen, landtagswahlenMonat } from '../src/engine/landtagswahlen.js';
 
 const lw = config.landtagswahlen;
 // Union + SPD im Amt, Bundestagswahl mit Startanteilen; keine geschäftsführenden Länder (für saubere Einzeltests)
@@ -13,7 +13,7 @@ const imAmt = (extra = {}) => {
   const z = neuesSpiel('union', 7);
   const stand = Object.fromEntries(Object.entries(laenderStart()).map(([id, l]) => [id, { ...l, geschaeftsfuehrend: false }]));
   return {
-    ...z, phase: 'regierung', quartal: 1, kanzlerParteiId: 'union', sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
+    ...z, phase: 'regierung', monat: 1, kanzlerParteiId: 'union', sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
     koalition: { partner: ['spd'], startAnteile: { spd: 16.4 }, minderheit: false, fehlschlaege: 0 },
     kabinett: { anspruch: {}, verteilung: Object.fromEntries(ministerien.map((m) => [m.id, 'union'])) },
     wahlergebnis: { anteile: { ...z.anteile }, vorher: { ...z.anteile }, wahlkampf: 0 },
@@ -25,7 +25,8 @@ const imAmt = (extra = {}) => {
 test('Feature 5: Termine mit Quelle, Kalenderjahr aus Kanzlerjahren', () => {
   for (const l of laender) {
     expect(l.wahl.jahr).toBeGreaterThanOrEqual(2027);
-    expect([1, 2, 3, 4]).toContain(l.wahl.quartal);
+    expect(l.wahl.monat).toBeGreaterThanOrEqual(1);
+    expect(l.wahl.monat).toBeLessThanOrEqual(11); // nicht im Haushaltsmonat
     expect(l.wahl.quelle === 'Spielwert' || l.wahl.quelle.startsWith('Quelle: ')).toBe(true);
   }
   expect(laender.find((l) => l.id === 'hb').wahlperiode).toBe(4);
@@ -57,32 +58,35 @@ test('Feature 5: Wechselchance nach Stimmung, begrenzt; Wechsel tauscht genau ei
 });
 
 test('Feature 5: Wahl zum Termin, nächste Wahl nach Wahlperiode, Umfragewirkung in der Bilanz', () => {
-  // NRW 2027, Quartal 2: Kalenderjahr 2027 = 1 Kanzlerjahr
-  const z = imAmt({ quartal: 2, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 } });
-  const ergebnisse = Array.from({ length: 30 }, (_, i) => landtagswahlenQuartal({ ...z, rngZustand: i * 7 + 3 }));
+  // NRW 25.04.2027: Kalenderjahr 2027 = 1 Kanzlerjahr, Monat April
+  const z = imAmt({ monat: 4, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 } });
+  const ergebnisse = Array.from({ length: 30 }, (_, i) => landtagswahlenMonat({ ...z, rngZustand: i * 7 + 3 }));
   const nw = ergebnisse.map((r) => r.state.laender.nw);
   expect(nw.every((l) => l.wahl.jahr === 2032)).toBe(true);
   expect(ergebnisse.every((r) => r.ereignisse.some((e) => e.startsWith('Landtagswahl Nordrhein-Westfalen')))).toBe(true);
   const gewechselt = ergebnisse.find((r) => r.state.laender.nw.regierung.join() !== 'union,gruene');
   expect(gewechselt).toBeDefined();
   expect(gewechselt.state.umfrageBilanz.at(-1).posten.some((p) => p.ursache.startsWith('Landtagswahl Nordrhein-Westfalen'))).toBe(true);
-  // Bremen am selben Termin, Hessen nicht
-  expect(ergebnisse[0].ereignisse.some((e) => e.includes('Bremen'))).toBe(true);
+  // Saarland und Schleswig-Holstein im selben Monat, Bremen (Mai) und Hessen nicht
+  expect(ergebnisse[0].ereignisse.some((e) => e.includes('Saarland'))).toBe(true);
+  expect(ergebnisse[0].ereignisse.some((e) => e.includes('Schleswig-Holstein'))).toBe(true);
+  expect(ergebnisse[0].ereignisse.some((e) => e.includes('Bremen'))).toBe(false);
   expect(ergebnisse[0].ereignisse.some((e) => e.includes('Hessen'))).toBe(false);
   // nicht in der Regierung: nichts
-  expect(landtagswahlenQuartal({ ...z, phase: 'wahlkampf' }).ereignisse).toEqual([]);
+  expect(landtagswahlenMonat({ ...z, phase: 'wahlkampf' }).ereignisse).toEqual([]);
 });
 
 test('Feature 5: Ankündigung, Bundesrat aus dem Spielstand, geschäftsführende Länder bilden neu', () => {
-  const z = imAmt({ quartal: 1, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 } });
+  const z = imAmt({ monat: 1, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 } });
   expect(naechsteWahlen(z).map((w) => w.land.id)).toEqual(expect.arrayContaining(['nw', 'sl', 'sh', 'hb']));
-  expect(naechsteWahlen(z).every((w) => w.inQuartalen === 1)).toBe(true);
+  // Januar 2027: April (in 3 Monaten) und Mai (Bremen, in 4 Monaten) liegen im Fenster von 6 Monaten
+  expect(naechsteWahlen(z).map((w) => w.inMonaten)).toEqual([3, 3, 3, 4]);
   // Bundesrat zählt den Stand im Spiel
   const ohneNrw = { ...z.laender, nw: { ...z.laender.nw, regierung: ['spd', 'gruene'] } };
   expect(bundesratAbstimmung(['union', 'gruene'], ohneNrw).ja).toBe(bundesratAbstimmung(['union', 'gruene']).ja - 6);
-  // geschäftsführend: Neubildung am ersten Quartalsende
+  // geschäftsführend: Neubildung am ersten Monatsende
   const start = imAmt({ laender: laenderStart() });
-  const r = quartalBeenden(start);
+  const r = monatBeenden(start);
   expect(Object.values(r.state.laender).some((l) => l.geschaeftsfuehrend)).toBe(false);
   expect(r.ereignisse.filter((e) => e.includes('Neubildung'))).toHaveLength(3);
 });

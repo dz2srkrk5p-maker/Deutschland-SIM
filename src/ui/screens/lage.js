@@ -5,7 +5,8 @@ import { probleme } from '../../data/probleme.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
 import { mehrheit } from '../../engine/koalition.js';
 import { vorschau, mrd, bruchAbstand, zugestaendnisSperre } from '../../engine/haushalt.js';
-import { haushaltsQuartal } from '../../engine/regierung.js';
+import { haushaltsMonat } from '../../engine/regierung.js';
+import { monatsname } from '../../data/kalender.js';
 import { offenesEreignis, folgen } from '../../engine/ereignisse.js';
 import { problemListe } from '../../engine/probleme.js';
 import { tickerHtml } from '../components/ticker.js';
@@ -46,10 +47,10 @@ function topProblemeHtml(zustand) {
     <div class="knoepfe"><button data-gehe="probleme">Alle Probleme und Lösungen</button></div>`;
 }
 
-// Lage: Dashboard jedes Quartals. Offenes Ereignis zuerst, dann Kennzahlen, Top-Probleme, Wirtschaft, Schlagzeilen, Hauptaktion.
-// Landtagswahlen (Feature 5): Termine dieses und des nächsten Quartals mit Chance und Folge für den Bundesrat
+// Lage: Dashboard jedes Monats. Offenes Ereignis zuerst, dann Kennzahlen, Top-Probleme, Wirtschaft, Schlagzeilen, Hauptaktion.
+// Landtagswahlen (Feature 5): Termine der nächsten Monate mit Chance und Folge für den Bundesrat
 function landtagswahlenHtml(zustand) {
-  const wahlen = naechsteWahlen(zustand, 2);
+  const wahlen = naechsteWahlen(zustand, 6);
   if (!wahlen.length) return '';
   const name = (id) => partei(id)?.name ?? id;
   const bund = koalitionsParteien(zustand);
@@ -58,7 +59,7 @@ function landtagswahlenHtml(zustand) {
     const l = zustand.laender[w.land.id];
     const neu = wechsel(zustand, w.land.id);
     const danach = bundesratAbstimmung(bund, { ...zustand.laender, [w.land.id]: { ...l, regierung: neu.regierung } }).ja;
-    return `<li><span><strong>${w.land.name}</strong> ${w.inQuartalen === 0 ? 'am Ende dieses Quartals' : 'am Ende des nächsten Quartals'} · Regierung: ${l.regierung.map(name).join(', ')}<br>
+    return `<li><span><strong>${w.land.name}</strong> ${w.inMonaten === 0 ? 'am Ende dieses Monats' : `im ${monatsname(w.monat)} (in ${w.inMonaten} ${w.inMonaten === 1 ? 'Monat' : 'Monaten'})`} · Regierung: ${l.regierung.map(name).join(', ')}<br>
       <small>Wechselchance ${Math.round(wechselChance(zustand, w.land.id) * 100)} %. Bei Wechsel: ${[neu.raus && `${name(neu.raus)} raus`, neu.rein && `${name(neu.rein)} rein`].filter(Boolean).join(', ') || 'keine Änderung möglich'}; Bundesrat für deine Koalition ${jetzt} → ${danach} Stimmen.</small></span></li>`;
   }).join('')}</ul>`;
 }
@@ -96,27 +97,27 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onPro
   const spielraum = b.grenze - b.schuldenbremse;
   const abstaende = bruchAbstand(zustand);
   const koalitionStufe = abstaende.map(bruchStufe).sort((x, y) => ['ok', 'gelb', 'rot'].indexOf(y) - ['ok', 'gelb', 'rot'].indexOf(x))[0];
-  const frei = pc.aktionenJeQuartal - zustand.aktionenImQuartal;
+  const frei = pc.aktionenJeMonat - zustand.aktionenImMonat;
 
-  const hauptaktion = haushaltsQuartal(zustand)
-    ? `<p>Im ${zustand.quartal}. Quartal wird der Haushalt für Jahr ${zustand.haushalt.jahr} eingebracht.</p>
+  const hauptaktion = haushaltsMonat(zustand)
+    ? `<p>Im ${monatsname(zustand.monat)} wird der Haushalt für Jahr ${zustand.haushalt.jahr} eingebracht.</p>
        <div class="knoepfe"><button class="primaer" data-gehe="haushalt">Zum Haushalt</button></div>`
-    : `<p>${frei > 0 ? `Noch ${frei} von ${pc.aktionenJeQuartal} Vorhaben in diesem Quartal möglich (Lösungen und Reformen).` : status('ok', 'Alle Vorhaben für dieses Quartal sind gestartet.')}</p>
-       <div class="knoepfe"><button class="primaer" id="weiter">${zustand.quartal + 1 === config.regierung.quartaleJeJahr ? 'Weiter ins Haushaltsquartal' : 'Nächstes Quartal'}</button></div>`;
+    : `<p>${frei > 0 ? `Noch ${frei} von ${pc.aktionenJeMonat} Vorhaben in diesem Monat möglich (Lösungen und Reformen).` : status('ok', 'Alle Vorhaben für diesen Monat sind gestartet.')}</p>
+       <div class="knoepfe"><button class="primaer" id="weiter">${zustand.monat + 1 === config.regierung.monateJeJahr ? `Weiter in den ${monatsname(config.regierung.monateJeJahr)} (Haushalt)` : 'Nächster Monat'}</button></div>`;
 
   el.innerHTML = `<div class="ansicht">
     <h1>Lage</h1>
-    ${hinweisHtml('quartal')}
+    ${hinweisHtml('monat')}
     ${e ? ereignisHtml(zustand, e) : ''}
     <div class="kennzahlen">
       ${kennzahl('Regierung', abstaende.length ? status(koalitionStufe, STUFE_TEXT[koalitionStufe]) : zustand.koalition.minderheit ? status('gelb', 'Minderheit') : status('ok', 'allein'),
         regierung.map((id) => partei(id).name).join(', '))}
       ${kennzahl('Mehrheit im Bundestag', `${sitze} <small>von ${noetig}</small>`, sitze >= noetig ? status('ok', 'eigene Mehrheit') : status('gelb', 'Stimmen der Opposition nötig'))}
       ${kennzahl('Schuldenbremse', `<span title="${erklaerungen.schuldenbremse}">${zahl(mrd(spielraum), 1)} Mrd.</span>`, spielraum >= 0 ? status('ok', 'Spielraum') : status('rot', 'überschritten – im Haushalt ausgleichen'))}
-      ${kennzahl('Politisches Kapital', `<span title="${erklaerungen.kapital}">${zustand.kapital}</span> <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeQuartal} je Quartal`)}
+      ${kennzahl('Politisches Kapital', `<span title="${erklaerungen.kapital}">${zustand.kapital}</span> <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeMonat} je Monat`)}
     </div>
     ${koalitionsWarnung(zustand) ? karte(koalitionHtml(zustand), { titel: `Koalition: ${koalitionsWarnung(zustand).text}` }) : ''}
-    ${e ? '' : karte(hauptaktion, { titel: `Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} · Quartal ${zustand.quartal} von ${config.regierung.quartaleJeJahr}` })}
+    ${e ? '' : karte(hauptaktion, { titel: `Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} · ${monatsname(zustand.monat)}` })}
     <div class="kennzahlen">
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
       ${karte(wirtschaftsverlaufHtml(zustand), { titel: 'Wirtschaft (Vorjahr)' })}

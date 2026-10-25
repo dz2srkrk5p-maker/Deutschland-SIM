@@ -88,8 +88,8 @@ export function wegSperre(zustand, wegId, { kompromiss = false } = {}) {
   if (w.braucht && zustand.reformwege[w.braucht]?.status !== 'beschlossen') return { grund: `erst „${weg(w.braucht).name}“ umsetzen` };
   if (zustand.phase !== 'regierung') return { grund: 'keine Regierung' };
   if (zustand.offenesEreignis) return { grund: 'erst auf das Ereignis reagieren' };
-  if (zustand.quartal === config.regierung.quartaleJeJahr) return { grund: 'im Haushaltsquartal nicht möglich' };
-  if (zustand.aktionenImQuartal >= config.probleme.aktionenJeQuartal) return { grund: `höchstens ${config.probleme.aktionenJeQuartal} Vorhaben je Quartal` };
+  if (zustand.monat === config.regierung.monateJeJahr) return { grund: 'im Haushaltsmonat nicht möglich' };
+  if (zustand.aktionenImMonat >= config.probleme.aktionenJeMonat) return { grund: `höchstens ${config.probleme.aktionenJeMonat} Vorhaben je Monat` };
   const belegt = !w.braucht && bereichStatus(zustand, w.bereich).weg;
   const br = w.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender) : null;
   const mitKompromiss = kompromiss && br && !br.mehrheit;
@@ -144,7 +144,7 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
   const stimmen = `${wahl.ja} Ja, ${wahl.nein} Nein${wahl.abweichler ? `, davon ${wahl.abweichler} Abweichler` : ''}`;
   if (!wahl.angenommen) {
     return {
-      state: { ...zustand, rngZustand: wahl.rngZustand, aktionenImQuartal: zustand.aktionenImQuartal + 1, kapital: zustand.kapital - Math.round(kapitalPreis * rw.abgelehntKapitalAnteil) },
+      state: { ...zustand, rngZustand: wahl.rngZustand, aktionenImMonat: zustand.aktionenImMonat + 1, kapital: zustand.kapital - Math.round(kapitalPreis * rw.abgelehntKapitalAnteil) },
       ereignisse: [`Reform „${w.name}“ im Bundestag abgelehnt (${stimmen})`],
     };
   }
@@ -152,7 +152,7 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
   const umfrage = {};
   const posten = []; // Umfrage-Bilanz
   const dazu = (id, x, ursache) => ((umfrage[id] = (umfrage[id] ?? 0) + x), posten.push({ ursache, partei: id, wert: x }));
-  const ereignisse = [`Reform beschlossen: „${w.name}“ (${v.ausrichtung}, ${stimmen}); Umsetzung in ${w.dauer} Quartalen`];
+  const ereignisse = [`Reform beschlossen: „${w.name}“ (${v.ausrichtung}, ${stimmen}); Umsetzung in ${w.dauer} Monaten`];
   if (alsKompromiss) ereignisse.push(`Kompromiss im Bundesrat: Die Länder stimmen einer abgeschwächten Fassung zu (Wirkung ${Math.round(km.wirkungFaktor * 100)} %, ${km.kapital} Kapital zusätzlich).`);
   if (v.revision) {
     // alter Weg und seine Folgewege fallen weg
@@ -195,7 +195,7 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
     probleme,
     kapital: zustand.kapital - kapitalPreis,
     koalition: vertrag.vertrag ? { ...zustand.koalition, vertrag: vertrag.vertrag } : zustand.koalition,
-    aktionenImQuartal: zustand.aktionenImQuartal + 1,
+    aktionenImMonat: zustand.aktionenImMonat + 1,
     jahresWirkung: wirkungSumme(zustand.jahresWirkung, { ...w.kurz, gruppen: {}, probleme: {} }),
   };
   if (Object.keys(umfrage).length) {
@@ -208,8 +208,8 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
   return { state, ereignisse };
 }
 
-// Am Ende eines Quartals: fertige Umsetzungen. Scheitern nach Risiko (umstrittene Wege zusätzlich in Karlsruhe).
-export function reformwegeQuartal(zustand) {
+// Am Ende eines Monats: fertige Umsetzungen. Scheitern nach Risiko (umstrittene Wege zusätzlich in Karlsruhe).
+export function reformwegeMonat(zustand) {
   let rngZustand = zustand.rngZustand;
   const reformwege = { ...zustand.reformwege };
   const ereignisse = [];

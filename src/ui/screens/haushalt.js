@@ -10,7 +10,8 @@ import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { RECHTSARTEN } from '../../data/einnahmen.js';
 import { erklaerungen } from '../../data/hinweise.js';
 import { gegenfinanzierung, spielraum, aufkommensSchaetzung, einnahmeart, schrittFaktor } from '../../engine/einnahmen.js';
-import { haushaltsQuartal } from '../../engine/regierung.js';
+import { haushaltsMonat } from '../../engine/regierung.js';
+import { monatsname } from '../../data/kalender.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
 import { abstimmungHtml } from '../components/abstimmung.js';
@@ -95,10 +96,10 @@ function einnahmenWirkungHtml(w, geaendert) {
 }
 
 // Haushalt (System 2): Übersicht mit Bilanz und Einbringen, Einnahmen je Art, Ausgaben, Schulden und Mehrjahresprognose.
-// Außerhalb des Haushaltsquartals nur lesbar. entwurf: { jahr, stufen, einnahmen, ausgestaltung, tab } aus app.js.
+// Außerhalb des Haushaltsmonats nur lesbar. entwurf: { jahr, stufen, einnahmen, ausgestaltung, tab } aus app.js.
 export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
   if (entwurf.jahr !== zustand.haushalt.jahr) Object.assign(entwurf, { jahr: zustand.haushalt.jahr, stufen: {}, einnahmen: {}, ausgestaltung: {} });
-  const bearbeitbar = haushaltsQuartal(zustand) && !zustand.offenesEreignis;
+  const bearbeitbar = haushaltsMonat(zustand) && !zustand.offenesEreignis;
   const maxMinister = hh.ministerMaxProzent / hh.ministerSchrittProzent;
   const verteilung = zustand.kabinett.verteilung;
   // Wert des Parameters bei einer Änderung um d Stufen gegenüber dem beschlossenen Stand
@@ -106,7 +107,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
   const einnahmenGeaendert = () => Object.values(entwurf.einnahmen).some(Boolean) || Object.keys(entwurf.ausgestaltung).length > 0;
   const params = () => ({ stufen: entwurf.stufen, einnahmen: entwurf.einnahmen, ausgestaltung: entwurf.ausgestaltung, kompromiss: Boolean(entwurf.kompromiss) });
 
-  // Etat je Ministerium: Betrag und Änderung, im Haushaltsquartal mit Schieberegler (Schritt und Grenze aus config)
+  // Etat je Ministerium: Betrag und Änderung, im Haushaltsmonat mit Schieberegler (Schritt und Grenze aus config)
   const etatProzent = (stufe) => `${plusMinus(stufe * hh.ministerSchrittProzent, 0)} %`;
   const etatBetrag = (m, stufe) => `${euro(etatNeu(zustand.haushalt.etats[m.id], stufe))}${prozentStufe(stufe, hh.ministerSchrittProzent)}`;
   const etatZeile = (m) => {
@@ -182,7 +183,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         ${v.bundesrat ? `<span>Bundesrat (Steueränderung)</span><span>${status(v.bundesrat.mehrheit ? 'ok' : 'rot', `${v.bundesrat.ja} von ${v.bundesrat.noetig} Stimmen`)}</span>` : ''}
       </div>
       ${v.rechtsrisiken.length ? `<p class="gelb">⚠ Rechtsrisiko vor dem Bundesverfassungsgericht:</p><ul>${v.rechtsrisiken.map((r) => `<li><strong>${r.name}</strong>: ${risikoText(r)}</li>`).join('')}</ul>` : ''}
-      ${(zustand.verfahren ?? []).length ? `<p><strong>Anhängige Verfahren:</strong> ${zustand.verfahren.map((x) => `${x.name} (Urteil in ${Math.max(1, x.faellig - zustand.runde)} Quartalen, Risiko ${Math.round(x.chance * 100)} %)`).join('; ')}</p>` : ''}
+      ${(zustand.verfahren ?? []).length ? `<p><strong>Anhängige Verfahren:</strong> ${zustand.verfahren.map((x) => `${x.name} (Urteil in ${Math.max(1, x.faellig - zustand.runde)} Monaten, Risiko ${Math.round(x.chance * 100)} %)`).join('; ')}</p>` : ''}
       ${aufklapp('Abstimmungen im Detail', abstimmungHtml(v.bundestag, 'Bundestag über den Haushalt', true) + bundesratHtml(bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender)))}`, { titel: 'Saldo und Schuldenbremse' })}
       ${karte(`<p><strong>Umfragen:</strong> ${wirkung.length ? wirkung.map(([id, w]) => `${partei(id).name} ${plusMinus(w)}`).join(' · ') : 'keine Änderung'}</p>
         <p><strong>Kennzahlen und Gruppen:</strong> ${wirkungListe(v.kennzahlWirkung)}</p>
@@ -229,7 +230,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
   // Rechtsrisiko (Feature 3): kurzer Hinweis und Erklärung, Werte sind Spielwerte
   const vr = config.verfassungsrisiko;
   const risikoKurz = (r) => `⚠ Rechtsrisiko ${Math.round(r.chance * 100)} % (${RECHTSARTEN[r.art].name}, Spielwert)`;
-  const risikoText = (r) => `Mit ${Math.round(r.chance * 100)} % Wahrscheinlichkeit kippt das Bundesverfassungsgericht diese Änderung nach ${vr.dauerQuartale} Quartalen (${RECHTSARTEN[r.art].name}, ${RECHTSARTEN[r.art].grundlage}). Dann wird sie zurückgenommen, die Einnahmen fallen weg und die Kanzlerpartei verliert ${zahl(vr.verlustUmfrage, 1)} Punkte.`;
+  const risikoText = (r) => `Mit ${Math.round(r.chance * 100)} % Wahrscheinlichkeit kippt das Bundesverfassungsgericht diese Änderung nach ${vr.dauerMonate} Monaten (${RECHTSARTEN[r.art].name}, ${RECHTSARTEN[r.art].grundlage}). Dann wird sie zurückgenommen, die Einnahmen fallen weg und die Kanzlerpartei verliert ${zahl(vr.verlustUmfrage, 1)} Punkte.`;
   const za = hh.zinsaufschlag;
   const hinweisZins = `Die Zinslast steigt mit einem Aufschlag, wenn die Schuldenquote über ${zahl(za.quoteAb)} % liegt oder der Bund mehr als ${zahl(za.defizitAb, 1)} % des BIP neu leiht. Der Aufschlag nähert sich jedes Jahr nur zu ${zahl(za.anpassung * 100)} % seinem Ziel und ist bei ${zahl(za.max * 100)} % gedeckelt (Spielwerte).`;
 
@@ -278,7 +279,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       <h1>Haushalt Jahr ${zustand.haushalt.jahr}</h1>
       ${hinweisHtml('regierung')}
       ${bearbeitbar ? '' : zustand.offenesEreignis ? '<div class="meldung">Erst auf das Ereignis in der Lage reagieren.</div>'
-        : `<div class="meldung">Nur lesen: Der Haushalt wird im ${config.regierung.quartaleJeJahr}. Quartal aufgestellt. Gezeigt wird der laufende Haushalt.</div>`}
+        : `<div class="meldung">Nur lesen: Der Haushalt wird im ${monatsname(config.regierung.monateJeJahr)} aufgestellt. Gezeigt wird der laufende Haushalt.</div>`}
       ${tabs(TABS, entwurf.tab, 'Haushalt')}
       ${inhalt()}
     </div>`;

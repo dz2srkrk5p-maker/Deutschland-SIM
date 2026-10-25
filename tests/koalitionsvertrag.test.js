@@ -38,7 +38,7 @@ test('Feature 7: Vereidigen legt den Vertrag an, Prüfung der Auswahl', () => {
 
 test('Feature 7: Erfüllen belohnt, anderer Weg im Bereich bricht den Vertrag', () => {
   const z = kabinett();
-  const imAmt = { ...bestaetigen(z, { verteilung: vorschlag(z) }).state, quartal: 1, kapital: 100, runde: 1 };
+  const imAmt = { ...bestaetigen(z, { verteilung: vorschlag(z) }).state, monat: 1, kapital: 100, runde: 1 };
   const [v] = imAmt.koalition.vertrag.vorhaben;
   const erfuellt = vertragNachBeschluss(imAmt, v.wegId);
   expect(erfuellt.vertrag.vorhaben[0].status).toBe('umgesetzt');
@@ -54,7 +54,7 @@ test('Feature 7: Erfüllen belohnt, anderer Weg im Bereich bricht den Vertrag', 
 
 test('Feature 7: Haushalt – Kürzung im Partner-Ressort und Rückstand kosten den Partner; Bruch entfernt seine Vorhaben', () => {
   const z = kabinett();
-  const imAmt = { ...bestaetigen(z, { verteilung: vorschlag(z) }).state, quartal: 4 };
+  const imAmt = { ...bestaetigen(z, { verteilung: vorschlag(z) }).state, monat: 12 };
   const partnerRessort = Object.keys(imAmt.koalition.vertrag.ressorts)[0];
   const posten = vertragHaushalt({ ...imAmt, haushalt: { ...imAmt.haushalt, jahr: 2 } }, { [partnerRessort]: -kv.kuerzungAbProzent / config.haushalt.ministerSchrittProzent });
   expect(posten.some((p) => p.ursache.includes('deutlich gekürzt') && p.wert === -kv.strafeKuerzung)).toBe(true);

@@ -5,11 +5,12 @@ import { wirkungSumme, wirtschaftWerte } from './wirtschaft.js';
 import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen.js';
 import { config } from '../data/config.js';
 import { einnahmearten } from '../data/einnahmen.js';
+import { laender as laenderDaten } from '../data/laender.js';
 import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 21; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 22; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -20,6 +21,7 @@ export const ZUSTAND_VERSION = 21; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 16: verfahren [{ typ, id, name, art, chance, stufen?, faellig }] (Verfassungsrisiko für Steuern, Feature 3)
 // 17: laender { landId: { regierung, geschaeftsfuehrend, wahl: { jahr, quartal } } } (Landtagswahlen, Feature 5)
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
+// 22: Monatstakt: monat (1–12) statt quartal, aktionenImMonat statt aktionenImQuartal; runde und alle Fristen in Monaten
 // 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
 //     ältere Einträge ohne diese Felder bleiben gültig, der Start wird aus fertig − Dauer berechnet
@@ -58,12 +60,12 @@ export function neuesSpiel(spielerParteiId, seed) {
     // Haushalt in tausend Euro; gilt über Wahlperioden hinweg weiter, nur das Jahr beginnt neu
     haushalt: { jahr: 1, etats: { ...etats2026 }, einnahmen: einnahmenStart(), neueSchuldenSeitStart: 0 },
     // für Sieg und Endbildschirm; besteWahl = bester Stimmanteil der Spielerpartei bei einer Wahl
-    quartal: 1, // Quartal im laufenden Regierungsjahr (F12); Haushalt im letzten
+    monat: 1, // Monat im laufenden Regierungsjahr (seit Version 22; vorher Quartal, F12); Haushalt im letzten
     // Probleme 0–100 mit Verlauf und gestartete Lösungen (System 3); gelten über Wahlperioden hinweg weiter
     probleme: startProbleme(),
     loesungen: {}, // { loesungId: { status: 'laufend' | 'erfolg' | 'gescheitert', fertig: Runde } }
-    runde: 0, // gezählte Quartale in der Regierung (für Dauer von Lösungen und Reformen)
-    aktionenImQuartal: 0, // gestartete Lösungen und Reformwege in diesem Quartal (Aufmerksamkeit)
+    runde: 0, // gezählte Monate in der Regierung (für Dauer von Lösungen, Reformen, Fristen)
+    aktionenImMonat: 0, // gestartete Lösungen und Reformwege in diesem Monat (Aufmerksamkeit)
     jahresWirkung: wirkungSumme(), // Wirkungen im laufenden Jahr, fließen in den nächsten Jahresschritt
     reformwege: {}, // gewählte Reformwege (System 1); gelten über Wahlperioden hinweg
     umfrageBilanz: [], // Ursachen der Umfrageänderungen der letzten Runden (Anzeige)
@@ -104,8 +106,8 @@ export function zurueckInDenWahlkampf(zustand) {
     kanzlerParteiId: null,
     kabinett: null,
     haushalt: { ...zustand.haushalt, jahr: 1 },
-    quartal: 1,
-    aktionenImQuartal: 0,
+    monat: 1,
+    aktionenImMonat: 0,
     ereignisseWahlperiode: [],
   };
 }
@@ -154,6 +156,30 @@ const MIGRATIONEN = {
     const stufen = Object.fromEntries(Object.entries(z.haushalt.einnahmen.stufen).map(([id, st]) => [id, fein(id, st)]));
     const verfahren = (z.verfahren ?? []).map((v) => (v.typ === 'einnahme' ? { ...v, stufen: fein(v.id, v.stufen) } : v));
     return { ...z, version: 21, haushalt: { ...z.haushalt, einnahmen: { ...z.haushalt.einnahmen, stufen } }, verfahren };
+  },
+  // Monatstakt: Quartal → Monat (Haushaltsquartal → Haushaltsmonat, sonst erster Monat des Quartals); alle Rundenzähler
+  // und Fristen ×3, Landtagswahltermine auf den Monat der Daten (gleiches Jahr)
+  21: (z) => {
+    const { quartal = 1, aktionenImQuartal = 0, ...rest } = z;
+    const m = (x) => (typeof x === 'number' ? x * 3 : x);
+    const mal3 = (o, felder) => Object.fromEntries(Object.entries(o ?? {}).map(([k, v]) => [k, { ...v, ...Object.fromEntries(felder.filter((f) => f in v).map((f) => [f, m(v[f])])) }]));
+    const laender = Object.fromEntries(Object.entries(z.laender ?? {}).map(([id, l]) => {
+      const { quartal: q, ...wahl } = l.wahl;
+      const daten = laenderDaten.find((x) => x.id === id)?.wahl;
+      return [id, { ...l, wahl: { ...wahl, monat: daten?.monat ?? (q - 1) * 3 + 1 } }];
+    }));
+    return {
+      ...rest, version: 22,
+      monat: quartal === 4 ? 12 : (quartal - 1) * 3 + 1,
+      aktionenImMonat: Math.min(aktionenImQuartal, config.probleme.aktionenJeMonat),
+      runde: m(z.runde ?? 0),
+      reformwege: mal3(z.reformwege, ['fertig', 'start']),
+      loesungen: mal3(z.loesungen, ['fertig', 'start']),
+      verfahren: (z.verfahren ?? []).map((v) => ({ ...v, faellig: m(v.faellig) })),
+      ketten: z.ketten && { ...z.ketten, aktiv: z.ketten.aktiv.map((g) => ({ ...g, faellig: m(g.faellig) })), zuletzt: Object.fromEntries(Object.entries(z.ketten.zuletzt).map(([k, v]) => [k, m(v)])), verlauf: z.ketten.verlauf.map((v) => ({ ...v, runde: m(v.runde) })) },
+      koalition: z.koalition && { ...z.koalition, ...(z.koalition.ultimatum ? { ultimatum: Object.fromEntries(Object.entries(z.koalition.ultimatum).map(([k, v]) => [k, m(v)])) } : {}) },
+      laender,
+    };
   },
 };
 

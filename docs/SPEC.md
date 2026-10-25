@@ -121,7 +121,15 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
-## System: Regierungsjahr in Quartalen (F12, freigegeben automatisch nach Empfehlung 2026-10-22)
+## System: Monatstakt (Epochen-Etappe 0a, 2026-10-25, Wunsch des Nutzers; ersetzt die Quartale aus F12)
+- Ein Regierungsjahr hat 12 Monate (`config.regierung.monateJeJahr`), Haushalt im Dezember. Nach dem Haushaltsbeschluss endet auch der Dezember wie jeder Monat (`monatsabschluss` in `src/engine/regierung.js`: Probleme, Lösungen, Reformwege, Verfahren, Landtagswahlen, Koalitionsprüfung), dann beginnt der Januar.
+- Je Jahr wirkt alles gleich stark wie vorher (damals 3 Entwicklungsschritte Q1–Q3): Treiber und Trends der Probleme wirken je Monat mit `config.zeit.anteilJeMonat` = 1/4 ihres Quartalswerts; Schockchancen je Monat so umgerechnet, dass sie je Jahr gleich bleiben; Problem-Umfrage 0,005/0,0125 je Monat; Schwankung ±0,5; Kapital +2 je Monat; Ereignischance 8,5 % je Monat.
+- Dauern und Fristen in Monaten (×3): Lösungen, Reformwege, Krisenketten (6 Monate Verzögerung, 24 Abklingzeit), Verfahren (12 Monate), Ultimatum (6 Monate).
+- Aufmerksamkeit: 1 Vorhaben je Monat (TODO-BALANCE: früher 6 je Jahr, jetzt 11).
+- Landtagswahlen im Monat (belegte Termine: NRW, SH, Saarland April 2027, Bremen Mai 2027; „Herbst“ als Oktober; sonst Monat der vorigen Wahl).
+- Spielstand-Version 22 rechnet alte Spielstände um.
+
+## System: Regierungsjahr in Quartalen (seit Etappe 0a ersetzt durch den Monatstakt; F12, freigegeben automatisch nach Empfehlung 2026-10-22)
 - Dateien: `src/engine/regierung.js` (Aktion `quartalBeenden`, `haushaltsQuartal`), `src/ui/screens/regierung.js`. Zahl: `config.regierung.quartaleJeJahr` = 4.
 - Ein Haushaltsjahr hat 4 Quartale. In Quartal 1–3 zeigt der Regierungsbildschirm Jahr, Quartal, Regierung, Umfrage und Verlauf, Knopf „Nächstes Quartal“ bzw. „Weiter zum Haushalt“. Im 4. Quartal wird der Haushalt beschlossen (`haushaltBeschliessen` wirft sonst), danach beginnt das nächste Jahr mit Quartal 1.
 - Die Zeit allein ändert nichts: kein Zufall, keine Umfrageänderung. Sieg, Koalitionsbruch, Spielende der Minderheitsregierung und Ende der Wahlperiode hängen weiter am Haushalt.

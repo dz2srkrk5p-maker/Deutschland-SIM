@@ -28,7 +28,7 @@ test('keine doppelten IDs', () => {
 });
 
 test('jede Phase hat einen Hinweis, Zahlen sind eingesetzt', () => {
-  for (const schluessel of ['start', 'wahlkampf', 'koalition', 'kabinett', 'quartal', 'regierung', 'ende']) {
+  for (const schluessel of ['start', 'wahlkampf', 'koalition', 'kabinett', 'monat', 'regierung', 'ende']) {
     expect(hinweise[schluessel]).toMatch(/\S/);
     expect(hinweise[schluessel]).not.toMatch(/undefined|NaN|\$\{/);
   }

@@ -2,13 +2,14 @@
 // Keine eigene Berechnung: Die Aktionen übergeben ihre festen Teilbeiträge (posten), der Rest der tatsächlichen
 // Änderung (Zufall, Verschiebung durch Gewinne und Verluste anderer Parteien, Rundung) wird als eigener Posten gebucht.
 import { config } from '../data/config.js';
+import { monatsname } from '../data/kalender.js';
 
 const r3 = (x) => Math.round(x * 1000) / 1000 + 0;
 
 // Zeitangabe der Runde, in der eine Aktion stattfindet
 export function zeitText(zustand) {
   if (zustand.phase === 'wahlkampf') return `Wahlkampf, Woche ${zustand.wahlkampfWoche}`;
-  return `Jahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal}`;
+  return `Jahr ${zustand.haushalt.jahr}, ${monatsname(zustand.monat)}`;
 }
 
 // posten: [{ ursache, partei, wert }]. Bucht für die Spielerpartei und die Koalitionspartner zusätzlich den Rest.

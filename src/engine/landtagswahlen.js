@@ -19,7 +19,7 @@ const begrenzt = (x) => Math.max(lw.min, Math.min(lw.max, x));
 const waehlbar = (zustand) => parteien.filter((p) => !p.sonstige && p.ches && !config.koalition.brandmauer.includes(p.id) && zustand.anteile[p.id] >= config.sperrklauselProzent).map((p) => p.id);
 
 // Startstand der Länder für den Spielstand
-export const laenderStart = () => Object.fromEntries(laender.map((l) => [l.id, { regierung: [...l.regierung], geschaeftsfuehrend: !!l.geschaeftsfuehrend, wahl: { jahr: l.wahl.jahr, quartal: l.wahl.quartal } }]));
+export const laenderStart = () => Object.fromEntries(laender.map((l) => [l.id, { regierung: [...l.regierung], geschaeftsfuehrend: !!l.geschaeftsfuehrend, wahl: { jahr: l.wahl.jahr, monat: l.wahl.monat } }]));
 
 // Kalenderjahr: ein Haushaltsjahr je Kanzlerjahr, Start 2026 (das Spiel hat sonst keine absolute Jahreszahl)
 export const kalenderJahr = (zustand) => lw.startJahr + (zustand.statistik?.jahreKanzler ?? 0);
@@ -60,18 +60,18 @@ export function wechsel(zustand, landId) {
   return { raus: null, rein, regierung: rein ? [...regierung, rein] : regierung };
 }
 
-// Termine der nächsten Quartale (für die Ankündigung): [{ land, jahr, quartal, inQuartalen }]
-export function naechsteWahlen(zustand, quartale = 2) {
+// Termine der nächsten Monate (für die Ankündigung): [{ land, jahr, monat, inMonaten }]; 0 = am Ende dieses Monats
+export function naechsteWahlen(zustand, monate = 6) {
   const jahr = kalenderJahr(zustand);
-  const jetzt = jahr * 4 + zustand.quartal;
+  const jetzt = jahr * 12 + zustand.monat;
   return laender.map((l) => ({ land: l, ...zustand.laender[l.id].wahl }))
-    .map((w) => ({ ...w, inQuartalen: w.jahr * 4 + w.quartal - jetzt }))
-    .filter((w) => w.inQuartalen >= 0 && w.inQuartalen < quartale)
-    .sort((a, b) => a.inQuartalen - b.inQuartalen);
+    .map((w) => ({ ...w, inMonaten: w.jahr * 12 + w.monat - jetzt }))
+    .filter((w) => w.inMonaten >= 0 && w.inMonaten < monate)
+    .sort((a, b) => a.inMonaten - b.inMonaten);
 }
 
-// Am Quartalsende: geschäftsführende Länder bilden neu (Spielregel), fällige Landtagswahlen finden statt
-export function landtagswahlenQuartal(zustand) {
+// Am Monatsende: geschäftsführende Länder bilden neu (Spielregel), fällige Landtagswahlen finden statt
+export function landtagswahlenMonat(zustand) {
   if (zustand.phase !== 'regierung' || !zustand.laender) return { state: zustand, ereignisse: [] };
   const jahr = kalenderJahr(zustand);
   const bund = koalitionsParteien(zustand);
@@ -91,11 +91,11 @@ export function landtagswahlenQuartal(zustand) {
       ereignisse.push(`${l.name}: neue Landesregierung aus ${w.regierung.map(name).join(', ')} (Neubildung nach der Wahl im September 2026, Spielregel).`);
       continue;
     }
-    if (stand.wahl.jahr !== jahr || stand.wahl.quartal !== zustand.quartal) continue;
+    if (stand.wahl.jahr !== jahr || stand.wahl.monat !== zustand.monat) continue;
     const chance = wechselChance({ ...zustand, laender: neu }, l.id);
     const r = zufall(rngZustand);
     rngZustand = r.rngZustand;
-    const naechste = { jahr: jahr + l.wahlperiode, quartal: stand.wahl.quartal };
+    const naechste = { jahr: jahr + l.wahlperiode, monat: stand.wahl.monat };
     if (r.wert < chance) {
       const w = wechsel({ ...zustand, laender: neu }, l.id);
       neu[l.id] = { ...stand, regierung: w.regierung, wahl: naechste };

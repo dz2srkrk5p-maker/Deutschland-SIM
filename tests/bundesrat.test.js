@@ -6,15 +6,15 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { laender, andereParteien, bundesratGesamt, bundesratMehrheit } from '../src/data/laender.js';
 import { parteien } from '../src/data/parteien.js';
 import { ministerien } from '../src/data/ministerien.js';
-import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { monatBeenden, haushaltsMonat } from '../src/engine/regierung.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 
 // Steueränderung in früheren (geeichten) Stufen → Reglerschritte (feinere Schritte seit 2026-10-25)
 const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).parameter; return Math.round((stufen * (p.eichSchritt ?? p.schritt)) / p.schritt); };
-// F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
+// F12: bis zum Haushaltsmonat weiterschalten, dann beschließen
 const beschliessen = (z, p) => {
   // F14: offene Ereignisse mit der ersten Möglichkeit beantworten
-  while (!haushaltsQuartal(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : quartalBeenden(z)).state;
+  while (!haushaltsMonat(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : monatBeenden(z)).state;
   return haushaltBeschliessen(z, p);
 };
 

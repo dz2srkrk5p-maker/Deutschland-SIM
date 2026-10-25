@@ -3,8 +3,8 @@
 import { weg, ausrichtungName, wegRisiko } from './reformwege.js';
 import { loesung, erfolgschance } from './probleme.js';
 
-// Fortschritt der Umsetzung in Quartalen. Über Erfolg oder Scheitern wird am Ende eines Quartals entschieden, sobald die
-// Runde fertig erreicht; im Haushaltsquartal zählt die Runde, entschieden wird erst am Ende des nächsten Quartals.
+// Fortschritt der Umsetzung in Monaten. Über Erfolg oder Scheitern wird am Ende des Monats entschieden, in dem die
+// Runde fertig erreicht (auch im Haushaltsmonat nach dem Beschluss).
 function fortschritt(zustand, fertig, dauer, start = fertig - dauer) {
   const vergangen = Math.max(0, Math.min(dauer, zustand.runde - start));
   return { dauer, vergangen, rest: Math.max(1, fertig - zustand.runde) };

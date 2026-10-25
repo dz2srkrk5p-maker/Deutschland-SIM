@@ -17,6 +17,12 @@ import { wegTrends } from './reformwege.js';
 const pc = config.probleme;
 const r1 = (x) => Math.round(x * 10) / 10 + 0; // + 0: aus −0 wird 0 (sonst ändert Speichern und Laden den Stand)
 const r2 = (x) => Math.round(x * 100) / 100 + 0;
+const r3 = (x) => Math.round(x * 1000) / 1000 + 0;
+const anteil = config.zeit.anteilJeMonat; // Treiber, Trends und Schocks sind je Quartal geeicht
+// Wahrscheinlichkeit je Quartal → je Monat, so dass sie je Jahr gleich bleibt
+export const chanceJeMonat = (p) => 1 - (1 - p) ** anteil;
+// je Quartal geeichter Trend (Daten) → Wirkung je Monat (Anzeige der Reformwege)
+export const trendJeMonat = (x) => r3(x * anteil);
 const begrenzt = (x) => Math.max(0, Math.min(100, x));
 const name = (id) => parteien.find((p) => p.id === id).name;
 
@@ -31,7 +37,8 @@ export function loesung(id) {
 export const stufeVon = (wert) => [...pc.stufen].reverse().find((s) => wert >= s.ab);
 export const startProbleme = () => Object.fromEntries(probleme.map((p) => [p.id, { wert: p.start, verlauf: [p.start] }]));
 
-// Ursachen: Beitrag jedes Treibers zum Trend je Quartal (für die Detailansicht und den Quartalsschritt)
+// Ursachen: Beitrag jedes Treibers zum Trend je Monat (für die Detailansicht und den Monatsschritt). Die Daten sind je
+// Quartal geeicht; je Monat wirkt der Anteil config.zeit.anteilJeMonat.
 export function ursachen(zustand, p) {
   const liste = [{ text: 'Grundtrend', beitrag: p.trend }];
   for (const t of p.treiber) {
@@ -50,9 +57,9 @@ export function ursachen(zustand, p) {
     }
   }
   liste.push(...wegTrends(zustand, p.id));
-  return liste.map((u) => ({ ...u, beitrag: r2(u.beitrag) }));
+  return liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) }));
 }
-export const trend = (zustand, p) => r2(ursachen(zustand, p).reduce((s, u) => s + u.beitrag, 0));
+export const trend = (zustand, p) => r3(ursachen(zustand, p).reduce((s, u) => s + u.beitrag, 0));
 
 // Liste aller Probleme nach Wert: prominent (höchstens maxAktiv ab „angespannt“), sonst Beobachtung mit Frühwarnung
 export function problemListe(zustand) {
@@ -92,14 +99,14 @@ export function loesungSperre(zustand, id) {
   if (l.braucht && zustand.loesungen[l.braucht]?.status !== 'erfolg') return `erst „${loesung(l.braucht).name}“`;
   if (zustand.phase !== 'regierung') return 'keine Regierung';
   if (zustand.offenesEreignis) return 'erst auf das Ereignis reagieren';
-  if (zustand.quartal === config.regierung.quartaleJeJahr) return 'im Haushaltsquartal nicht möglich';
-  if (zustand.aktionenImQuartal >= pc.aktionenJeQuartal) return `höchstens ${pc.aktionenJeQuartal} Vorhaben je Quartal`;
+  if (zustand.monat === config.regierung.monateJeJahr) return 'im Haushaltsmonat nicht möglich';
+  if (zustand.aktionenImMonat >= pc.aktionenJeMonat) return `höchstens ${pc.aktionenJeMonat} Vorhaben je Monat`;
   if (zustand.kapital < l.kapital) return `zu wenig politisches Kapital (${l.kapital} nötig)`;
   return null;
 }
 
 // Aktion: Lösung starten. Kostet politisches Kapital und Aufmerksamkeit; die laufenden Kosten zählen ab dem nächsten
-// Haushalt. Nach der Dauer wird über Erfolg oder Fehlschlag entschieden (problemeQuartal).
+// Haushalt. Nach der Dauer wird über Erfolg oder Fehlschlag entschieden (problemeMonat).
 export function loesungStarten(zustand, { loesungId }) {
   const grund = loesungSperre(zustand, loesungId);
   if (grund) throw new Error(`Lösung nicht möglich: ${grund}`);
@@ -108,10 +115,10 @@ export function loesungStarten(zustand, { loesungId }) {
     state: {
       ...zustand,
       kapital: zustand.kapital - l.kapital,
-      aktionenImQuartal: zustand.aktionenImQuartal + 1,
+      aktionenImMonat: zustand.aktionenImMonat + 1,
       loesungen: { ...zustand.loesungen, [loesungId]: { status: 'laufend', fertig: zustand.runde + l.dauer, start: zustand.runde } },
     },
-    ereignisse: [`Lösung gestartet: „${l.name}“ gegen ${l.problem.name} (fertig in ${l.dauer} Quartalen, Chance ${Math.round(erfolgschance(zustand, l) * 100)} %)`],
+    ereignisse: [`Lösung gestartet: „${l.name}“ gegen ${l.problem.name} (fertig in ${l.dauer} Monaten, Chance ${Math.round(erfolgschance(zustand, l) * 100)} %)`],
   };
 }
 
@@ -120,9 +127,9 @@ export function jahresFolgen(zustand) {
   return wirkungSumme(zustand.jahresWirkung, ...probleme.map((p) => skaliert(p.folgen, stufeVon(zustand.probleme[p.id].wert).folgen)));
 }
 
-// Am Ende eines Quartals: Werte entwickeln sich, Schocks, Eskalationen, fertige Lösungen, Wirkung auf die Kanzlerpartei.
+// Am Ende eines Monats: Werte entwickeln sich, Schocks, Eskalationen, fertige Lösungen, Wirkung auf die Kanzlerpartei.
 // Danach wächst das politische Kapital, die Aufmerksamkeit ist wieder frei.
-export function problemeQuartal(zustand) {
+export function problemeMonat(zustand) {
   let rngZustand = zustand.rngZustand;
   const zieh = () => {
     const z = zufall(rngZustand);
@@ -134,11 +141,11 @@ export function problemeQuartal(zustand) {
   for (const p of probleme) {
     const alt = zustand.probleme[p.id];
     let w = alt.wert + trend(zustand, p) + (zieh() * 2 - 1) * pc.schwankung;
-    if (p.schock && zieh() < p.schock.chance) {
+    if (p.schock && zieh() < chanceJeMonat(p.schock.chance)) {
       w += p.schock.staerke;
       ereignisse.push(`Plötzliche Verschärfung: ${p.name}`);
     }
-    w = r1(begrenzt(w));
+    w = r2(begrenzt(w));
     if (stufeVon(w).ab > stufeVon(alt.wert).ab && w >= pc.stufen[2].ab) ereignisse.push(`Eskalation: ${p.name} ist jetzt „${stufeVon(w).name}“`);
     neu[p.id] = { wert: w, verlauf: [...alt.verlauf, w].slice(-pc.verlaufLaenge) };
   }
@@ -155,7 +162,7 @@ export function problemeQuartal(zustand) {
     const l = loesung(id);
     const erfolg = zieh() < erfolgschance(zustand, l);
     const senkung = Math.min(neu[l.problem.id].wert, erfolg ? l.wirkung : l.wirkung * pc.fehlschlagWirkung);
-    neu[l.problem.id] = { ...neu[l.problem.id], wert: r1(neu[l.problem.id].wert - senkung) };
+    neu[l.problem.id] = { ...neu[l.problem.id], wert: r2(neu[l.problem.id].wert - senkung) };
     loesungen[id] = { ...stand, status: erfolg ? 'erfolg' : 'gescheitert' };
     if (erfolg) {
       const halter = zustand.kabinett.verteilung[l.problem.ministerium];
@@ -167,7 +174,7 @@ export function problemeQuartal(zustand) {
       if (l.nebenwirkung) {
         jahresWirkung = wirkungSumme(jahresWirkung, { ...l.nebenwirkung, gruppen: {}, probleme: {} });
         for (const [g, v] of Object.entries(l.nebenwirkung.gruppen ?? {})) gruppenNeu[g] = Math.max(0, Math.min(100, gruppenNeu[g] + v));
-        for (const [pid, v] of Object.entries(l.nebenwirkung.probleme ?? {})) neu[pid] = { ...neu[pid], wert: r1(begrenzt(neu[pid].wert + v)) };
+        for (const [pid, v] of Object.entries(l.nebenwirkung.probleme ?? {})) neu[pid] = { ...neu[pid], wert: r2(begrenzt(neu[pid].wert + v)) };
       }
       ereignisse.push(`Lösung wirkt: „${l.name}“ – ${l.problem.name} −${r1(senkung)}`);
     } else {
@@ -183,9 +190,9 @@ export function problemeQuartal(zustand) {
 
   // prominente ernste Probleme und Krisen kosten die Kanzlerpartei
   const zwischen = { ...zustand, probleme: neu };
-  const belastend = problemListe(zwischen).filter((e) => e.prominent && pc.umfrageJeQuartal[e.stufe.id]);
-  const verlust = belastend.reduce((s, e) => s + pc.umfrageJeQuartal[e.stufe.id], 0);
-  for (const e of belastend) posten.push({ ursache: `Problem „${e.problem.name}“ (${e.stufe.name})`, partei: zustand.kanzlerParteiId, wert: -pc.umfrageJeQuartal[e.stufe.id] });
+  const belastend = problemListe(zwischen).filter((e) => e.prominent && pc.umfrageJeMonat[e.stufe.id]);
+  const verlust = belastend.reduce((s, e) => s + pc.umfrageJeMonat[e.stufe.id], 0);
+  for (const e of belastend) posten.push({ ursache: `Problem „${e.problem.name}“ (${e.stufe.name})`, partei: zustand.kanzlerParteiId, wert: -pc.umfrageJeMonat[e.stufe.id] });
   if (verlust) umfrage[zustand.kanzlerParteiId] = (umfrage[zustand.kanzlerParteiId] ?? 0) - verlust;
 
   let state = {
@@ -197,8 +204,8 @@ export function problemeQuartal(zustand) {
     jahresWirkung,
     gruppen: gruppenNeu,
     runde: zustand.runde + 1,
-    aktionenImQuartal: 0,
-    kapital: Math.min(config.kapital.max, zustand.kapital + config.kapital.jeQuartal),
+    aktionenImMonat: 0,
+    kapital: Math.min(config.kapital.max, zustand.kapital + config.kapital.jeMonat),
   };
   if (Object.keys(umfrage).length) {
     state = umfrageBuchen(zustand, mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) }), posten);

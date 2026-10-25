@@ -8,7 +8,7 @@ import { wahlkampfWoche, ertragFaktor } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen, kuerzungsVorschlag, zugestaendnis, zugestaendnisSperre } from '../src/engine/haushalt.js';
-import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { monatBeenden, haushaltsMonat } from '../src/engine/regierung.js';
 import { loesungStarten, loesungSperre, erfolgschance, problemListe, loesung } from '../src/engine/probleme.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 import { ministerien } from '../src/data/ministerien.js';
@@ -73,7 +73,7 @@ function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Pla
     else if (z.phase === 'koalition') r = koalitionZug(z);
     else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
     else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
-        else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
+        else if (z.phase === 'regierung' && !haushaltsMonat(z)) r = monatBeenden(z);
         else if (z.phase === 'regierung') r = beschliessen(z, haushaltZug(z));
     else break;
     if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
@@ -129,7 +129,7 @@ const minderheitZeilen = spielbar.flatMap((p) =>
         else if (z.phase === 'koalition') r = kz(z);
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
         else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
-        else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
+        else if (z.phase === 'regierung' && !haushaltsMonat(z)) r = monatBeenden(z);
         else if (z.phase === 'regierung') r = beschliessen(z, {});
         else break;
         if (r.state.koalition?.minderheit) war = true;
@@ -159,9 +159,9 @@ const LOESUNG = {
   'billigste zuerst': (z) => startbar(z).sort((a, b) => a.l.kosten - b.l.kosten)[0]?.l,
 };
 const regierenMit = (wahl) => (z) => {
-  if (haushaltsQuartal(z)) return beschliessen(z, {});
+  if (haushaltsMonat(z)) return beschliessen(z, {});
   const l = wahl(z);
-  return l ? loesungStarten(z, { loesungId: l.id }) : quartalBeenden(z);
+  return l ? loesungStarten(z, { loesungId: l.id }) : monatBeenden(z);
 };
 const loesungZeilen = spielbar.flatMap((p) =>
   Object.entries(LOESUNG).map(([name, wahl]) => {
@@ -230,13 +230,13 @@ function reformZeile(id, name, wahl, reagieren) {
         else if (z.phase === 'regierung' && reagieren && drohend(z).length) {
           const frei = drohend(z).find((p) => !zugestaendnisSperre(z, p));
           if (frei) r = zugestaendnis(z, { partnerId: frei });
-          else r = haushaltsQuartal(z) ? beschliessen(z, {}) : quartalBeenden(z);
+          else r = haushaltsMonat(z) ? beschliessen(z, {}) : monatBeenden(z);
         }
-        else if (z.phase === 'regierung' && haushaltsQuartal(z)) r = beschliessen(z, {});
+        else if (z.phase === 'regierung' && haushaltsMonat(z)) r = beschliessen(z, {});
         else if (z.phase === 'regierung') {
           const w = wahl(z);
           r = w ? wegBeschliessen(z, { wegId: w.id, kompromiss: Boolean(wegSperre(z, w.id)) }) : regierenMit(LOESUNG['größtes Problem zuerst'])(z);
-          if (w && r.state === z) r = quartalBeenden(z);
+          if (w && r.state === z) r = monatBeenden(z);
         } else break;
         if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
         z = r.state;
@@ -292,7 +292,7 @@ Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Parti
 ${minderheitZeilen.join('\n')}
 
 ## Probleme und Lösungen (System 3)
-Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur wenn nötig. Je Quartal bis zu ${config.probleme.aktionenJeQuartal} Lösungen nach Strategie (siehe Skript). Werte am Partieende: Problemwert im Mittel über alle Bereiche, Zahl der Krisen, Schuldenquote.
+Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur wenn nötig. Je Quartal bis zu ${config.probleme.aktionenJeMonat} Lösungen nach Strategie (siehe Skript). Werte am Partieende: Problemwert im Mittel über alle Bereiche, Zahl der Krisen, Schuldenquote.
 
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø erfolgreiche Lösungen | Ø Problemwert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|

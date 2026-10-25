@@ -15,7 +15,7 @@ function nachZeit(bilanz) {
   return zeiten.reverse();
 }
 
-// gleiche Ursache je Partei zusammenfassen (z. B. Zufall aus mehreren Aktionen eines Quartals)
+// gleiche Ursache je Partei zusammenfassen (z. B. Zufall aus mehreren Aktionen eines Monats)
 function verdichten(posten) {
   const m = new Map();
   for (const p of posten) {

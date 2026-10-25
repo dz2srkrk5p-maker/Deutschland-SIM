@@ -4,7 +4,7 @@ import { config } from '../src/data/config.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { bundesratAbstimmung, kompromissMoeglich } from '../src/engine/bundesrat.js';
-import { weg, wegSperre, wegVorschau, wegBeschliessen, reformwegeQuartal, wegEinnahmen } from '../src/engine/reformwege.js';
+import { weg, wegSperre, wegVorschau, wegBeschliessen, reformwegeMonat, wegEinnahmen } from '../src/engine/reformwege.js';
 import { vorschau, haushaltBeschliessen } from '../src/engine/haushalt.js';
 
 // Steueränderung in früheren (geeichten) Stufen → Reglerschritte (feinere Schritte seit 2026-10-25)
@@ -13,7 +13,7 @@ const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).
 const km = config.kompromiss;
 // Union + SPD: 24 von 35 Bundesratsstimmen, es fehlen 11 – Kompromiss möglich
 const regierung = (partner = ['spd'], extra = {}) => ({
-  ...neuesSpiel('union', 1), phase: 'regierung', quartal: 1, runde: 4, kanzlerParteiId: 'union', kapital: 100,
+  ...neuesSpiel('union', 1), phase: 'regierung', monat: 1, runde: 4, kanzlerParteiId: 'union', kapital: 100,
   sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
   koalition: { partner, startAnteile: Object.fromEntries(partner.map((p) => [p, 15])), minderheit: false, fehlschlaege: 0 },
   kabinett: { anspruch: {}, verteilung: Object.fromEntries(ministerien.map((m) => [m.id, 'union'])) },
@@ -47,7 +47,7 @@ test('Feature 6: Reformweg als Kompromiss – abgeschwächt, teurer, gekennzeich
   expect(wegEinnahmen(st).koerperschaft[0]).toEqual({ quelle: 'Unternehmensteuern senken (Kompromiss)', betrag: Math.round(weg('st_unternehmen').einnahmen.koerperschaft * km.wirkungFaktor) });
   // Langwirkung bei Erfolg abgeschwächt
   const fertig = { ...state, runde: 99 };
-  const laeufe = Array.from({ length: 20 }, (_, i) => reformwegeQuartal({ ...fertig, rngZustand: i * 11 + 5 }).state);
+  const laeufe = Array.from({ length: 20 }, (_, i) => reformwegeMonat({ ...fertig, rngZustand: i * 11 + 5 }).state);
   const ok = laeufe.find((s) => s.reformwege.r_buerger.status === 'beschlossen');
   for (const [pid, x] of Object.entries(w.lang?.probleme ?? {})) {
     expect(ok.probleme[pid].wert).toBeCloseTo(Math.max(0, fertig.probleme[pid].wert + x * km.wirkungFaktor), 0);
@@ -55,7 +55,7 @@ test('Feature 6: Reformweg als Kompromiss – abgeschwächt, teurer, gekennzeich
 });
 
 test('Feature 6: Haushalt mit Steueränderung – Ausgleichszahlung und Kapital statt Scheitern', () => {
-  const z = { ...regierung(), quartal: 4 };
+  const z = { ...regierung(), monat: 12 };
   const entwurf = { einnahmen: { umsatz: fein('umsatz', 1) } };
   expect(vorschau(z, entwurf).bundesrat.mehrheit).toBe(false);
   expect(() => haushaltBeschliessen(z, entwurf)).toThrow('Bundesrat');
@@ -66,7 +66,8 @@ test('Feature 6: Haushalt mit Steueränderung – Ausgleichszahlung und Kapital 
   const { state, ereignisse } = haushaltBeschliessen(z, { ...entwurf, kompromiss: true });
   // dazu die Verbände: Umsatzsteuer +1 Punkt trifft Geringverdiener → Sozialverbände protestieren
   expect(mit.verbaendeKapital).toBe(-config.verbaendeSteuern.kapitalDagegen);
-  expect(state.kapital).toBe(100 - km.kapital + mit.verbaendeKapital);
+  // nach dem Haushalt endet der Dezember wie jeder Monat: Kapital wächst um jeMonat
+  expect(state.kapital).toBe(Math.min(config.kapital.max, 100 - km.kapital + mit.verbaendeKapital + config.kapital.jeMonat));
   expect(ereignisse.some((e) => e.startsWith('Kompromiss im Bundesrat'))).toBe(true);
   expect(state.haushalt.einnahmen.stufen.umsatz).toBe(fein('umsatz', 1));
 });

@@ -4,7 +4,7 @@ import { laufendeVorhaben } from '../../engine/vorhaben.js';
 import { badge } from './basis.js';
 
 const prozent = (x) => `${Math.round(x * 100)} %`;
-const quartale = (n) => `${n} ${n === 1 ? 'Quartal' : 'Quartalen'}`;
+const monate = (n) => `${n} ${n === 1 ? 'Monat' : 'Monaten'}`;
 const schritt = (zustand, titel, text, symbol) => `<li class="${zustand}"><span class="marke" aria-hidden="true">${symbol}</span>
   <span class="schritt-titel">${titel}<span class="nur-screenreader"> (${{ erledigt: 'erledigt', aktiv: 'läuft', offen: 'offen', entfaellt: 'entfällt' }[zustand]})</span></span>
   <small>${text}</small></li>`;
@@ -14,8 +14,8 @@ function umsetzung(v) {
   const segmente = Array.from({ length: v.dauer }, (_, i) => `<i class="${i < v.vergangen ? 'voll' : i === v.vergangen ? 'jetzt' : ''}"></i>`).join('');
   return `<li class="aktiv"><span class="marke" aria-hidden="true">●</span>
     <span class="schritt-titel">Umsetzung<span class="nur-screenreader"> (läuft)</span></span>
-    <span class="segmente" role="img" aria-label="Quartal ${aktuell} von ${v.dauer}">${segmente}</span>
-    <small>Quartal ${aktuell} von ${v.dauer}</small></li>`;
+    <span class="segmente" role="img" aria-label="Monat ${aktuell} von ${v.dauer}">${segmente}</span>
+    <small>Monat ${aktuell} von ${v.dauer}</small></li>`;
 }
 
 function gesetz(v) {
@@ -28,7 +28,7 @@ function gesetz(v) {
       ${schritt('erledigt', 'Bundestag', bt, '✓')}
       ${br}
       ${umsetzung(v)}
-      ${schritt('offen', 'Ergebnis', `am Ende in ${quartale(v.rest)} · Risiko des Scheiterns ${prozent(v.risiko)}${v.verfassung ? ', Klage möglich' : ''}`, '○')}
+      ${schritt('offen', 'Ergebnis', `am Ende in ${monate(v.rest)} · Risiko des Scheiterns ${prozent(v.risiko)}${v.verfassung ? ', Klage möglich' : ''}`, '○')}
     </ol></div>`;
 }
 
@@ -38,7 +38,7 @@ function loesung(v) {
     <ol class="zeitstrahl">
       ${schritt('erledigt', 'Gestartet', 'ohne Abstimmung (Regierungsprogramm)', '✓')}
       ${umsetzung(v)}
-      ${schritt('offen', 'Ergebnis', `am Ende in ${quartale(v.rest)} · Erfolgschance ${prozent(v.chance)}`, '○')}
+      ${schritt('offen', 'Ergebnis', `am Ende in ${monate(v.rest)} · Erfolgschance ${prozent(v.chance)}`, '○')}
     </ol></div>`;
 }
 
@@ -47,5 +47,5 @@ export function zeitstrahlHtml(zustand) {
   const liste = laufendeVorhaben(zustand);
   if (!liste.length) return '';
   return `${liste.map((v) => (v.typ === 'gesetz' ? gesetz(v) : loesung(v))).join('')}
-    <p class="klein">Über Erfolg oder Scheitern wird am Ende des letzten Umsetzungsquartals entschieden. Liegt es im Haushaltsquartal, fällt die Entscheidung am Ende des folgenden Quartals.</p>`;
+    <p class="klein">Über Erfolg oder Scheitern wird am Ende des letzten Umsetzungsmonats entschieden.</p>`;
 }

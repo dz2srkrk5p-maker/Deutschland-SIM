@@ -4,7 +4,7 @@ import { wahlkampfWoche } from '../engine/wahlkampf.js';
 import { verhandeln, minderheitAntreten } from '../engine/koalition.js';
 import { bestaetigen } from '../engine/kabinett.js';
 import { haushaltBeschliessen, zugestaendnis } from '../engine/haushalt.js';
-import { quartalBeenden, haushaltsQuartal } from '../engine/regierung.js';
+import { monatBeenden, haushaltsMonat } from '../engine/regierung.js';
 import { loesungStarten } from '../engine/probleme.js';
 import { ereignisEntscheiden } from '../engine/ereignisse.js';
 import { spielSichern, spielLaden, spielLoeschen, hinweiseSetzen, hinweiseAn } from '../storage/speicher.js';
@@ -69,7 +69,7 @@ function zeichne() {
   }
   const regiert = zustand.phase === 'regierung';
   const ernst = regiert ? warnZahl(zustand) : 0;
-  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: haushaltsQuartal(zustand) ? badge('fällig', 'gelb') : '' } : {};
+  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: haushaltsMonat(zustand) ? badge('fällig', 'gelb') : '' } : {};
   el.innerHTML = shellHtml(zustand, { aktiv: regiert ? ui.bereich : null, badges });
   el.querySelector('#meldung').innerHTML = meldungHtml(ui.meldung);
   menueBinden();
@@ -101,7 +101,7 @@ function zeichne() {
     // Richtungsprofil auf dem Dashboard (System 1)
     const zusatz = karte(`${profilHtml(richtungsprofil(zustand))}<div class="knoepfe"><button data-gehe="reformen">Zu den Reformen</button></div>`, { titel: 'Richtungsprofil' });
     const onProblem = (p) => (wechseln('probleme'), (ui.problem = p), zeichne(), fokusOben());
-    return lageScreen(a, zustand, { onWeiter: ausfuehren(quartalBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onBereich, onProblem, zusatz });
+    return lageScreen(a, zustand, { onWeiter: ausfuehren(monatBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onBereich, onProblem, zusatz });
   }
   if (ui.bereich === 'reformen') {
     return reformenScreen(a, zustand, { auswahl: ui.reformBereich, onBeschliessen: ausfuehren(wegBeschliessen), onAuswahl: (b) => ((ui.reformBereich = b), zeichne(), fokusOben()) });

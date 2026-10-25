@@ -39,3 +39,28 @@ test('Migration: Version 18 bekommt einen Wirtschaftsverlauf, der mit dem aktuel
   expect(z.wirtschaftVerlauf).toHaveLength(1);
   expect(z.wirtschaftVerlauf[0]).toMatchObject({ wachstum: 1.4, schuldenquote: 70.2 });
 });
+
+test('Migration 21 → 22: Quartal wird Monat, Rundenzähler und Fristen ×3, Landtagswahl im Monat der Daten', () => {
+  const { monat, aktionenImMonat, ...rest } = neuesSpiel('union', 3);
+  const nw = rest.laender.nw;
+  const alt = {
+    ...rest, version: 21, quartal: 4, aktionenImQuartal: 2, runde: 5,
+    reformwege: { st_einfach: { status: 'umsetzung', fertig: 7, start: 3 } },
+    loesungen: { wohnen1: { status: 'laufend', fertig: 6 } },
+    verfahren: [{ typ: 'einnahme', id: 'vermoegen', stufen: 10, faellig: 8 }],
+    koalition: { partner: ['spd'], ultimatum: { spd: 6 } },
+    laender: { ...rest.laender, nw: { ...nw, wahl: { jahr: 2027, quartal: 2 } } },
+  };
+  const z = laden(JSON.stringify(alt));
+  expect(z.version).toBe(ZUSTAND_VERSION);
+  expect(z.monat).toBe(12); // Haushaltsquartal → Haushaltsmonat
+  expect(z.quartal).toBeUndefined();
+  expect(z.aktionenImMonat).toBe(1);
+  expect(z.runde).toBe(15);
+  expect(z.reformwege.st_einfach).toMatchObject({ fertig: 21, start: 9 });
+  expect(z.loesungen.wohnen1.fertig).toBe(18);
+  expect(z.verfahren[0].faellig).toBe(24);
+  expect(z.koalition.ultimatum.spd).toBe(18);
+  expect(z.laender.nw.wahl).toEqual({ jahr: 2027, monat: 4 });
+  expect(laden(JSON.stringify({ ...alt, quartal: 2 })).monat).toBe(4);
+});

@@ -7,13 +7,18 @@ export const config = {
   // Legislaturperiode in Jahren, freigegeben 2026-10-20
   legislaturJahre: 4,
 
-  // Regierungsjahr in Runden (F12, freigegeben automatisch nach Empfehlung 2026-10-22): je Jahr so viele Quartale,
+  // Regierungsjahr in Monaten (seit 2026-10-25, Wunsch des Nutzers; vorher Quartale, F12): je Jahr so viele Monate,
   // der Haushalt wird im letzten beschlossen.
-  regierung: { quartaleJeJahr: 4 },
+  regierung: { monateJeJahr: 12 },
+
+  // Umrechnung der früher je Quartal geeichten Werte (Treiber und Trends der Probleme, Schockchancen, Problem-Umfrage,
+  // Kapital, Ereignisse). Früher gab es 3 solche Schritte je Jahr (Q1–Q3, Q4 war der Haushalt), jetzt 12 Monate: je Monat
+  // wirkt ein Viertel, Wahrscheinlichkeiten so umgerechnet, dass sie je Jahr gleich bleiben.
+  zeit: { anteilJeMonat: 0.25 },
 
   // Politisches Kapital (Erweiterung „drei Systeme“, freigegeben automatisch nach Empfehlung 2026-10-23): knappe Ressource
-  // für Reformwege und Problemlösungen, wächst je beendetem Quartal nach. Spielwerte.
-  kapital: { start: 50, max: 100, jeQuartal: 8 },
+  // für Reformwege und Problemlösungen, wächst je beendetem Monat nach (24 je Jahr wie früher 3 Quartale × 8). Spielwerte.
+  kapital: { start: 50, max: 100, jeMonat: 2 },
 
   // Reformwege (System 1, freigegeben automatisch nach Empfehlung 2026-10-24). Spielwerte; Inhalte in src/data/reformwege.js.
   reformwege: {
@@ -63,25 +68,26 @@ export const config = {
     ],
     maxAktiv: 6, // so viele Probleme ab „angespannt“ stehen prominent, der Rest auf der Beobachtungsliste
     fruehwarnungAb: 32, // Beobachtungsliste: Frühwarnung ab diesem Wert bei steigendem Trend
-    umfrageJeQuartal: { ernst: 0.02, krise: 0.05 }, // Verlust der Kanzlerpartei je Quartal und prominentem Problem
-    schwankung: 1, // zufällig ± je Quartal und Problem
-    aktionenJeQuartal: 2, // Aufmerksamkeit: Lösungen und Reformwege zusammen je Quartal
+    umfrageJeMonat: { ernst: 0.005, krise: 0.0125 }, // Verlust der Kanzlerpartei je Monat und prominentem Problem (je Jahr gleich wie früher 3 × 0,02 / 0,05)
+    schwankung: 0.5, // zufällig ± je Monat und Problem (gleiche Streuung je Jahr wie früher 3 × ±1)
+    aktionenJeMonat: 1, // Aufmerksamkeit: Lösungen und Reformwege zusammen je Monat. TODO-BALANCE: früher 6 je Jahr (2 je Quartal, Q1–Q3), jetzt 11
     fehlschlagWirkung: 0.3, // gescheiterte Lösung senkt das Problem nur um diesen Anteil
     fehlschlagUmfrage: 0.2, // und kostet die Kanzlerpartei so viele Punkte
     gewinnJeWertpunkt: 0.01, // Umfragegewinn der Ministeriumspartei je gesenktem Punkt (wie F13)
     gewinnRegierungJeWertpunkt: 0.015, // dazu für die Regierung, verteilt nach Umfrageanteil der Koalitionsparteien; Balancing 2026-10-24
     passungBonus: 0.15, // Erfolgschance ± je nach Nähe der Lösung zum Richtungsprofil (System 1)
-    verlaufLaenge: 16, // so viele Quartale Verlauf je Problem
+    verlaufLaenge: 48, // so viele Monate Verlauf je Problem
   },
 
-  // Ereignisse (F14, freigegeben automatisch nach Empfehlung 2026-10-22): Chance je beendetem Quartal, höchstens eines;
-  // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
-  ereignisse: { chanceJeQuartal: 0.3 },
+  // Ereignisse (F14, freigegeben automatisch nach Empfehlung 2026-10-22): Chance je beendetem Monat, höchstens eines;
+  // dasselbe Ereignis höchstens einmal je Wahlperiode. 0,085 je Monat: je Jahr gleich viele wie früher 30 % in 3 Quartalen.
+  // Folgen: src/data/ereignisse.js.
+  ereignisse: { chanceJeMonat: 0.085 },
 
   // Krisenketten (Paket Groß, Feature 8, Spielwerte): Stärke eines Glieds = Gewicht der bestehenden Wechselwirkung × faktor;
-  // wirkt nach verzoegerung Quartalen, je Kettenstufe × daempfung, höchstens maxTiefe Stufen und maxAktiv gleichzeitig
-  // aktive Glieder; ein Problem löst frühestens nach abklingQuartale erneut eine Kette aus. verlaufLaenge: Anzeige.
-  krisenketten: { faktor: 40, verzoegerung: 2, daempfung: 0.5, maxTiefe: 2, maxAktiv: 3, abklingQuartale: 8, verlaufLaenge: 6 },
+  // wirkt nach verzoegerung Monaten, je Kettenstufe × daempfung, höchstens maxTiefe Stufen und maxAktiv gleichzeitig
+  // aktive Glieder; ein Problem löst frühestens nach abklingMonate erneut eine Kette aus. verlaufLaenge: Anzeige.
+  krisenketten: { faktor: 40, verzoegerung: 6, daempfung: 0.5, maxTiefe: 2, maxAktiv: 3, abklingMonate: 24, verlaufLaenge: 6 },
 
   // Koalitionsvertrag (Paket Groß, Feature 7, Spielwerte): je Partner vorschlaegeJePartner Vorschläge, 1 bis maxJePartner
   // aufnehmen. Erfüllt (Vorhaben beschlossen): Partner +bonusUmsetzung. Gebrochen (anderer Weg im zugesagten Bereich):
@@ -116,12 +122,12 @@ export const config = {
   // Landesregierung verliert, verliert Umfragepunkte, eine, die hinzukommt, gewinnt.
   landtagswahlen: { startJahr: 2026, basis: 0.35, jePunkt: 0.08, min: 0.1, max: 0.85, verlustUmfrage: 0.15, gewinnUmfrage: 0.1 },
 
-  // Verfassungsrisiko für Steuern (Paket Klein, Feature 3, Spielwerte): Nach dauerQuartale Quartalen entscheidet das
+  // Verfassungsrisiko für Steuern (Paket Klein, Feature 3, Spielwerte): Nach dauerMonate Monaten entscheidet das
   // Gericht; kippt es eine Änderung, wird sie zurückgenommen (Einnahmeausfall ab dann) und die Kanzlerpartei verliert.
-  verfassungsrisiko: { dauerQuartale: 4, verlustUmfrage: 0.3 },
+  verfassungsrisiko: { dauerMonate: 12, verlustUmfrage: 0.3 },
 
   // Umfrage-Bilanz (Paket Klein, Feature 1): reine Anzeige, wie viele Runden zurück die Ursachen gezeigt werden. Spielwert.
-  umfrageBilanz: { runden: 8 },
+  umfrageBilanz: { runden: 12 }, // so viele Zeitangaben (Monate, Wahlkampfwochen, Haushalte) bleiben sichtbar
 
   // Nachrichtenticker (F15, freigegeben automatisch nach Empfehlung 2026-10-22): reine Anzeige, Schwellen für Schlagzeilen
   ticker: {
@@ -221,7 +227,7 @@ export const config = {
   // Vorhersehbarer Koalitionsbruch (Schwächen-Bearbeitung Block 2, freigegeben automatisch nach Empfehlung 2026-10-24). Spielwerte.
   koalitionsbruch: {
     ultimatumAnteil: 0.8, // ab diesem Anteil der Bruchgrenze stellt ein Partner ein Ultimatum
-    fristQuartale: 2, // so viele Quartalsenden später wird gebrochen, wenn er dann noch über der Grenze liegt
+    fristMonate: 6, // so viele Monatsenden später wird gebrochen, wenn er dann noch über der Grenze liegt
     zugestaendnisKapital: 15, // Gegenmaßnahme Zugeständnis: kostet Kapital und ein Vorhaben, einmal je Partner und Jahr
     zugestaendnisPunkte: 0.4, // Partner gewinnt so viele Umfragepunkte
     zugestaendnisKanzler: 0.2, // Kanzlerpartei verliert so viele

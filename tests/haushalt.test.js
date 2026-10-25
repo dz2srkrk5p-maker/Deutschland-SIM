@@ -5,15 +5,15 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { etats2026, steuern2026, sonstigeEinnahmen2026 } from '../src/data/haushalt.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { config } from '../src/data/config.js';
-import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { monatBeenden, haushaltsMonat } from '../src/engine/regierung.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 
 // Steueränderung in früheren (geeichten) Stufen → Reglerschritte (feinere Schritte seit 2026-10-25)
 const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).parameter; return Math.round((stufen * (p.eichSchritt ?? p.schritt)) / p.schritt); };
-// F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
+// F12: bis zum Haushaltsmonat weiterschalten, dann beschließen
 const beschliessen = (z, p) => {
   // F14: offene Ereignisse mit der ersten Möglichkeit beantworten
-  while (!haushaltsQuartal(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : quartalBeenden(z)).state;
+  while (!haushaltsMonat(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : monatBeenden(z)).state;
   return haushaltBeschliessen(z, p);
 };
 
@@ -100,9 +100,9 @@ test('nach Jahr 4 beginnt der Wahlkampf, der Haushalt bleibt', () => {
   let z = imAmt();
   for (let jahr = 1; jahr <= config.legislaturJahre; jahr++) {
     expect(z.phase).toBe('regierung');
-    // direkt ins Haushaltsquartal, ohne Quartale und Ereignisse (F12/F14), damit nur der Haushalt wirkt
+    // direkt ins Haushaltsmonat, ohne Quartale und Ereignisse (F12/F14), damit nur der Haushalt wirkt
     // Kürzung bei der Kanzlerpartei (Verkehr, SPD): kein Koalitionsbruch, Schuldenbremse hält
-    z = haushaltBeschliessen({ ...z, quartal: config.regierung.quartaleJeJahr }, { stufen: { verkehr: -P(5) } }).state;
+    z = haushaltBeschliessen({ ...z, monat: config.regierung.monateJeJahr }, { stufen: { verkehr: -P(5) } }).state;
   }
   expect(z.phase).toBe('wahlkampf');
   // Wirtschaftsverlauf: Start plus ein Eintrag je Haushaltsjahr, letzter Eintrag = aktuelle Kennzahlen

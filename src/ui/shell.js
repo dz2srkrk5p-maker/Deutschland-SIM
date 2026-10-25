@@ -1,4 +1,5 @@
 // App-Shell (UI-Umbau): Kopfzeile mit Dauer-Kennzahlen und Spielmenü, Navigation bzw. Schrittanzeige, Hauptbereich.
+import { monatsname } from '../data/kalender.js';
 import { parteien } from '../data/parteien.js';
 import { config } from '../data/config.js';
 import { hinweiseAn } from '../storage/speicher.js';
@@ -33,7 +34,7 @@ const SCHRITTE = [
 export function zeitText(z) {
   if (z.phase === 'wahlkampf') return `Woche ${z.wahlkampfWoche} von ${config.wahlkampf.wochen}`;
   if (z.phase === 'koalition' || z.phase === 'kabinett') return 'Regierungsbildung';
-  if (z.phase === 'regierung') return `Jahr ${z.haushalt.jahr} · Quartal ${z.quartal}`;
+  if (z.phase === 'regierung') return `Jahr ${z.haushalt.jahr} · ${monatsname(z.monat)}`;
   return 'Spielende';
 }
 

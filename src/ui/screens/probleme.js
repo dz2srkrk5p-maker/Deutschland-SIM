@@ -52,10 +52,10 @@ function kettenHtml(zustand, p) {
   const kommt = k.aktiv.filter((g) => g.nach === p.id);
   const geht = k.aktiv.filter((g) => g.von === p.id);
   const war = k.verlauf.filter((g) => g.nach === p.id || g.von === p.id);
-  const sperre = k.zuletzt[p.id] !== undefined && zustand.runde - k.zuletzt[p.id] < config.krisenketten.abklingQuartale;
+  const sperre = k.zuletzt[p.id] !== undefined && zustand.runde - k.zuletzt[p.id] < config.krisenketten.abklingMonate;
   return `<p class="klein">${erklaerungen.ketten}</p>
     <p>${ziele.length ? `In der Krise verschärft es: ${ziele.map((z) => `${n(z.nach)} (+${zahl(z.staerke, 1)})`).join(', ')}.` : 'In der Krise löst es keine Kette aus.'}</p>
-    ${kommt.length ? `<p class="rot">Droht: ${kommt.map((g) => `+${zahl(g.staerke, 1)} in ${Math.max(1, g.faellig - zustand.runde)} Quartalen wegen der Krise bei ${n(g.von)}`).join('; ')}.</p>` : ''}
+    ${kommt.length ? `<p class="rot">Droht: ${kommt.map((g) => `+${zahl(g.staerke, 1)} in ${Math.max(1, g.faellig - zustand.runde)} Monaten wegen der Krise bei ${n(g.von)}`).join('; ')}.</p>` : ''}
     ${geht.length ? `<p class="gelb">Läuft: Die Krise hier verschärft bald ${geht.map((g) => `${n(g.nach)} (+${zahl(g.staerke, 1)})`).join(', ')}.</p>` : ''}
     ${war.length ? `<p class="klein">Zuletzt gewirkt: ${war.map((g) => `${n(g.von)} → ${n(g.nach)} +${zahl(g.staerke, 1)}`).join('; ')}.</p>` : ''}
     ${sperre ? '<p class="klein">Abklingzeit: Dieses Problem löst vorerst keine neue Kette aus.</p>' : ''}`;
@@ -78,7 +78,7 @@ function detail(zustand, id) {
         <tr><th scope="row">Wirkung bei Erfolg</th><td>−${l.wirkung} Punkte</td></tr>
         <tr><th scope="row">Erfolgschance</th><td>${Math.round(erfolgschance(zustand, l) * 100)} %</td></tr>
         <tr><th scope="row">Kosten</th><td>${l.kosten >= 0 ? `${zahl(mrd(l.kosten), 1)} Mrd. je Jahr` : `spart ${zahl(mrd(-l.kosten), 1)} Mrd. je Jahr`}</td></tr>
-        <tr><th scope="row">Dauer</th><td>${l.dauer} Quartale</td></tr>
+        <tr><th scope="row">Dauer</th><td>${l.dauer} Monate</td></tr>
         <tr><th scope="row">Politisches Kapital</th><td>${l.kapital}</td></tr>
         ${l.nebenwirkung ? `<tr><th scope="row">Nebenwirkungen</th><td>${[
           ...['wachstum', 'inflation', 'gini'].filter((k) => l.nebenwirkung[k]).map((k) => `${kName(k)} ${plusMinus(l.nebenwirkung[k])}`),
@@ -95,7 +95,7 @@ function detail(zustand, id) {
       <p>${p.text}</p>
       <p class="klein">${p.kategorie} · ${stufeBadge(e.stufe)} · zuständig: ${ministerien.find((m) => m.id === p.ministerium).kurz} (${halter ? partei(halter).name : '–'})</p>
       <p>Verlauf: ${verlaufSvg(e.verlauf)}</p>`)}
-    ${karte(`<table><thead><tr><th scope="col">Ursache</th><th scope="col">je Quartal</th></tr></thead><tbody>
+    ${karte(`<table><thead><tr><th scope="col">Ursache</th><th scope="col">je Monat</th></tr></thead><tbody>
       ${u.map((x) => `<tr><th scope="row">${x.text}</th><td class="${x.beitrag > 0 ? 'rot' : 'ok'}">${plusMinus(x.beitrag)}</td></tr>`).join('')}
       <tr><th scope="row"><strong>Trend</strong></th><td><strong>${plusMinus(e.trend)}</strong></td></tr></tbody></table>
       ${treibtAndere.length ? `<p class="klein">Verschärft bei hohem Wert: ${treibtAndere.map((q) => q.name).join(', ')}.</p>` : ''}
@@ -117,7 +117,7 @@ export function problemeScreen(el, zustand, { auswahl, filter, onAuswahl, onFilt
   const beobachtung = gefiltert.filter((e) => !e.prominent);
   el.innerHTML = `<div class="ansicht">
     <h1>Probleme</h1>
-    <p class="klein">Politisches Kapital: <strong>${zustand.kapital}</strong> · Vorhaben in diesem Quartal: ${zustand.aktionenImQuartal} von ${pc.aktionenJeQuartal}. Ignorierte Probleme eskalieren; ernste Probleme und Krisen kosten Zustimmung.</p>
+    <p class="klein">Politisches Kapital: <strong>${zustand.kapital}</strong> · Vorhaben in diesem Monat: ${zustand.aktionenImMonat} von ${pc.aktionenJeMonat}. Ignorierte Probleme eskalieren; ernste Probleme und Krisen kosten Zustimmung.</p>
     ${auswahl ? detail(zustand, auswahl) : `
       <div class="tabs" role="group" aria-label="Kategorie">
         <button data-filter="" aria-pressed="${!filter}">Alle</button>

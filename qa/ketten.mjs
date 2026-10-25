@@ -13,7 +13,7 @@ const { wahlkampfWoche } = await import(R + 'engine/wahlkampf.js');
 const { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitAntreten } = await import(R + 'engine/koalition.js');
 const { vorschlag, bestaetigen } = await import(R + 'engine/kabinett.js');
 const H = await import(R + 'engine/haushalt.js');
-const { quartalBeenden, haushaltsQuartal } = await import(R + 'engine/regierung.js');
+const { monatBeenden, haushaltsMonat } = await import(R + 'engine/regierung.js');
 const { ereignisEntscheiden } = await import(R + 'engine/ereignisse.js');
 const { wegSperre, wegVorschau, wegBeschliessen } = await import(R + 'engine/reformwege.js');
 const { problemListe } = await import(R + 'engine/probleme.js');
@@ -45,12 +45,12 @@ function partie(seed, s) {
     else if (z.phase === 'koalition') r = mehrheitMoeglich(z) ? verhandeln(z, { partner: partnerWaehlen(z) }) : minderheitAntreten(z);
     else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: vorschlag(z) });
     else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
-    else if (z.phase === 'regierung' && haushaltsQuartal(z)) {
+    else if (z.phase === 'regierung' && haushaltsMonat(z)) {
       const e = s.haushalt(z);
       try { r = H.haushaltBeschliessen(z, e); } catch { r = H.haushaltBeschliessen(z, H.kuerzungsVorschlag(z, e) ?? H.kuerzungsVorschlag(z, {}) ?? {}); }
     } else if (z.phase === 'regierung') {
       const w = s.reform?.(z);
-      r = w ? wegBeschliessen(z, { wegId: w.id }) : quartalBeenden(z);
+      r = w ? wegBeschliessen(z, { wegId: w.id }) : monatBeenden(z);
     } else break;
     glieder += r.ereignisse.filter((e) => e.startsWith('Krisenkette wirkt')).length;
     z = r.state;

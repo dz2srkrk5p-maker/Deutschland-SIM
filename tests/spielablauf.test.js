@@ -4,7 +4,7 @@ import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, mehrheit, mehrheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag, bestaetigen } from '../src/engine/kabinett.js';
 import { haushaltBeschliessen, kuerzungsVorschlag } from '../src/engine/haushalt.js';
-import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { monatBeenden, haushaltsMonat } from '../src/engine/regierung.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
 
 // Einfacher Spieler: Plakate, Partner nach Größe bis zur Mehrheit, Kabinettsvorschlag, Haushalt unverändert
@@ -24,7 +24,7 @@ function zug(z) {
   }
   if (z.phase === 'kabinett') return bestaetigen(z, { verteilung: vorschlag(z) });
   if (z.offenesEreignis) return ereignisEntscheiden(z, { wahl: 0 });
-  if (!haushaltsQuartal(z)) return quartalBeenden(z);
+  if (!haushaltsMonat(z)) return monatBeenden(z);
   // unverändert, sonst so wenig kürzen, dass die Schuldenbremse hält (System 2)
   return haushaltBeschliessen(z, kuerzungsVorschlag(z) ?? {});
 }

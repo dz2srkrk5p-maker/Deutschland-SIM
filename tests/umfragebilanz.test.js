@@ -2,16 +2,16 @@ import { test, expect } from 'vitest';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { neuesSpiel, laden } from '../src/engine/state.js';
 import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
-import { quartalBeenden } from '../src/engine/regierung.js';
+import { monatBeenden } from '../src/engine/regierung.js';
 import { umfrageBuchen } from '../src/engine/umfragebilanz.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { gruppen } from '../src/data/kennzahlen.js';
 import { config } from '../src/data/config.js';
 
-// Union + SPD im Amt, Haushaltsquartal
+// Union + SPD im Amt, Haushaltsmonat
 const imAmt = () => ({
   ...neuesSpiel('union', 3),
-  phase: 'regierung', quartal: 4, kanzlerParteiId: 'union', sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
+  phase: 'regierung', monat: 12, kanzlerParteiId: 'union', sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
   koalition: { partner: ['spd'], startAnteile: { spd: 16.4 }, minderheit: false, fehlschlaege: 0 },
   kabinett: { anspruch: {}, verteilung: { ...Object.fromEntries(ministerien.map((m) => [m.id, 'union'])), arbeit: 'spd' } },
   gruppen: { ...neuesSpiel('union', 3).gruppen, rentner: 30 },
@@ -22,9 +22,11 @@ const summe = (z, id) => z.umfrageBilanz.at(-1).posten.filter((p) => p.partei ==
 test('Haushalt: Posten mit Ursache addieren sich zur tatsächlichen Änderung, Gruppen einzeln', () => {
   const z = imAmt();
   const { state } = haushaltBeschliessen(z, { stufen: { arbeit: -1, verteidigung: 1 } });
-  const e = state.umfrageBilanz.at(-1);
-  expect(e.zeit).toBe('Haushalt Jahr 1');
-  for (const id of ['union', 'spd']) expect(summe(state, id)).toBeCloseTo(state.anteile[id] - z.anteile[id], 2);
+  // Haushalt, danach endet der Dezember wie jeder Monat (eigener Eintrag); zusammen ergeben sie die Änderung
+  const e = state.umfrageBilanz.find((x) => x.zeit === 'Haushalt Jahr 1');
+  const beide = state.umfrageBilanz.filter((x) => ['Haushalt Jahr 1', 'Jahr 1, Dezember'].includes(x.zeit));
+  const gesamt = (id) => beide.flatMap((x) => x.posten).filter((p) => p.partei === id).reduce((s, p) => s + p.wert, 0);
+  for (const id of ['union', 'spd']) expect(gesamt(id)).toBeCloseTo(state.anteile[id] - z.anteile[id], 2);
   const ursachen = e.posten.map((p) => p.ursache);
   expect(ursachen).toContain('Haushalt: Etat Arbeit gekürzt');
   expect(ursachen).toContain('Haushalt: Etat Verteidigung erhöht');
@@ -50,8 +52,8 @@ test('Wahlkampf und Quartal buchen, es bleiben die letzten Runden', () => {
 });
 
 test('Quartal: belastende Probleme erscheinen einzeln mit Namen', () => {
-  const z = { ...imAmt(), quartal: 1, probleme: { ...imAmt().probleme, wohnungsnot: { wert: 85, verlauf: [85] } } };
-  const { state } = quartalBeenden(z);
+  const z = { ...imAmt(), monat: 1, probleme: { ...imAmt().probleme, wohnungsnot: { wert: 85, verlauf: [85] } } };
+  const { state } = monatBeenden(z);
   const posten = state.umfrageBilanz.flatMap((e) => e.posten);
   expect(posten.some((p) => p.ursache.startsWith('Problem „Wohnungsnot'))).toBe(true);
 });

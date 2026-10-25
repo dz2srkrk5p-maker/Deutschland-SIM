@@ -3,7 +3,7 @@ import { config } from '../src/data/config.js';
 import { RECHTSARTEN, einnahmearten } from '../src/data/einnahmen.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { rechtsrisiken } from '../src/engine/einnahmen.js';
-import { verfahrenAnlegen, verfahrenQuartal } from '../src/engine/verfahren.js';
+import { verfahrenAnlegen, verfahrenMonat } from '../src/engine/verfahren.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { neuesSpiel, laden } from '../src/engine/state.js';
 
@@ -13,7 +13,7 @@ const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).
 const vr = config.verfassungsrisiko;
 // Union + SPD + Grüne: 49 Bundesratsstimmen, genug für Steueränderungen
 const imAmt = () => ({
-  ...neuesSpiel('union', 4), phase: 'regierung', quartal: 4, runde: 10, kanzlerParteiId: 'union',
+  ...neuesSpiel('union', 4), phase: 'regierung', monat: 12, runde: 10, kanzlerParteiId: 'union',
   sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
   koalition: { partner: ['spd', 'gruene'], startAnteile: { spd: 16.4, gruene: 11.6 }, minderheit: false, fehlschlaege: 0 },
   kabinett: { anspruch: {}, verteilung: Object.fromEntries(ministerien.map((m) => [m.id, 'union'])) },
@@ -37,10 +37,10 @@ test('Feature 3: Rechtsrisiken nur bei Erhöhung bzw. neu eingeschalteter Ausges
 
 test('Feature 3: Haushaltsbeschluss legt Verfahren an, Urteil nach der Frist', () => {
   const { state } = haushaltBeschliessen(imAmt(), { einnahmen: { vermoegen: fein('vermoegen', 2) } });
-  expect(state.verfahren).toMatchObject([{ id: 'vermoegen', stufen: fein('vermoegen', 2), faellig: state.runde + vr.dauerQuartale }]);
+  expect(state.verfahren).toMatchObject([{ id: 'vermoegen', stufen: fein('vermoegen', 2), faellig: state.runde - 1 + vr.dauerMonate }]); // angelegt vor dem Ende des Dezembers
   expect(state.haushalt.einnahmen.stufen.vermoegen).toBe(fein('vermoegen', 2));
   // vor der Frist nichts
-  expect(verfahrenQuartal({ ...state, runde: state.runde + 1 }).ereignisse).toEqual([]);
+  expect(verfahrenMonat({ ...state, runde: state.runde + 1 }).ereignisse).toEqual([]);
 });
 
 test('Feature 3: gekippt → Rücknahme, Verlust der Kanzlerpartei in der Umfrage-Bilanz; bestätigt → bleibt', () => {
@@ -50,14 +50,14 @@ test('Feature 3: gekippt → Rücknahme, Verlust der Kanzlerpartei in der Umfrag
     { typ: 'einnahme', id: 'vermoegen', name: 'Vermögensteuer erhöht', stufen: fein('vermoegen', 2), art: 'eigentum', chance },
     { typ: 'ausgestaltung', id: 'agrardiesel', name: 'Agrardiesel', art: 'gleichheit', chance },
   ]);
-  const gekippt = verfahrenQuartal({ ...sicher(1), runde: 6 + vr.dauerQuartale });
+  const gekippt = verfahrenMonat({ ...sicher(1), runde: 6 + vr.dauerMonate });
   expect(gekippt.state.haushalt.einnahmen.stufen.vermoegen).toBe(0);
   expect(gekippt.state.haushalt.einnahmen.ausgestaltung).toEqual([]);
   expect(gekippt.state.verfahren).toEqual([]);
   expect(gekippt.state.anteile.union).toBeCloseTo(z.anteile.union - 2 * vr.verlustUmfrage, 2);
   expect(gekippt.ereignisse[0]).toContain('kippt');
   expect(gekippt.state.umfrageBilanz.at(-1).posten.some((p) => p.ursache.startsWith('Verfassungsgericht kippt'))).toBe(true);
-  const bestaetigt = verfahrenQuartal({ ...sicher(0), runde: 6 + vr.dauerQuartale });
+  const bestaetigt = verfahrenMonat({ ...sicher(0), runde: 6 + vr.dauerMonate });
   expect(bestaetigt.state.haushalt.einnahmen.stufen.vermoegen).toBe(fein('vermoegen', 2));
   expect(bestaetigt.state.anteile).toEqual(z.anteile);
   expect(bestaetigt.ereignisse[0]).toContain('bestätigt');

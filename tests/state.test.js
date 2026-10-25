@@ -5,12 +5,12 @@ import { config } from '../src/data/config.js';
 import { wahlkampfWoche } from '../src/engine/wahlkampf.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
-import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
+import { monatBeenden, haushaltsMonat } from '../src/engine/regierung.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
-// F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
+// F12: bis zum Haushaltsmonat weiterschalten, dann beschließen
 const beschliessen = (z, p) => {
   // F14: offene Ereignisse mit der ersten Möglichkeit beantworten
-  while (!haushaltsQuartal(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : quartalBeenden(z)).state;
+  while (!haushaltsMonat(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : monatBeenden(z)).state;
   return haushaltBeschliessen(z, p);
 };
 
@@ -80,7 +80,7 @@ test('Verlauf (F09): ein Eintrag je Aktion, Wahl markiert, Haushalt zählt mit, 
   // Alleinregierung im Amt, ein Haushalt: ein weiterer Eintrag ohne Wahl-Markierung
   const verteilung = Object.fromEntries(ministerien.map((m) => [m.id, 'union']));
   const regierung = { ...z, phase: 'regierung', kanzlerParteiId: 'union', koalition: { partner: [], startAnteile: {} }, kabinett: { anspruch: { union: 16 }, verteilung } };
-  const nachher = haushaltBeschliessen({ ...regierung, quartal: config.regierung.quartaleJeJahr }, {}).state;
+  const nachher = haushaltBeschliessen({ ...regierung, monat: config.regierung.monateJeJahr }, {}).state;
   expect(nachher.verlauf).toHaveLength(regierung.verlauf.length + 1);
   expect(nachher.verlauf.at(-1)).toEqual({ schritt: config.wahlkampf.wochen + 1, anteil: nachher.anteile.union });
 });

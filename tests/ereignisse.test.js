@@ -3,7 +3,7 @@ import { config } from '../src/data/config.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { ereignisse } from '../src/data/ereignisse.js';
 import { neuesSpiel, zurueckInDenWahlkampf } from '../src/engine/state.js';
-import { quartalBeenden } from '../src/engine/regierung.js';
+import { monatBeenden } from '../src/engine/regierung.js';
 import { loesungStarten } from '../src/engine/probleme.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { ereignisZiehen, ereignisEntscheiden, folgen } from '../src/engine/ereignisse.js';
@@ -23,8 +23,8 @@ const regierung = (extra = {}) => ({
 test('F14: Chance je Quartal, gleicher Seed gleiches Ereignis, Daten vollständig', () => {
   let mit = 0;
   for (let seed = 1; seed <= 2000; seed++) if (ereignisZiehen(regierung({ rngZustand: seed })).state.offenesEreignis) mit++;
-  expect(mit / 2000).toBeGreaterThan(config.ereignisse.chanceJeQuartal - 0.05);
-  expect(mit / 2000).toBeLessThan(config.ereignisse.chanceJeQuartal + 0.05);
+  expect(mit / 2000).toBeGreaterThan(config.ereignisse.chanceJeMonat - 0.05);
+  expect(mit / 2000).toBeLessThan(config.ereignisse.chanceJeMonat + 0.05);
   const z = regierung({ rngZustand: 42 });
   expect(ereignisZiehen(z)).toEqual(ereignisZiehen(z));
   expect(new Set(ereignisse.map((e) => e.id)).size).toBe(ereignisse.length);
@@ -58,9 +58,9 @@ test('F14: Folgen gehen an die Partei, die das Ministerium hält; Entscheidung w
 
 test('F14: solange ein Ereignis offen ist, geht nichts anderes', () => {
   const z = regierung({ offenesEreignis: 'hochwasser' });
-  expect(() => quartalBeenden(z)).toThrow('Ereignis');
+  expect(() => monatBeenden(z)).toThrow('Ereignis');
   expect(() => loesungStarten(z, { loesungId: 'wohnen1' })).toThrow('Ereignis');
-  expect(() => haushaltBeschliessen({ ...z, quartal: config.regierung.quartaleJeJahr }, {})).toThrow('Ereignis');
+  expect(() => haushaltBeschliessen({ ...z, monat: config.regierung.monateJeJahr }, {})).toThrow('Ereignis');
   expect(() => ereignisEntscheiden(z, { wahl: 5 })).toThrow();
   expect(() => ereignisEntscheiden(regierung(), { wahl: 0 })).toThrow('Kein offenes');
 });

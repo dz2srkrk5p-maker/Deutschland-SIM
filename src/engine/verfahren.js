@@ -11,9 +11,9 @@ import { umfrageBuchen } from './umfragebilanz.js';
 
 const vr = config.verfassungsrisiko;
 
-// beim Haushaltsbeschluss: je Rechtsrisiko ein Verfahren, Urteil nach dauerQuartale Quartalen
+// beim Haushaltsbeschluss: je Rechtsrisiko ein Verfahren, Urteil nach dauerMonate Monaten
 export const verfahrenAnlegen = (zustand, risiken) => (risiken.length
-  ? { ...zustand, verfahren: [...(zustand.verfahren ?? []), ...risiken.map((r) => ({ ...r, faellig: zustand.runde + vr.dauerQuartale }))] }
+  ? { ...zustand, verfahren: [...(zustand.verfahren ?? []), ...risiken.map((r) => ({ ...r, faellig: zustand.runde + vr.dauerMonate }))] }
   : zustand);
 
 // Rücknahme einer gekippten Änderung im Einnahmenstand
@@ -26,8 +26,8 @@ function zuruecknehmen(einnahmen, v) {
   return { ...einnahmen, stufen: { ...einnahmen.stufen, [v.id]: stufe } };
 }
 
-// am Quartalsende: fällige Verfahren entscheiden
-export function verfahrenQuartal(zustand) {
+// am Monatsende: fällige Verfahren entscheiden
+export function verfahrenMonat(zustand) {
   const offen = zustand.verfahren ?? [];
   if (!offen.some((v) => v.faellig <= zustand.runde)) return { state: zustand, ereignisse: [] };
   let rngZustand = zustand.rngZustand;

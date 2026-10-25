@@ -11,7 +11,7 @@ import { jahresSchritt } from '../src/engine/wirtschaft.js';
 const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).parameter; return Math.round((stufen * (p.eichSchritt ?? p.schritt)) / p.schritt); };
 
 const regierung = () => ({
-  ...neuesSpiel('union', 1), phase: 'regierung', quartal: 4, kanzlerParteiId: 'union',
+  ...neuesSpiel('union', 1), phase: 'regierung', monat: 12, kanzlerParteiId: 'union',
   sitze: { union: 209, afd: 152, spd: 120, gruene: 85, linke: 64 },
   koalition: { partner: ['spd'], startAnteile: { spd: 16.4 }, minderheit: false, fehlschlaege: 0 },
   kabinett: { anspruch: {}, verteilung: Object.fromEntries(ministerien.map((m) => [m.id, 'union'])) },

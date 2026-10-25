@@ -9,7 +9,7 @@ const { wahlkampfWoche } = await import(R + 'engine/wahlkampf.js');
 const { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitAntreten } = await import(R + 'engine/koalition.js');
 const { vorschlag, bestaetigen } = await import(R + 'engine/kabinett.js');
 const H = await import(R + 'engine/haushalt.js');
-const { quartalBeenden, haushaltsQuartal } = await import(R + 'engine/regierung.js');
+const { monatBeenden, haushaltsMonat } = await import(R + 'engine/regierung.js');
 const { ereignisEntscheiden } = await import(R + 'engine/ereignisse.js');
 const hh = config.haushalt;
 const MAXS = hh.ministerMaxProzent / hh.ministerSchrittProzent;
@@ -42,7 +42,7 @@ for (const [name, f] of Object.entries(S)) {
       else if (z.phase === 'koalition') r = mehrheitMoeglich(z) ? verhandeln(z, { partner: partnerWaehlen(z) }) : minderheitAntreten(z);
       else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: vorschlag(z) });
       else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
-      else if (z.phase === 'regierung' && !haushaltsQuartal(z)) r = quartalBeenden(z);
+      else if (z.phase === 'regierung' && !haushaltsMonat(z)) r = monatBeenden(z);
       else if (z.phase === 'regierung') {
         const e = f(z); versuche++;
         try { r = H.haushaltBeschliessen(z, e); }

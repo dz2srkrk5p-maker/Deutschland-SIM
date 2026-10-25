@@ -12,7 +12,7 @@ const punkte = (v) => (v > 0 ? '−' : '+') + Math.abs(v).toLocaleString('de-DE'
 // Ultimatum (Block 2): Text mit Restfrist, oder leer
 export const ultimatumText = (zustand, id) => {
   const rest = ultimatumRest(zustand, id);
-  return rest === null ? '' : rest === 1 ? 'Ultimatum läuft am Ende dieses Quartals ab' : `Ultimatum: noch ${rest} ${rest === 1 ? 'Quartal' : 'Quartale'}`;
+  return rest === null ? '' : rest === 1 ? 'Ultimatum läuft am Ende dieses Monats ab' : `Ultimatum: noch ${rest} Monate`;
 };
 
 // Warnung für Kopfzeile und Lage: Ultimatum vor Unmut, null wenn alles stabil
@@ -37,5 +37,5 @@ export function koalitionslageHtml(zustand, anteileNachher = null) {
         ${nachher ? `<td>${status(bruchStufe(nachher[i]), punkte(nachher[i].verlust))}${nachher[i].geht ? ' <strong class="rot">verlässt die Koalition</strong>' : ''}</td>` : ''}</tr>`).join('')}
       </tbody>
     </table>
-    <p><small>Ab ${zahl(config.spielende.koalitionsbruchPunkte * config.koalitionsbruch.ultimatumAnteil, 1)} Punkten Verlust stellt ein Partner ein Ultimatum. Liegt er nach ${config.koalitionsbruch.fristQuartale} Quartalen mehr als ${zahl(config.spielende.koalitionsbruchPunkte, 1)} Punkte unter seinem Wert bei der Regierungsbildung, verlässt er die Koalition.${nachher ? ` Ohne die zufällige Schwankung von ±${zahl(config.wahlkampf.schwankungMax, 1)} Punkten.` : ''}</small></p>`;
+    <p><small>Ab ${zahl(config.spielende.koalitionsbruchPunkte * config.koalitionsbruch.ultimatumAnteil, 1)} Punkten Verlust stellt ein Partner ein Ultimatum. Liegt er nach ${config.koalitionsbruch.fristMonate} Monaten mehr als ${zahl(config.spielende.koalitionsbruchPunkte, 1)} Punkte unter seinem Wert bei der Regierungsbildung, verlässt er die Koalition.${nachher ? ` Ohne die zufällige Schwankung von ±${zahl(config.wahlkampf.schwankungMax, 1)} Punkten.` : ''}</small></p>`;
 }

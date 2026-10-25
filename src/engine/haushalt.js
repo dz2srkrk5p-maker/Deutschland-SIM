@@ -1,4 +1,5 @@
 import { config } from '../data/config.js';
+import { monatsname } from '../data/kalender.js';
 import { parteien } from '../data/parteien.js';
 import { ministerien } from '../data/ministerien.js';
 import { festeAusgaben2026 } from '../data/haushalt.js';
@@ -19,6 +20,8 @@ import { umfrageBuchen } from './umfragebilanz.js';
 import { verfahrenAnlegen } from './verfahren.js';
 import { verbaendeZuSteuern, verbaendeKapital } from './verbaende.js';
 import { vertragHaushalt, vertragOhne } from './koalitionsvertrag.js';
+import { monatsabschluss } from './regierung.js';
+import { ereignisZiehen } from './ereignisse.js';
 import { jahresSchritt, gruppenSchritt, lageUmfrage, lageTeile, wirkungSumme, wirtschaftWerte } from './wirtschaft.js';
 
 const hh = config.haushalt;
@@ -157,7 +160,7 @@ const zahl = (x, n = 2) => x.toLocaleString('de-DE', { maximumFractionDigits: n 
 // Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
 export function haushaltBeschliessen(zustand, params = {}) {
   if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
-  if (zustand.quartal !== config.regierung.quartaleJeJahr) throw new Error('Der Haushalt kommt erst im letzten Quartal');
+  if (zustand.monat !== config.regierung.monateJeJahr) throw new Error(`Der Haushalt kommt erst im ${monatsname(config.regierung.monateJeJahr)}`);
   if (zustand.offenesEreignis) throw new Error('Erst auf das Ereignis reagieren');
   const v = vorschau(zustand, params);
   // echte Abstimmung: gleich der Vorschau, außer bei einer Brandmauer-Regierung (Abweichler per Zufall, F11)
@@ -220,7 +223,7 @@ export function haushaltBeschliessen(zustand, params = {}) {
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, wirtschaftVerlauf: [...(zustand.wirtschaftVerlauf ?? []), wirtschaftWerte(w.land)], gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme(), kapital: kapitalNeu }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
+  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, wirtschaftVerlauf: [...(zustand.wirtschaftVerlauf ?? []), wirtschaftWerte(w.land)], gruppen, statistik, koalition, jahresWirkung: wirkungSumme(), kapital: kapitalNeu }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {
@@ -229,13 +232,17 @@ export function haushaltBeschliessen(zustand, params = {}) {
   if (fehlschlaege >= config.minderheit.fehlschlaegeBisSpielende) {
     return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, `${fehlschlaege}. gescheiterter Haushalt in dieser Wahlperiode: Die Minderheitsregierung ist am Ende, Opposition`] };
   }
-  const bruch = koalitionPruefen(state);
-  if (bruch.neuwahl) return { state: zurueckInDenWahlkampf(bruch.state), ereignisse: [...ereignisse, ...bruch.ereignisse] };
-  if (jahr < config.legislaturJahre) return { state: bruch.state, ereignisse: [...ereignisse, ...bruch.ereignisse] };
-  return {
-    state: zurueckInDenWahlkampf(bruch.state),
-    ereignisse: [...ereignisse, ...bruch.ereignisse, 'Wahlperiode vorbei: Wahlkampf für die nächste Bundestagswahl'],
-  };
+  // danach endet der letzte Monat wie jeder andere (Probleme, Umsetzungen, Verfahren, Landtagswahlen, Koalitionsprüfung).
+  // Er gehört noch zum alten Jahr: Haushaltsjahr und Kanzlerjahre zählen erst danach weiter (Zeitangaben, Kalenderjahr).
+  const abgeschlossen = monatsabschluss({ ...state, haushalt: { ...state.haushalt, jahr }, statistik: zustand.statistik });
+  const ende = { ...abgeschlossen, state: { ...abgeschlossen.state, haushalt: { ...abgeschlossen.state.haushalt, jahr: jahr + 1 }, statistik } };
+  const alle = [...ereignisse, ...ende.ereignisse];
+  if (ende.neuwahl) return { state: zurueckInDenWahlkampf(ende.state), ereignisse: alle };
+  if (jahr < config.legislaturJahre) {
+    const neu = ereignisZiehen({ ...ende.state, monat: 1 });
+    return { state: neu.state, ereignisse: [...alle, ...neu.ereignisse] };
+  }
+  return { state: zurueckInDenWahlkampf({ ...ende.state, monat: 1 }), ereignisse: [...alle, 'Wahlperiode vorbei: Wahlkampf für die nächste Bundestagswahl'] };
 }
 
 // Verlust jedes Partners seit der Regierungsbildung und die Bruchgrenze, in Prozentpunkten. Gerechnet in Tausendsteln.
@@ -279,7 +286,7 @@ export function koalitionsbruch(zustand, kandidaten = zustand.koalition.partner)
 
 // Vorhersehbarer Bruch (Block 2): ab ultimatumAnteil der Grenze stellt ein Partner ein Ultimatum mit Frist. Gebrochen wird
 // erst, wenn die Frist abgelaufen ist und er dann über der Grenze liegt. Unter der Warnstufe zieht er das Ultimatum zurück.
-// Läuft am Ende jedes Quartals und nach dem Haushalt.
+// Läuft am Ende jedes Monats (auch im Haushaltsmonat nach dem Beschluss).
 export function koalitionPruefen(zustand) {
   if (zustand.phase !== 'regierung' || !zustand.koalition?.partner.length) return { state: zustand, ereignisse: [], neuwahl: false };
   const kb = config.koalitionsbruch;
@@ -290,8 +297,8 @@ export function koalitionPruefen(zustand) {
     const n = parteien.find((p) => p.id === a.id).name;
     if (ultimatum[a.id] === undefined) {
       if (a.verlust > a.grenze * kb.ultimatumAnteil) {
-        ultimatum[a.id] = zustand.runde + kb.fristQuartale;
-        ereignisse.push(`Ultimatum: ${n} droht mit dem Koalitionsbruch, wenn sie in ${kb.fristQuartale} Quartalen noch mehr als ${a.grenze.toLocaleString('de-DE')} Punkte unter ihrem Start liegt`);
+        ultimatum[a.id] = zustand.runde + kb.fristMonate;
+        ereignisse.push(`Ultimatum: ${n} droht mit dem Koalitionsbruch, wenn sie in ${kb.fristMonate} Monaten noch mehr als ${a.grenze.toLocaleString('de-DE')} Punkte unter ihrem Start liegt`);
       }
     } else if (a.verlust < a.grenze * config.spielende.warnAnteil) {
       delete ultimatum[a.id];
@@ -302,7 +309,7 @@ export function koalitionPruefen(zustand) {
   return { ...bruch, ereignisse: [...ereignisse, ...bruch.ereignisse] };
 }
 
-// Quartalsenden bis zur Bruchprüfung (1: am Ende dieses Quartals), null ohne Ultimatum
+// Monatsenden bis zur Bruchprüfung (1: am Ende dieses Monats), null ohne Ultimatum
 export const ultimatumRest = (zustand, id) => {
   const frist = zustand.koalition?.ultimatum?.[id];
   return frist === undefined ? null : Math.max(1, frist - zustand.runde);
@@ -314,7 +321,7 @@ export function zugestaendnisSperre(zustand, partnerId) {
   if (zustand.phase !== 'regierung' || !zustand.koalition.partner.includes(partnerId)) return 'kein Koalitionspartner';
   if (zustand.offenesEreignis) return 'erst auf das Ereignis reagieren';
   if (zustand.koalition.zugestaendnisse?.[partnerId] === zustand.haushalt.jahr) return 'in diesem Jahr schon ein Zugeständnis';
-  if (zustand.aktionenImQuartal >= config.probleme.aktionenJeQuartal) return `höchstens ${config.probleme.aktionenJeQuartal} Vorhaben je Quartal`;
+  if (zustand.aktionenImMonat >= config.probleme.aktionenJeMonat) return `höchstens ${config.probleme.aktionenJeMonat} Vorhaben je Monat`;
   if (zustand.kapital < kb.zugestaendnisKapital) return `zu wenig politisches Kapital (${kb.zugestaendnisKapital} nötig)`;
   return null;
 }
@@ -327,7 +334,7 @@ export function zugestaendnis(zustand, { partnerId }) {
   const koalition = { ...zustand.koalition, zugestaendnisse: { ...zustand.koalition.zugestaendnisse, [partnerId]: zustand.haushalt.jahr } };
   const n = parteien.find((p) => p.id === partnerId).name;
   return {
-    state: umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile, koalition, kapital: zustand.kapital - kb.zugestaendnisKapital, aktionenImQuartal: zustand.aktionenImQuartal + 1 }), [
+    state: umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile, koalition, kapital: zustand.kapital - kb.zugestaendnisKapital, aktionenImMonat: zustand.aktionenImMonat + 1 }), [
       { ursache: `Zugeständnis an ${n}`, partei: partnerId, wert: kb.zugestaendnisPunkte },
       { ursache: `Zugeständnis an ${n}`, partei: zustand.kanzlerParteiId, wert: -kb.zugestaendnisKanzler },
     ]),

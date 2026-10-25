@@ -7,6 +7,7 @@ import { ministerien } from '../../data/ministerien.js';
 import { einnahmearten } from '../../data/einnahmen.js';
 import { bereichStatus, wegVorschau, richtungsprofil, weg } from '../../engine/reformwege.js';
 import { mrd } from '../../engine/haushalt.js';
+import { trendJeMonat } from '../../engine/probleme.js';
 import { profilHtml } from '../components/profil.js';
 import { karte, badge, status, zahl, plusMinus, aufklapp } from '../components/basis.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -19,13 +20,13 @@ const kName = (id) => (id === 'gini' ? 'Gini' : kennzahlen.find((k) => k.id === 
 const STATUS = { offen: ['offen', ''], umsetzung: ['in Umsetzung', 'gelb'], beschlossen: ['beschlossen', 'ok'], gescheitert: ['gescheitert', 'rot'] };
 const euro = (t) => `${zahl(mrd(Math.abs(t)), 1)} Mrd.`;
 
-// Wirkung als lesbarer Text: Kennzahlen, Gruppen, Probleme (einmalig) und Trends (dauerhaft je Quartal)
+// Wirkung als lesbarer Text: Kennzahlen, Gruppen, Probleme (einmalig) und Trends (dauerhaft je Monat)
 function wirkungText(w = {}) {
   const teile = [
     ...['wachstum', 'inflation', 'arbeitslosigkeit', 'gini'].filter((k) => w[k]).map((k) => `${kName(k)} ${plusMinus(w[k])}`),
     ...Object.entries(w.gruppen ?? {}).map(([g, v]) => `${gName(g)} ${plusMinus(v, 0)}`),
     ...Object.entries(w.probleme ?? {}).map(([p, v]) => `${pName(p)} ${plusMinus(v, 0)}`),
-    ...Object.entries(w.trend ?? {}).map(([p, v]) => `${pName(p)} dauerhaft ${plusMinus(v)} je Quartal`),
+    ...Object.entries(w.trend ?? {}).map(([p, v]) => `${pName(p)} dauerhaft ${plusMinus(trendJeMonat(v), 3)} je Monat`),
   ];
   return teile.join(' · ') || '–';
 }
@@ -49,7 +50,7 @@ function wegKarte(zustand, w) {
       <tr><th scope="row">Nach Umsetzung</th><td>${wirkungText(w.lang)}</td></tr>
       <tr><th scope="row">Gewinner</th><td>${v.gewinner.map(gName).join(', ') || '–'}</td></tr>
       <tr><th scope="row">Verlierer</th><td>${v.verlierer.map(gName).join(', ') || '–'}</td></tr>
-      <tr><th scope="row">Dauer</th><td>${w.dauer} Quartale</td></tr>
+      <tr><th scope="row">Dauer</th><td>${w.dauer} Monate</td></tr>
       <tr><th scope="row">Risiko des Scheiterns</th><td>${Math.round(v.risiko * 100)} %${w.verfassung ? ' <span class="gelb">⚠ verfassungsrechtlich umstritten</span>' : ''}</td></tr>
       <tr><th scope="row">Politisches Kapital</th><td>${v.kapital}${v.revision ? ` <span class="gelb">(davon ${config.reformwege.revisionKapital} für den Kurswechsel)</span>` : ''}</td></tr>
       ${v.bonus ? `<tr><th scope="row">${partei(zustand.kanzlerParteiId).name}</th><td>${status('ok', `passt zur eigenen Linie, +${zahl(v.bonus, 2)} beim Beschluss`)}</td></tr>` : ''}
@@ -77,7 +78,7 @@ function dialogHtml(zustand, wegId, kompromiss = false) {
       <li>Bundestag: ${v.abstimmung.ja} Ja, ${v.abstimmung.nein} Nein – ${v.abstimmung.angenommen ? 'angenommen' : '<strong class="rot">abgelehnt (Kapital trotzdem teilweise verbraucht)</strong>'}</li>
       <li>Kosten: ${w.kosten ? `${w.kosten > 0 ? '' : 'spart '}${euro(w.kosten)} je Jahr ab dem nächsten Haushalt` : 'keine laufenden Kosten'}</li>
       <li>Sofort: ${wirkungText(w.kurz)}</li>
-      <li>Nach ${w.dauer} Quartalen: ${wirkungText(w.lang)}</li>
+      <li>Nach ${w.dauer} Monaten: ${wirkungText(w.lang)}</li>
       ${v.bonus ? `<li>${partei(zustand.kanzlerParteiId).name}: +${zahl(v.bonus, 2)} (passt zur eigenen Linie)</li>` : ''}
       <li>Risiko des Scheiterns: ${Math.round(v.risiko * 100)} %; politisches Kapital: ${v.kapital}</li>
       ${v.partner.filter((p) => p.unmut || p.veto).map((p) => `<li>${partei(p.id).name}: ${p.veto ? 'stimmt dagegen' : `Unmut −${zahl(p.unmut, 2)}`}</li>`).join('')}
@@ -115,7 +116,7 @@ export function reformenScreen(el, zustand, { auswahl, onAuswahl, onBeschliessen
   const b = bereiche.find((x) => x.id === auswahl);
   el.innerHTML = `<div class="ansicht">
     <h1>Reformen</h1>
-    <p class="klein">Politisches Kapital: <strong>${zustand.kapital}</strong> · Vorhaben in diesem Quartal: ${zustand.aktionenImQuartal} von ${config.probleme.aktionenJeQuartal}.</p>
+    <p class="klein">Politisches Kapital: <strong>${zustand.kapital}</strong> · Vorhaben in diesem Monat: ${zustand.aktionenImMonat} von ${config.probleme.aktionenJeMonat}.</p>
     ${b ? detail(zustand, b) : uebersicht(zustand)}
     <div id="dialog-platz"></div>
   </div>`;
