@@ -5,7 +5,7 @@ import { config } from '../../data/config.js';
 import { gruppen as gruppenListe } from '../../data/kennzahlen.js';
 import { probleme as problemListe } from '../../data/probleme.js';
 import { festeAusgaben2026 } from '../../data/haushalt.js';
-import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmeWirkung, etatNeu } from '../../engine/haushalt.js';
+import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmenWirkung, etatNeu } from '../../engine/haushalt.js';
 import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { RECHTSARTEN } from '../../data/einnahmen.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -22,7 +22,7 @@ const hh = config.haushalt;
 const partei = (id) => parteien.find((p) => p.id === id);
 const euro = (tausend, n = 2) => `${zahl(mrd(tausend), n)} Mrd.`;
 const stellen = (p) => (p.schritt < 1 ? 1 : 0);
-const parameterWert = (p, wert) => `${zahl(wert, stellen(p))} ${p.einheit}`;
+const parameterWert = (p, wert) => `${wert < 0 && Math.round(Math.abs(wert) * 10) ? '−' : ''}${zahl(Math.abs(wert), stellen(p))} ${p.einheit}`; // echtes Minuszeichen
 const wertText = (p, wert, d) => `${p.name}: ${parameterWert(p, wert)}${d ? ` (${plusMinus(d * p.schritt, stellen(p))})` : ''}`;
 const prozentStufe = (stufe, schritt) => (stufe ? ` <small>(${plusMinus(stufe * schritt, 0)} %)</small>` : '');
 const TABS = [
@@ -46,22 +46,43 @@ function wirkungListe(w, mitProblemen = false) {
   return teile.length ? teile.join(' · ') : 'keine';
 }
 
-// Schätzung neben dem Regler einer Einnahmeart: Änderung des Aufkommens im ersten Jahr und ab dem Folgejahr.
-// Das absolute Aufkommen steht rechts in der Zeile (betragText).
-function schaetzungHtml(art, s, d) {
-  if (!art.aufkommenJeStufe) return `<small>Kein Bundesaufkommen${art.keinBund ? ` (fließt an: ${art.keinBund})` : ''}</small>`;
-  if (!d) return '<small>unverändert</small>';
-  const ort = art.keinBund ? ` <small>(bei: ${art.keinBund})</small>` : '';
-  return `<strong>${plusMinus(mrd(s.erstesJahr), 1)} Mrd.</strong> im 1. Jahr${ort}<br>
-    <small>${art.parameter.einmalig ? 'einmalig' : `${plusMinus(mrd(s.dauerhaft), 1)} Mrd. ab dem Folgejahr`}</small>`;
+// Betrag rechts in der Einnahmezeile wie bei den Etats: Aufkommen, darunter die Änderung im 1. Jahr und dauerhaft
+function einnahmeBetragHtml(art, s, d) {
+  const aufkommen = art.keinBund ? '–' : euro(s.aufkommen); // „Aufkommen bei …“ steht schon als Plakette am Namen
+  if (!d) return aufkommen;
+  if (!art.aufkommenJeStufe) return `${aufkommen}<br><small>kein Bundesaufkommen</small>`;
+  return `${aufkommen}<br><small>${plusMinus(mrd(s.erstesJahr), 1)} Mrd. im 1. Jahr${art.parameter.einmalig ? ', einmalig' : `, dann ${plusMinus(mrd(s.dauerhaft), 1)}`}</small>`;
 }
-const betragText = (art, summe) => (!art.keinBund ? euro(summe) : '–');
 
-// Wirkung der Änderung neben dem Regler: Wachstum und andere Kennzahlen, Gruppen, Probleme, Umfrage der Finanzministeriums-Partei
-function wirkungText(w, d) {
-  if (!d) return '';
-  const umfrage = Object.entries(w.umfrage).map(([id, v]) => `Umfrage ${partei(id).name} (Finanzen) ${plusMinus(v)}`);
-  return `<strong>Wirkung beim Beschluss:</strong> ${[wirkungListe(w.wirkung, true), ...umfrage].filter((t) => t !== 'keine').join(' · ') || 'keine'}`;
+// Gesamtwirkung der Einnahmeänderungen (Übersicht neben den Reglern): Wachstum und Kennzahlen, Gruppen als Balken
+// nach links (weniger zufrieden) und rechts (zufriedener), Mehr- oder Mindereinnahmen und Umfrage der Finanzministeriums-Partei
+function einnahmenWirkungHtml(w, geaendert) {
+  if (!geaendert) return '<p class="klein">Noch keine Änderung. Sobald du einen Regler oder Schalter bewegst, steht hier, was der Entwurf beim Beschluss bewirkt.</p>';
+  const k = w.wirkung;
+  const zeile = (titel, wert) => `<span>${titel}</span><span class="zahl">${wert}</span>`;
+  const maxGruppe = Math.max(5, ...gruppenListe.map((g) => Math.abs(k.gruppen[g.id] ?? 0)));
+  const balken = (v) => {
+    const breite = (Math.abs(v) / maxGruppe) * 50;
+    return `<span class="div-balken" aria-hidden="true"><i class="mitte"></i><i class="wert" style="${v < 0 ? `right:50%` : `left:50%`};width:${breite.toFixed(1)}%"></i></span>`;
+  };
+  const probleme = Object.entries(k.probleme ?? {}).filter(([, v]) => Math.abs(v) >= 0.05);
+  return `<div class="bilanz">
+      ${zeile('Bundeshaushalt im 1. Jahr', `${plusMinus(w.kern, 1)} Mrd.`)}
+      ${Math.abs(w.ktf) >= 0.05 ? zeile('Klimafonds im 1. Jahr', `${plusMinus(w.ktf, 1)} Mrd.`) : ''}
+      ${zeile('<strong>Wirtschaftswachstum</strong>', `<strong>${plusMinus(k.wachstum)} Pp</strong>`)}
+      ${zeile('Inflation', `${plusMinus(k.inflation)} Pp`)}
+      ${zeile('Ungleichheit (Gini)', plusMinus(k.gini))}
+      ${Object.entries(w.umfrage).map(([id, v]) => zeile(`Umfrage ${partei(id).name} (Finanzministerium)`, plusMinus(v))).join('')}
+    </div>
+    <h4>Zufriedenheit der Gruppen</h4>
+    <div class="gruppen-wirkung">${gruppenListe.map((g) => {
+      const v = k.gruppen[g.id] ?? 0;
+      return `<span>${g.name}</span>${balken(v)}<span class="zahl">${plusMinus(v, 1)}</span>`;
+    }).join('')}</div>
+    ${probleme.length ? `<p class="klein"><strong>Probleme:</strong> ${probleme.map(([p, v]) => `${problemName(p)} ${plusMinus(v, 1)}`).join(' · ')}</p>` : ''}
+    <h4>Verbände</h4>
+    <p class="klein">Verbände reagieren im Spiel bisher nur auf Reformwege. Eine eigene Reaktion auf Steuern ist als neue Spielregel vorgeschlagen und noch nicht freigegeben.</p>
+    <p class="klein">Einmalig beim Beschluss, Spielwerte. Die Umfragewirkung auf die Parteien steht unter „Übersicht“.</p>`;
 }
 
 // Haushalt (System 2): Übersicht mit Bilanz und Einbringen, Einnahmen je Art, Ausgaben, Schulden und Mehrjahresprognose.
@@ -73,6 +94,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
   const verteilung = zustand.kabinett.verteilung;
   // Wert des Parameters bei einer Änderung um d Stufen gegenüber dem beschlossenen Stand
   const parameterBei = (art, d) => art.parameter.startwert + ((art.parameter.einmalig ? 0 : (zustand.haushalt.einnahmen.stufen[art.id] ?? 0)) + d) * art.parameter.schritt;
+  const einnahmenGeaendert = () => Object.values(entwurf.einnahmen).some(Boolean) || Object.keys(entwurf.ausgestaltung).length > 0;
   const params = () => ({ stufen: entwurf.stufen, einnahmen: entwurf.einnahmen, ausgestaltung: entwurf.ausgestaltung, kompromiss: Boolean(entwurf.kompromiss) });
 
   // Etat je Ministerium: Betrag und Änderung, im Haushaltsquartal mit Schieberegler (Schritt und Grenze aus config)
@@ -109,21 +131,17 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       return `<div class="posten nurlesen"><span>${s.name}<br><small>${s.kosten ? euro(s.kosten) + ' je Jahr · ' : ''}${wirkungListe(s.wirkung)}${s.rechtsrisiko ? ` · <span class="gelb" title="${risikoText(s.rechtsrisiko)}">${risikoKurz(s.rechtsrisiko)}</span>` : ''}</small></span>
         ${bearbeitbar ? `<button data-schalter="${s.id}" aria-pressed="${an}">${an ? '✓ aktiv' : 'aktivieren'}</button>` : `<span>${an ? status('ok', 'aktiv') : 'aus'}</span>`}</div>`;
     }).join('')}` : ''}`;
+    // gleiche Zeile wie bei den Etats: Name und Satz | Regler | Betrag; Grenzen dieses Jahres im Tooltip und für Screenreader
     const r = bearbeitbar ? spielraum(zustand, a.id) : null;
-    const regler = bearbeitbar ? `
-      <div class="regler">
-        <input type="range" id="regler-${a.id}" data-regler="${a.id}" min="${r.min}" max="${r.max}" step="1" value="${d}"
-          aria-label="${a.name}: ${p.name}" aria-valuetext="${parameterWert(p, z.wert)}" ${r.min === r.max ? 'disabled' : ''}>
-        <output for="regler-${a.id}" data-schaetzung="${a.id}" aria-live="polite">${schaetzungHtml(a, aufkommensSchaetzung(zustand, params(), a.id), d)}</output>
-        <span class="regler-skala" aria-hidden="true"><span>${parameterWert(p, parameterBei(a, r.min))}</span><span>${parameterWert(p, parameterBei(a, r.max))}</span></span>
-        <p class="regler-wirkung klein" data-wirkung="${a.id}" aria-live="polite">${wirkungText(einnahmeWirkung(zustand, params(), a.id), d)}</p>
-      </div>` : '';
+    const grenzen = r ? `${parameterWert(p, parameterBei(a, r.min))} bis ${parameterWert(p, parameterBei(a, r.max))}` : '';
     return `<div class="einnahme">
-      <div class="posten nurlesen">
-        <span><strong>${a.name}</strong> ${ort}<br><small data-wert="${a.id}">${wertText(p, z.wert, d)}</small></span>
-        <span class="betrag" data-betrag="${a.id}">${betragText(a, z.summe)}</span>
-      </div>${regler}
-      ${aufklapp('Herleitung und Wirkung', herleitung)}
+      <div class="etat ${bearbeitbar ? '' : 'nurlesen'}">
+        <span class="etat-name"><strong>${a.name}</strong> ${ort}<br><small data-wert="${a.id}">${wertText(p, z.wert, d)}</small>${r ? ` <small class="grenzen">(${grenzen})</small>` : ''}</span>
+        ${bearbeitbar ? `<input type="range" data-regler="${a.id}" min="${r.min}" max="${r.max}" step="1" value="${d}" title="${grenzen}"
+          aria-label="${a.name}: ${p.name}, möglich ${grenzen}" aria-valuetext="${parameterWert(p, z.wert)}" ${r.min === r.max ? 'disabled' : ''}>` : ''}
+        <span class="betrag" data-betrag="${a.id}">${einnahmeBetragHtml(a, aufkommensSchaetzung(zustand, params(), a.id), d)}</span>
+      </div>
+      ${aufklapp('Herleitung und Ausgestaltung', herleitung)}
     </div>`;
   }
 
@@ -179,7 +197,10 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
           <li>Ausgaben kürzen (Partner-Ministerien zuerst) <button id="kuerzen">Kürzungen vorschlagen</button></li></ul>`, { titel: 'Gegenfinanzierung', klasse: 'ereignis' }) : ''}
       ${bearbeitbar ? `<p class="klein">${erklaerungen.regler}</p>` : ''}
       <p class="klein">Bundeshaushalt: ${euro(v.einnahmen.kern)} Klima- und Transformationsfonds (zweckgebunden): ${euro(v.einnahmen.ktf)}</p>
-      ${gruppen.map((g) => karte(v.einnahmen.zeilen.filter((z) => z.art.gruppe === g).map(einnahmeZeile).join(''), { titel: g })).join('')}`;
+      <div class="${bearbeitbar ? 'einnahmen-layout' : ''}">
+        <div>${gruppen.map((g) => karte(v.einnahmen.zeilen.filter((z) => z.art.gruppe === g).map(einnahmeZeile).join(''), { titel: g })).join('')}</div>
+        ${bearbeitbar ? `<aside class="einnahmen-wirkung">${karte(`<div data-einnahmen-wirkung aria-live="polite">${einnahmenWirkungHtml(einnahmenWirkung(zustand, params()), einnahmenGeaendert())}</div>`, { titel: 'Auswirkungen deines Entwurfs' })}</aside>` : ''}
+      </div>`;
   }
 
   function ausgabenTab(v) {
@@ -279,10 +300,8 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         const wert = parameterBei(art, d);
         r.setAttribute('aria-valuetext', parameterWert(art.parameter, wert));
         el.querySelector(`[data-wert="${art.id}"]`).textContent = wertText(art.parameter, wert, d);
-        const s = aufkommensSchaetzung(zustand, params(), art.id);
-        el.querySelector(`[data-schaetzung="${art.id}"]`).innerHTML = schaetzungHtml(art, s, d);
-        el.querySelector(`[data-betrag="${art.id}"]`).textContent = betragText(art, s.aufkommen);
-        el.querySelector(`[data-wirkung="${art.id}"]`).innerHTML = wirkungText(einnahmeWirkung(zustand, params(), art.id), d);
+        el.querySelector(`[data-betrag="${art.id}"]`).innerHTML = einnahmeBetragHtml(art, aufkommensSchaetzung(zustand, params(), art.id), d);
+        el.querySelector('[data-einnahmen-wirkung]').innerHTML = einnahmenWirkungHtml(einnahmenWirkung(zustand, params()), einnahmenGeaendert());
       });
       r.addEventListener('change', () => neuZeichnen(`[data-regler="${art.id}"]`));
     });

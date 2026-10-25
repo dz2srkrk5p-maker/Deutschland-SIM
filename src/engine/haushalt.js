@@ -14,7 +14,7 @@ import { wegKosten, profilWirkung } from './reformwege.js';
 
 // Laufende Kosten von Lösungen (System 3) und Reformwegen (System 1)
 export const laufendeKosten = (zustand) => loesungsKosten(zustand) + wegKosten(zustand);
-import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen, einnahmeart, aufkommensSchaetzung } from './einnahmen.js';
+import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { verfahrenAnlegen } from './verfahren.js';
 import { vertragHaushalt, vertragOhne } from './koalitionsvertrag.js';
@@ -74,9 +74,7 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   const einnahmenNeu = aufstellung(zustand, entwurf);
   // Mehr- oder Mindereinnahmen wirken auf die Partei mit dem Finanzministerium
   const einnahmenDelta = mrd(einnahmenNeu.kern - aufstellung(zustand).kern);
-  if (Math.abs(einnahmenDelta) > 1e-9) {
-    dazu(verteilung.finanzen, -einnahmenDelta * (einnahmenDelta > 0 ? hh.wirkungSteuerErhoehungProMrd : hh.wirkungSteuerSenkungProMrd), `Haushalt: Einnahmen ${einnahmenDelta > 0 ? 'erhöht' : 'gesenkt'} (Finanzministerium)`);
-  }
+  if (Math.abs(einnahmenDelta) > 1e-9) dazu(verteilung.finanzen, einnahmenUmfrage(einnahmenDelta), `Haushalt: Einnahmen ${einnahmenDelta > 0 ? 'erhöht' : 'gesenkt'} (Finanzministerium)`);
   const ew = entwurfWirkung(zustand, entwurf);
   // Änderungen an Gemeinschafts-, Länder- und Gemeindesteuern brauchen den Bundesrat (Art. 105 GG)
   const br = ew.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender) : null;
@@ -94,18 +92,22 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   };
 }
 
-// Wirkung der Änderung einer einzelnen Einnahmeart (Anzeige neben dem Regler): Kennzahlen, Gruppen und Probleme beim
-// Beschluss wie in entwurfWirkung, dazu der Anteil dieser Steuer an der Umfragewirkung auf die Partei mit dem
-// Finanzministerium (gleiche Sätze wie in vorschau, aber nur mit dem Mehr- oder Minderaufkommen dieser Steuer im 1. Jahr)
-export function einnahmeWirkung(zustand, entwurf, id) {
-  const d = entwurf.einnahmen?.[id] ?? 0;
-  const art = einnahmeart(id);
-  const wirkung = entwurfWirkung(zustand, { einnahmen: { [id]: d } }).wirkung;
-  const delta = art.keinBund || art.sondervermoegen ? 0 : mrd(aufkommensSchaetzung(zustand, entwurf, id).erstesJahr);
+// Umfragewirkung von Mehr- (positiv) oder Mindereinnahmen in Mrd. auf die Partei mit dem Finanzministerium
+const einnahmenUmfrage = (deltaMrd) => -deltaMrd * (deltaMrd > 0 ? hh.wirkungSteuerErhoehungProMrd : hh.wirkungSteuerSenkungProMrd);
+
+// Gesamtwirkung aller Einnahmeänderungen eines Entwurfs (Übersicht unter Haushalt → Einnahmen): Kennzahlen, Gruppen und
+// Probleme beim Beschluss, Mehr- oder Mindereinnahmen im 1. Jahr (Kernhaushalt, Klimafonds) und die Umfrage der Partei mit
+// dem Finanzministerium – dieselben Rechnungen wie in vorschau, nur ohne die Etats
+export function einnahmenWirkung(zustand, { einnahmen = {}, ausgestaltung = {} } = {}) {
+  const entwurf = { einnahmen, ausgestaltung };
+  const neu = aufstellung(zustand, entwurf);
+  const alt = aufstellung(zustand);
+  const kern = mrd(neu.kern - alt.kern);
   const partei = zustand.kabinett?.verteilung?.finanzen;
-  const umfrage = partei && Math.abs(delta) > 1e-9
-    ? { [partei]: -delta * (delta > 0 ? hh.wirkungSteuerErhoehungProMrd : hh.wirkungSteuerSenkungProMrd) } : {};
-  return { wirkung, umfrage };
+  return {
+    wirkung: entwurfWirkung(zustand, entwurf).wirkung, kern, ktf: mrd(neu.ktf - alt.ktf),
+    umfrage: partei && Math.abs(kern) > 1e-9 ? { [partei]: einnahmenUmfrage(kern) } : {},
+  };
 }
 
 // Mehrjahresprognose ohne Zufall (System 2): der Entwurf gilt ab diesem Jahr, danach bleibt alles unverändert.

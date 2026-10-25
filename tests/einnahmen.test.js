@@ -4,7 +4,7 @@ import { einnahmearten } from '../src/data/einnahmen.js';
 import { config } from '../src/data/config.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen, gegenfinanzierung, spielraum, aufkommensSchaetzung } from '../src/engine/einnahmen.js';
-import { vorschau, prognose, kuerzungsVorschlag, mrd, einnahmeWirkung } from '../src/engine/haushalt.js';
+import { vorschau, prognose, kuerzungsVorschlag, mrd, einnahmenWirkung } from '../src/engine/haushalt.js';
 import { jahresSchritt } from '../src/engine/wirtschaft.js';
 
 const regierung = () => ({
@@ -108,14 +108,15 @@ test('Regler: Schätzung des Aufkommens im ersten Jahr und dauerhaft', () => {
   expect(kap.dauerhaft).toBeLessThan(2 * 900000); // Ausweichen ab der 2. Stufe
 });
 
-test('Regler: Wirkung einer einzelnen Steueränderung auf Kennzahlen, Gruppen und Umfrage', () => {
+test('Übersicht: Gesamtwirkung aller Einnahmeänderungen wie in der Vorschau', () => {
   const z = regierung(); // Union hält Finanzen
-  const w = einnahmeWirkung(z, { einnahmen: { einkommensteuer: 2, umsatz: 1 } }, 'einkommensteuer');
-  expect(w.wirkung.wachstum).toBeCloseTo(-0.12, 5); // 2 Stufen × −0,06, die Umsatzsteuer zählt nicht mit
-  expect(w.wirkung.gruppen.arbeitnehmer).toBe(-6);
-  // Mehraufkommen im 1. Jahr 4,8 Mrd. → Finanzministeriums-Partei verliert wirkungSteuerErhoehungProMrd je Mrd.
-  expect(w.umfrage.union).toBeCloseTo(-4.8 * config.haushalt.wirkungSteuerErhoehungProMrd, 5);
-  expect(einnahmeWirkung(z, { einnahmen: { gewerbe: 1 } }, 'gewerbe').umfrage).toEqual({}); // kein Bundesaufkommen
-  expect(einnahmeWirkung(z, { einnahmen: { gewerbe: 1 } }, 'gewerbe').wirkung.probleme.kommunalfinanzen).toBe(-6);
-  expect(einnahmeWirkung(z, {}, 'umsatz').umfrage).toEqual({});
+  const e = { einnahmen: { einkommensteuer: 2, umsatz: 1 } };
+  const w = einnahmenWirkung(z, e);
+  expect(w.wirkung.wachstum).toBeCloseTo(2 * -0.06 - 0.08, 5); // beide Steuern zusammen
+  expect(w.wirkung.gruppen.familien).toBe(2 * -2 - 3);
+  expect(w.kern).toBeCloseTo(4.8 + 7, 5); // Mehraufkommen im 1. Jahr
+  // gleiche Umfragewirkung wie die Vorschau des ganzen Haushalts (ohne Etats)
+  expect(w.umfrage.union).toBeCloseTo(vorschau(z, e).wirkung.union, 6);
+  expect(einnahmenWirkung(z, {}).umfrage).toEqual({});
+  expect(einnahmenWirkung(z, { einnahmen: { gewerbe: 1 } }).wirkung.probleme.kommunalfinanzen).toBe(-6);
 });

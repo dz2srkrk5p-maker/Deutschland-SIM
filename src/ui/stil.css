@@ -249,17 +249,6 @@ dialog .knoepfe { flex-direction: column; align-items: stretch; }
 /* Einnahmen (System 2) */
 .einnahme { border-bottom: 1px solid var(--linie); padding-bottom: var(--a1); margin-bottom: var(--a1); }
 .einnahme .posten { border-bottom: 0; }
-.regler { display: grid; grid-template-columns: 1fr minmax(12em, auto); gap: 0 var(--a2); align-items: center; padding: 0 0 var(--a1); }
-.regler input[type='range'] { width: 100%; min-height: var(--ziel); margin: 0; accent-color: var(--akzent); }
-.regler output { grid-row: span 2; text-align: right; font-variant-numeric: tabular-nums; }
-.regler-wirkung { grid-column: 1 / -1; margin: var(--a-halb) 0 0; }
-.regler-wirkung:empty { display: none; }
-.regler-skala { display: flex; justify-content: space-between; font-size: var(--t-klein); color: var(--text-2); }
-@media (max-width: 560px) {
-  .regler { grid-template-columns: 1fr; }
-  .regler output { grid-row: auto; order: 1; text-align: left; }
-  .regler-wirkung { order: 2; }
-}
 .einnahme details > summary { min-height: 36px; font-size: var(--t-klein); color: var(--text-2); }
 h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transform: uppercase; color: var(--text-2); }
 
@@ -337,4 +326,19 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
   .zeitstrahl { grid-auto-flow: row; gap: var(--a2); }
   .zeitstrahl li { padding: 0 0 0 32px; }
   .zeitstrahl li::before { top: 24px; bottom: calc(-1 * var(--a2)); left: 10px; right: auto; width: 2px; height: auto; }
+}
+
+/* Einnahmen: Regler wie bei den Etats, daneben die Gesamtwirkung (Haushalt → Einnahmen) */
+.einnahmen-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--a2); align-items: start; }
+.einnahmen-wirkung { position: sticky; top: 120px; }
+.einnahme .etat { border-bottom: 0; }
+.einnahme .grenzen { white-space: nowrap; }
+.gruppen-wirkung { display: grid; grid-template-columns: auto 1fr 3.5em; gap: var(--a-halb) var(--a1); align-items: center; font-size: var(--t-klein); }
+.gruppen-wirkung .zahl { text-align: right; }
+.div-balken { position: relative; height: 10px; background: var(--flaeche-2); border-radius: var(--radius-klein); }
+.div-balken .mitte { position: absolute; left: 50%; top: -2px; bottom: -2px; border-left: 1px solid var(--text-2); }
+.div-balken .wert { position: absolute; top: 0; bottom: 0; background: var(--akzent); border-radius: 2px; }
+@media (max-width: 900px) {
+  .einnahmen-layout { grid-template-columns: 1fr; }
+  .einnahmen-wirkung { position: static; order: -1; }
 }
