@@ -342,3 +342,5 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
   .einnahmen-layout { grid-template-columns: 1fr; }
   .einnahmen-wirkung { position: static; order: -1; }
 }
+.gruppen-wirkung.verbaende { grid-template-columns: auto minmax(40px, 1fr) auto; }
+.gruppen-wirkung.verbaende > span:nth-child(3n) { white-space: nowrap; }

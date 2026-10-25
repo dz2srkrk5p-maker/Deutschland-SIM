@@ -54,6 +54,15 @@ function einnahmeBetragHtml(art, s, d) {
   return `${aufkommen}<br><small>${plusMinus(mrd(s.erstesJahr), 1)} Mrd. im 1. Jahr${art.parameter.einmalig ? ', einmalig' : `, dann ${plusMinus(mrd(s.dauerhaft), 1)}`}</small>`;
 }
 
+// Haltung der Verbände zu den Steueränderungen (−2 bis +2) als Balken, dazu die Wirkung aufs politische Kapital
+function verbaendeHtml(liste, summe) {
+  const text = (v) => (v.haltung === null ? '–' : v.kapital < 0 ? `dagegen −${-v.kapital}` : v.kapital > 0 ? `dafür +${v.kapital}` : 'neutral');
+  const balken = (h) => `<span class="div-balken" aria-hidden="true"><i class="mitte"></i>${h ? `<i class="wert" style="${h < 0 ? 'right:50%' : 'left:50%'};width:${((Math.abs(h) / 2) * 50).toFixed(1)}%"></i>` : ''}</span>`;
+  return `<div class="gruppen-wirkung verbaende">${liste.map((v) => `<span>${v.akteur.name}</span>${balken(v.haltung ?? 0)}<span class="klein">${text(v)}</span>`).join('')}</div>
+    <div class="bilanz"><span><strong>Politisches Kapital durch Verbände</strong></span><span class="zahl"><strong>${summe > 0 ? '+' : summe < 0 ? '−' : '±'}${Math.abs(summe)}</strong></span></div>
+    ${aufklapp('Wie entsteht die Haltung?', `<p class="klein">${erklaerungen.verbaende} Die EU-Kommission hat zu Steuern keine Haltung.</p>`)}`;
+}
+
 // Gesamtwirkung der Einnahmeänderungen (Übersicht neben den Reglern): Wachstum und Kennzahlen, Gruppen als Balken
 // nach links (weniger zufrieden) und rechts (zufriedener), Mehr- oder Mindereinnahmen und Umfrage der Finanzministeriums-Partei
 function einnahmenWirkungHtml(w, geaendert) {
@@ -80,8 +89,8 @@ function einnahmenWirkungHtml(w, geaendert) {
       return `<span>${g.name}</span>${balken(v)}<span class="zahl">${plusMinus(v, 1)}</span>`;
     }).join('')}</div>
     ${probleme.length ? `<p class="klein"><strong>Probleme:</strong> ${probleme.map(([p, v]) => `${problemName(p)} ${plusMinus(v, 1)}`).join(' · ')}</p>` : ''}
-    <h4>Verbände</h4>
-    <p class="klein">Verbände reagieren im Spiel bisher nur auf Reformwege. Eine eigene Reaktion auf Steuern ist als neue Spielregel vorgeschlagen und noch nicht freigegeben.</p>
+    <h4>Zustimmung der Verbände</h4>
+    ${verbaendeHtml(w.verbaende, w.verbaendeKapital)}
     <p class="klein">Einmalig beim Beschluss, Spielwerte. Die Umfragewirkung auf die Parteien steht unter „Übersicht“.</p>`;
 }
 
@@ -176,7 +185,8 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       ${(zustand.verfahren ?? []).length ? `<p><strong>Anhängige Verfahren:</strong> ${zustand.verfahren.map((x) => `${x.name} (Urteil in ${Math.max(1, x.faellig - zustand.runde)} Quartalen, Risiko ${Math.round(x.chance * 100)} %)`).join('; ')}</p>` : ''}
       ${aufklapp('Abstimmungen im Detail', abstimmungHtml(v.bundestag, 'Bundestag über den Haushalt', true) + bundesratHtml(bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender)))}`, { titel: 'Saldo und Schuldenbremse' })}
       ${karte(`<p><strong>Umfragen:</strong> ${wirkung.length ? wirkung.map(([id, w]) => `${partei(id).name} ${plusMinus(w)}`).join(' · ') : 'keine Änderung'}</p>
-        <p><strong>Kennzahlen und Gruppen:</strong> ${wirkungListe(v.kennzahlWirkung)}</p>`, { titel: 'Wirkung des Entwurfs' })}
+        <p><strong>Kennzahlen und Gruppen:</strong> ${wirkungListe(v.kennzahlWirkung)}</p>
+        <p><strong>Verbände (Steuern):</strong> ${v.verbaende.filter((x) => x.kapital).map((x) => `${x.akteur.name} ${x.kapital < 0 ? 'dagegen' : 'dafür'}`).join(' · ') || 'keine Reaktion'}${v.verbaendeKapital ? `, Kapital ${v.verbaendeKapital > 0 ? '+' : '−'}${Math.abs(v.verbaendeKapital)}` : ''}</p>`, { titel: 'Wirkung des Entwurfs' })}
       ${karte(koalitionslageHtml(zustand, v.anteile), { titel: 'Koalition' })}
       ${bearbeitbar ? karte(`
         ${durchfallen ? `<p class="rot">✗ Keine Mehrheit. Einbringen heißt: Der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} ${plusMinus(-config.minderheit.umfrageVerlustHaushaltGescheitert, 1)} Punkte (Fehlschlag ${(zustand.koalition.fehlschlaege ?? 0) + 1} von ${config.minderheit.fehlschlaegeBisSpielende} bis zum Spielende).</p>` : ''}

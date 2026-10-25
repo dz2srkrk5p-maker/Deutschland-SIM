@@ -17,10 +17,12 @@ export const laufendeKosten = (zustand) => loesungsKosten(zustand) + wegKosten(z
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { verfahrenAnlegen } from './verfahren.js';
+import { verbaendeZuSteuern, verbaendeKapital } from './verbaende.js';
 import { vertragHaushalt, vertragOhne } from './koalitionsvertrag.js';
 import { jahresSchritt, gruppenSchritt, lageUmfrage, lageTeile, wirkungSumme, wirtschaftWerte } from './wirtschaft.js';
 
 const hh = config.haushalt;
+const x0 = (x) => `${x > 0 ? '+' : x < 0 ? '−' : '±'}${Math.abs(x)}`; // Kapital mit Vorzeichen
 const festeOhneZinsen = Object.values(festeAusgaben2026).reduce((s, x) => s + x, 0) - festeAusgaben2026.bundesschuld;
 const MRD = 1e6; // tausend Euro je Mrd.
 export const mrd = (tausend) => tausend / MRD;
@@ -86,6 +88,8 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   const bundestag = abstimmung(zustand, 'haushalt');
   return {
     etats, einnahmen: einnahmenNeu, bilanz: bilanz(etats, einnahmenNeu.kern, laufendeKosten(zustand) + ausgleich, zinsen(zustand), schuldenbremseGrenze(zustand)), ausgleich,
+    // verbaende: Haltung zu den Steueränderungen (nur Einnahmen und Ausgestaltung), Kapital beim Beschluss
+    verbaende: verbaendeZuSteuern(ew.wirkung), verbaendeKapital: verbaendeKapital(verbaendeZuSteuern(ew.wirkung)),
     wirkung, posten, kennzahlWirkung: ew.wirkung, verfassung: ew.verfassung, rechtsrisiken: ew.rechtsrisiken, bundesrat, bundestag,
     // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
     anteile: runden(umverteilen(zustand.anteile, wirkung)),
@@ -104,8 +108,10 @@ export function einnahmenWirkung(zustand, { einnahmen = {}, ausgestaltung = {} }
   const alt = aufstellung(zustand);
   const kern = mrd(neu.kern - alt.kern);
   const partei = zustand.kabinett?.verteilung?.finanzen;
+  const wirkung = entwurfWirkung(zustand, entwurf).wirkung;
+  const verbaende = verbaendeZuSteuern(wirkung);
   return {
-    wirkung: entwurfWirkung(zustand, entwurf).wirkung, kern, ktf: mrd(neu.ktf - alt.ktf),
+    wirkung, kern, ktf: mrd(neu.ktf - alt.ktf), verbaende, verbaendeKapital: verbaendeKapital(verbaende),
     umfrage: partei && Math.abs(kern) > 1e-9 ? { [partei]: einnahmenUmfrage(kern) } : {},
   };
 }
@@ -162,6 +168,9 @@ export function haushaltBeschliessen(zustand, params = {}) {
   if (!gescheitert && !v.bilanz.eingehalten) throw new Error('Schuldenbremse überschritten');
   if (!gescheitert && v.bundesrat && !v.bundesrat.mehrheit) throw new Error('Keine Mehrheit im Bundesrat für die Steueränderung');
   const kompromissPreis = !gescheitert && v.bundesrat?.kompromiss ? config.kompromiss.kapital : 0;
+  // Verbände (freigegeben 2026-10-25): Zustimmung oder Protest gegen die Steueränderungen kostet oder bringt Kapital
+  const verbandKapital = gescheitert ? 0 : v.verbaendeKapital;
+  const kapitalNeu = Math.max(0, Math.min(config.kapital.max, zustand.kapital - kompromissPreis + verbandKapital));
   if (zustand.kapital < kompromissPreis) throw new Error(`Für den Kompromiss im Bundesrat fehlt politisches Kapital (${kompromissPreis} nötig)`);
 
   const jahr = zustand.haushalt.jahr;
@@ -205,12 +214,13 @@ export function haushaltBeschliessen(zustand, params = {}) {
       : `Haushalt Jahr ${jahr} beschlossen: neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`) + (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
     ...vertragPosten.map((p) => `${p.ursache}: ${name(p.partei)} −${zahl(Math.abs(p.wert))}`),
     ...(kompromissPreis ? [`Kompromiss im Bundesrat: Ausgleichszahlung an die Länder ${zahl(mrd(v.ausgleich))} Mrd., ${kompromissPreis} Kapital`] : []),
+    ...(!gescheitert && v.verbaende.some((x) => x.kapital) ? [`Verbände zu den Steueränderungen: ${v.verbaende.filter((x) => x.kapital).map((x) => `${x.akteur.name} ${x.kapital < 0 ? 'protestieren' : 'stimmen zu'}`).join(', ')} (Kapital ${x0(verbandKapital)})`] : []),
     `Wirtschaft: Wachstum ${zahl(w.land.wachstum, 1)} %, Inflation ${zahl(w.land.inflation, 1)} %, Arbeitslosigkeit ${zahl(w.land.arbeitslosigkeit, 1)} %, Schuldenquote ${zahl(w.land.schuldenquote, 1)} %`,
   ];
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, wirtschaftVerlauf: [...(zustand.wirtschaftVerlauf ?? []), wirtschaftWerte(w.land)], gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme(), kapital: zustand.kapital - kompromissPreis }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
+  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, wirtschaftVerlauf: [...(zustand.wirtschaftVerlauf ?? []), wirtschaftWerte(w.land)], gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme(), kapital: kapitalNeu }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

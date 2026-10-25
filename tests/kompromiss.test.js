@@ -64,7 +64,9 @@ test('Feature 6: Haushalt mit Steueränderung – Ausgleichszahlung und Kapital 
   expect(mit.ausgleich).toBe(km.laenderAusgleich);
   expect(mit.bilanz.neueSchulden - vorschau(z, entwurf).bilanz.neueSchulden).toBe(km.laenderAusgleich);
   const { state, ereignisse } = haushaltBeschliessen(z, { ...entwurf, kompromiss: true });
-  expect(state.kapital).toBe(100 - km.kapital);
+  // dazu die Verbände: Umsatzsteuer +1 Punkt trifft Geringverdiener → Sozialverbände protestieren
+  expect(mit.verbaendeKapital).toBe(-config.verbaendeSteuern.kapitalDagegen);
+  expect(state.kapital).toBe(100 - km.kapital + mit.verbaendeKapital);
   expect(ereignisse.some((e) => e.startsWith('Kompromiss im Bundesrat'))).toBe(true);
   expect(state.haushalt.einnahmen.stufen.umsatz).toBe(fein('umsatz', 1));
 });

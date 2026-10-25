@@ -93,6 +93,21 @@ export const config = {
   // Möglich, wenn höchstens maxFehlend Stimmen zur Mehrheit fehlen. Reformweg: abgeschwächte Fassung (alle Wirkungen und
   // Einnahmen × wirkungFaktor) gegen zusätzliches Kapital. Haushalt mit Steueränderung: einmalige Ausgleichszahlung an die
   // Länder (laenderAusgleich, tausend €, zählt zur Schuldenbremse) plus Kapital.
+  // Verbände reagieren auf Steueränderungen (freigegeben 2026-10-25, Spielwerte). Haltung −2 bis +2 aus der Gesamtwirkung
+  // des Entwurfs auf die vertretene Gruppe bzw. das Problem, geteilt durch teiler (Umweltverbände: weniger Klimafolgen =
+  // Zustimmung, daher negativ). EU-Kommission ohne Eintrag = keine Haltung. Beim Beschluss: je Verband ab dagegenAb
+  // −kapitalDagegen, ab dafuerAb +kapitalDafuer politisches Kapital; keine Umfragewirkung (die Gruppen zählen dort schon).
+  verbaendeSteuern: {
+    quellen: {
+      gewerkschaften: { gruppe: 'arbeitnehmer', teiler: 3 },
+      wirtschaftsverbaende: { gruppe: 'unternehmen', teiler: 3 },
+      sozialverbaende: { gruppe: 'geringverdiener', teiler: 3 },
+      bauernverband: { gruppe: 'landwirtschaft', teiler: 3 },
+      umweltverbaende: { problem: 'klimafolgen', teiler: -2 },
+    },
+    dagegenAb: -1, dafuerAb: 1, kapitalDagegen: 3, kapitalDafuer: 1,
+  },
+
   kompromiss: { maxFehlend: 15, wirkungFaktor: 0.6, kapital: 10, laenderAusgleich: 2000000 },
 
   // Landtagswahlen (Paket Mittel, Feature 5, Spielwerte): Einzelmodell. Je Wahl bleibt die Landesregierung oder es
