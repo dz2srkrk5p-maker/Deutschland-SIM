@@ -7,6 +7,9 @@ import { verfahrenAnlegen, verfahrenQuartal } from '../src/engine/verfahren.js';
 import { haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { neuesSpiel, laden } from '../src/engine/state.js';
 
+// Steueränderung in früheren (geeichten) Stufen → Reglerschritte (feinere Schritte seit 2026-10-25)
+const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).parameter; return Math.round((stufen * (p.eichSchritt ?? p.schritt)) / p.schritt); };
+
 const vr = config.verfassungsrisiko;
 // Union + SPD + Grüne: 49 Bundesratsstimmen, genug für Steueränderungen
 const imAmt = () => ({
@@ -18,8 +21,8 @@ const imAmt = () => ({
 
 test('Feature 3: Rechtsrisiken nur bei Erhöhung bzw. neu eingeschalteter Ausgestaltung', () => {
   const z = imAmt();
-  expect(rechtsrisiken(z, { einnahmen: { vermoegen: 1 } })).toMatchObject([{ typ: 'einnahme', id: 'vermoegen', art: 'eigentum', stufen: 1 }]);
-  expect(rechtsrisiken(z, { einnahmen: { umsatz: 1 } })).toEqual([]);
+  expect(rechtsrisiken(z, { einnahmen: { vermoegen: fein('vermoegen', 1) } })).toMatchObject([{ typ: 'einnahme', id: 'vermoegen', art: 'eigentum', stufen: fein('vermoegen', 1) }]);
+  expect(rechtsrisiken(z, { einnahmen: { umsatz: fein('umsatz', 1) } })).toEqual([]);
   expect(rechtsrisiken(z, { ausgestaltung: { agrardiesel: true } })[0]).toMatchObject({ art: 'gleichheit', chance: 0.1 });
   // schon aktiv oder ausgeschaltet: kein neues Risiko
   const aktiv = { ...z, haushalt: { ...z.haushalt, einnahmen: { ...z.haushalt.einnahmen, ausgestaltung: ['agrardiesel'] } } };
@@ -33,18 +36,18 @@ test('Feature 3: Rechtsrisiken nur bei Erhöhung bzw. neu eingeschalteter Ausges
 });
 
 test('Feature 3: Haushaltsbeschluss legt Verfahren an, Urteil nach der Frist', () => {
-  const { state } = haushaltBeschliessen(imAmt(), { einnahmen: { vermoegen: 2 } });
-  expect(state.verfahren).toMatchObject([{ id: 'vermoegen', stufen: 2, faellig: state.runde + vr.dauerQuartale }]);
-  expect(state.haushalt.einnahmen.stufen.vermoegen).toBe(2);
+  const { state } = haushaltBeschliessen(imAmt(), { einnahmen: { vermoegen: fein('vermoegen', 2) } });
+  expect(state.verfahren).toMatchObject([{ id: 'vermoegen', stufen: fein('vermoegen', 2), faellig: state.runde + vr.dauerQuartale }]);
+  expect(state.haushalt.einnahmen.stufen.vermoegen).toBe(fein('vermoegen', 2));
   // vor der Frist nichts
   expect(verfahrenQuartal({ ...state, runde: state.runde + 1 }).ereignisse).toEqual([]);
 });
 
 test('Feature 3: gekippt → Rücknahme, Verlust der Kanzlerpartei in der Umfrage-Bilanz; bestätigt → bleibt', () => {
   const basis = imAmt();
-  const z = { ...basis, haushalt: { ...basis.haushalt, einnahmen: { ...basis.haushalt.einnahmen, stufen: { vermoegen: 2 }, ausgestaltung: ['agrardiesel'] } } };
+  const z = { ...basis, haushalt: { ...basis.haushalt, einnahmen: { ...basis.haushalt.einnahmen, stufen: { vermoegen: fein('vermoegen', 2) }, ausgestaltung: ['agrardiesel'] } } };
   const sicher = (chance) => verfahrenAnlegen({ ...z, runde: 6 }, [
-    { typ: 'einnahme', id: 'vermoegen', name: 'Vermögensteuer erhöht', stufen: 2, art: 'eigentum', chance },
+    { typ: 'einnahme', id: 'vermoegen', name: 'Vermögensteuer erhöht', stufen: fein('vermoegen', 2), art: 'eigentum', chance },
     { typ: 'ausgestaltung', id: 'agrardiesel', name: 'Agrardiesel', art: 'gleichheit', chance },
   ]);
   const gekippt = verfahrenQuartal({ ...sicher(1), runde: 6 + vr.dauerQuartale });
@@ -55,7 +58,7 @@ test('Feature 3: gekippt → Rücknahme, Verlust der Kanzlerpartei in der Umfrag
   expect(gekippt.ereignisse[0]).toContain('kippt');
   expect(gekippt.state.umfrageBilanz.at(-1).posten.some((p) => p.ursache.startsWith('Verfassungsgericht kippt'))).toBe(true);
   const bestaetigt = verfahrenQuartal({ ...sicher(0), runde: 6 + vr.dauerQuartale });
-  expect(bestaetigt.state.haushalt.einnahmen.stufen.vermoegen).toBe(2);
+  expect(bestaetigt.state.haushalt.einnahmen.stufen.vermoegen).toBe(fein('vermoegen', 2));
   expect(bestaetigt.state.anteile).toEqual(z.anteile);
   expect(bestaetigt.ereignisse[0]).toContain('bestätigt');
 });

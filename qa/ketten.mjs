@@ -7,6 +7,7 @@ const { config } = await import(R + 'data/config.js');
 const { parteien } = await import(R + 'data/parteien.js');
 const { ministerien } = await import(R + 'data/ministerien.js');
 const { bereiche } = await import(R + 'data/reformwege.js');
+const { einnahmearten } = await import(R + 'data/einnahmen.js');
 const { neuesSpiel } = await import(R + 'engine/state.js');
 const { wahlkampfWoche } = await import(R + 'engine/wahlkampf.js');
 const { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitAntreten } = await import(R + 'engine/koalition.js');
@@ -29,7 +30,8 @@ const nationale = bereiche.flatMap((b) => b.wege).filter((w) => w.richtung === '
 const STRATEGIEN = {
   'nichts tun': { haushalt: () => ({}) },
   'alle Etats maximal kürzen': { haushalt: () => ({ stufen: Object.fromEntries(ministerien.map((m) => [m.id, -MAXS])) }) },
-  'Energiesteuern maximal erhöhen': { haushalt: (z) => ({ einnahmen: { energie: Math.min(2, Math.max(0, 4 - (z.haushalt.einnahmen.stufen.energie ?? 0))) } }) },
+  // Reglerschritte seit den feineren Steuerschritten: höchstens maxJeJahr je Jahr bis zur Obergrenze
+  'Energiesteuern maximal erhöhen': { haushalt: (z) => { const p = einnahmearten.find((a) => a.id === 'energie').parameter; return { einnahmen: { energie: Math.min(p.maxJeJahr, Math.max(0, Math.round((p.max - p.startwert) / p.schritt) - (z.haushalt.einnahmen.stufen.energie ?? 0))) } }; } },
   'Verteidigung maximal': { haushalt: () => ({ stufen: { verteidigung: MAXS } }) },
   'nur national-konservative Reformwege': { haushalt: () => ({}), reform: (z) => nationale.find((w) => !z.reformwege[w.id] && !wegSperre(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision) },
 };

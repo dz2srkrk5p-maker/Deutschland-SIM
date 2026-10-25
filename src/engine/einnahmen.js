@@ -8,12 +8,19 @@ export const einnahmeart = (id) => einnahmearten.find((e) => e.id === id);
 // Reales Wachstum seit Spielbeginn: Steuerbasis wächst mit der Wirtschaft (preisbereinigt, weil die Etats nominal fest sind)
 export const basisFaktor = (zustand) => zustand.land.bip / startBip / (zustand.land.preise ?? 1);
 
-// Verlust durch Ausweichen (Steuerflucht, Konsumrückgang) bei hohen Stufen: je Stufe über ausweichenAb ein wachsender Anteil
+// Anteil eines Reglerschritts an der geeichten Stufe (data/einnahmen.js: schritt / eichSchritt)
+export const schrittFaktor = (art) => art.parameter.schritt / (art.parameter.eichSchritt ?? art.parameter.schritt);
+
+// Verlust durch Ausweichen (Steuerflucht, Konsumrückgang) bei hohen Sätzen: je geeichter Stufe über ausweichenAb ein
+// wachsender Anteil. stufe in Reglerschritten; an ganzen geeichten Stufen wie bisher, dazwischen linear.
 function ausweichVerlust(art, stufe) {
-  if (stufe <= art.ausweichenAb) return 0; // nur bei Erhöhungen über der Schwelle
-  let verlust = 0;
-  for (let k = art.ausweichenAb + 1; k <= stufe; k++) verlust += art.aufkommenJeStufe * art.ausweichen * (k - art.ausweichenAb);
-  return Math.min(verlust, stufe * art.aufkommenJeStufe);
+  const u = stufe * schrittFaktor(art); // in geeichten Stufen
+  const ueber = u - art.ausweichenAb;
+  if (ueber <= 1e-9) return 0; // nur bei Erhöhungen über der Schwelle
+  const summe = (m) => (art.aufkommenJeStufe * art.ausweichen * m * (m + 1)) / 2; // 1 + 2 + … + m Stufen über der Schwelle
+  const unten = Math.floor(ueber + 1e-9);
+  const verlust = summe(unten) + (summe(unten + 1) - summe(unten)) * (ueber - unten);
+  return Math.min(verlust, u * art.aufkommenJeStufe);
 }
 
 // Prüft einen Entwurf: { einnahmen: { artId: Änderung in Stufen }, ausgestaltung: { schalterId: true|false } }
@@ -45,10 +52,11 @@ export function aufstellung(zustand, entwurf = {}, reformPosten = wegEinnahmen(z
     const neu = alt + (entwurf.einnahmen?.[art.id] ?? 0);
     const steuer = art.gruppe !== 'Sonstige' && !art.sondervermoegen;
     const basis = Math.round(art.start * (steuer ? e.altFaktor : 1) * faktor);
-    const stufen = Math.round(neu * art.aufkommenJeStufe * faktor);
+    const jeSchritt = art.aufkommenJeStufe * schrittFaktor(art);
+    const stufen = Math.round(neu * jeSchritt * faktor);
     const ausweichen = -Math.round(ausweichVerlust(art, neu) * faktor) || 0;
     // Verzögerung: Neu Beschlossenes wirkt im ersten Jahr nur anteilig
-    const verzoegerung = -Math.round((neu - alt) * art.aufkommenJeStufe * faktor * (1 - art.verzoegerung)) || 0;
+    const verzoegerung = -Math.round((neu - alt) * jeSchritt * faktor * (1 - art.verzoegerung)) || 0;
     const schalter = art.ausgestaltung.filter((s) => aktiv(zustand, entwurf, s.id));
     const ausgestaltung = Math.round(schalter.reduce((s, x) => s + x.kosten, 0) * faktor)
       + (art.sondervermoegen ? Math.round(schalter.reduce((s, x) => s + (x.ktfAnteil ?? 0), 0) * (basis + stufen)) : 0);
@@ -97,7 +105,7 @@ export function entwurfWirkung(zustand, entwurf = {}) {
   for (const [id, d] of Object.entries(entwurf.einnahmen ?? {})) {
     if (!d) continue;
     const art = einnahmeart(id);
-    teile.push(skaliert(art.wirkungJeStufe, d));
+    teile.push(skaliert(art.wirkungJeStufe, d * schrittFaktor(art)));
     bundesrat ||= art.bundesrat;
   }
   for (const [id, an] of Object.entries(entwurf.ausgestaltung ?? {})) {
@@ -147,9 +155,9 @@ export function gegenfinanzierung(zustand, entwurf, luecke) {
       const p = a.parameter;
       const jetzt = (p.einmalig ? 0 : (zustand.haushalt.einnahmen.stufen[a.id] ?? 0)) + (entwurf.einnahmen?.[a.id] ?? 0);
       const frei = Math.min(p.maxJeJahr - Math.abs(entwurf.einnahmen?.[a.id] ?? 0), Math.floor((p.max - (p.startwert + jetzt * p.schritt)) / p.schritt + 1e-9));
-      const jeStufe = a.aufkommenJeStufe * faktor * a.verzoegerung;
+      const jeStufe = a.aufkommenJeStufe * schrittFaktor(a) * faktor * a.verzoegerung;
       const stufen = Math.ceil(luecke / jeStufe);
-      return { art: a, stufen, moeglich: stufen <= frei, wachstum: (a.wirkungJeStufe.wachstum ?? 0) * stufen };
+      return { art: a, stufen, moeglich: stufen <= frei, wachstum: (a.wirkungJeStufe.wachstum ?? 0) * schrittFaktor(a) * stufen };
     })
     .filter((v) => v.moeglich)
     .sort((x, y) => y.wachstum - x.wachstum);

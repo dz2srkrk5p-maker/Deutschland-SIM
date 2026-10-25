@@ -4,11 +4,12 @@ import { startProbleme } from './probleme.js';
 import { wirkungSumme, wirtschaftWerte } from './wirtschaft.js';
 import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen.js';
 import { config } from '../data/config.js';
+import { einnahmearten } from '../data/einnahmen.js';
 import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 20; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 21; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -19,6 +20,7 @@ export const ZUSTAND_VERSION = 20; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 16: verfahren [{ typ, id, name, art, chance, stufen?, faellig }] (Verfassungsrisiko für Steuern, Feature 3)
 // 17: laender { landId: { regierung, geschaeftsfuehrend, wahl: { jahr, quartal } } } (Landtagswahlen, Feature 5)
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
+// 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
 //     ältere Einträge ohne diese Felder bleiben gültig, der Start wird aus fertig − Dauer berechnet
 // 19: wirtschaftVerlauf [{ wachstum, inflation, arbeitslosigkeit, schuldenquote, gini }] je Haushaltsjahr, erster Eintrag = Start
@@ -146,6 +148,13 @@ const MIGRATIONEN = {
   // Frühere Jahre sind nicht gespeichert: der Verlauf beginnt mit dem aktuellen Stand
   18: (z) => ({ ...z, version: 19, wirtschaftVerlauf: [wirtschaftWerte(z.land)] }),
   19: (z) => ({ ...z, version: 20 }),
+  // feinere Steuerschritte: gespeicherte Stufen auf Reglerschritte umrechnen (gleicher Steuersatz wie vorher)
+  20: (z) => {
+    const fein = (id, st) => { const p = einnahmearten.find((a) => a.id === id)?.parameter; return p ? Math.round((st * (p.eichSchritt ?? p.schritt)) / p.schritt) : st; };
+    const stufen = Object.fromEntries(Object.entries(z.haushalt.einnahmen.stufen).map(([id, st]) => [id, fein(id, st)]));
+    const verfahren = (z.verfahren ?? []).map((v) => (v.typ === 'einnahme' ? { ...v, stufen: fein(v.id, v.stufen) } : v));
+    return { ...z, version: 21, haushalt: { ...z.haushalt, einnahmen: { ...z.haushalt.einnahmen, stufen } }, verfahren };
+  },
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

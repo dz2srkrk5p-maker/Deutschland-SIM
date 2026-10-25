@@ -1,10 +1,14 @@
 import { test, expect } from 'vitest';
+import { einnahmearten } from '../src/data/einnahmen.js';
 import { config } from '../src/data/config.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { bundesratAbstimmung, kompromissMoeglich } from '../src/engine/bundesrat.js';
 import { weg, wegSperre, wegVorschau, wegBeschliessen, reformwegeQuartal, wegEinnahmen } from '../src/engine/reformwege.js';
 import { vorschau, haushaltBeschliessen } from '../src/engine/haushalt.js';
+
+// Steueränderung in früheren (geeichten) Stufen → Reglerschritte (feinere Schritte seit 2026-10-25)
+const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).parameter; return Math.round((stufen * (p.eichSchritt ?? p.schritt)) / p.schritt); };
 
 const km = config.kompromiss;
 // Union + SPD: 24 von 35 Bundesratsstimmen, es fehlen 11 – Kompromiss möglich
@@ -52,7 +56,7 @@ test('Feature 6: Reformweg als Kompromiss – abgeschwächt, teurer, gekennzeich
 
 test('Feature 6: Haushalt mit Steueränderung – Ausgleichszahlung und Kapital statt Scheitern', () => {
   const z = { ...regierung(), quartal: 4 };
-  const entwurf = { einnahmen: { umsatz: 1 } };
+  const entwurf = { einnahmen: { umsatz: fein('umsatz', 1) } };
   expect(vorschau(z, entwurf).bundesrat.mehrheit).toBe(false);
   expect(() => haushaltBeschliessen(z, entwurf)).toThrow('Bundesrat');
   const mit = vorschau(z, { ...entwurf, kompromiss: true });
@@ -62,5 +66,5 @@ test('Feature 6: Haushalt mit Steueränderung – Ausgleichszahlung und Kapital 
   const { state, ereignisse } = haushaltBeschliessen(z, { ...entwurf, kompromiss: true });
   expect(state.kapital).toBe(100 - km.kapital);
   expect(ereignisse.some((e) => e.startsWith('Kompromiss im Bundesrat'))).toBe(true);
-  expect(state.haushalt.einnahmen.stufen.umsatz).toBe(1);
+  expect(state.haushalt.einnahmen.stufen.umsatz).toBe(fein('umsatz', 1));
 });

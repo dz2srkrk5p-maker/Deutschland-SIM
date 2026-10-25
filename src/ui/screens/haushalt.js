@@ -9,7 +9,7 @@ import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmenWirkung, etatNeu 
 import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { RECHTSARTEN } from '../../data/einnahmen.js';
 import { erklaerungen } from '../../data/hinweise.js';
-import { gegenfinanzierung, spielraum, aufkommensSchaetzung, einnahmeart } from '../../engine/einnahmen.js';
+import { gegenfinanzierung, spielraum, aufkommensSchaetzung, einnahmeart, schrittFaktor } from '../../engine/einnahmen.js';
 import { haushaltsQuartal } from '../../engine/regierung.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { koalitionsParteien } from '../../engine/kabinett.js';
@@ -21,7 +21,7 @@ import { karte, tabs, status, punkt, zahl, plusMinus, badge, aufklapp, leer } fr
 const hh = config.haushalt;
 const partei = (id) => parteien.find((p) => p.id === id);
 const euro = (tausend, n = 2) => `${zahl(mrd(tausend), n)} Mrd.`;
-const stellen = (p) => (p.schritt < 1 ? 1 : 0);
+const stellen = (p) => (String(p.schritt).split('.')[1] ?? '').length; // Nachkommastellen wie die Schrittweite
 const parameterWert = (p, wert) => `${wert < 0 && Math.round(Math.abs(wert) * 10) ? '−' : ''}${zahl(Math.abs(wert), stellen(p))} ${p.einheit}`; // echtes Minuszeichen
 const wertText = (p, wert, d) => `${p.name}: ${parameterWert(p, wert)}${d ? ` (${plusMinus(d * p.schritt, stellen(p))})` : ''}`;
 const prozentStufe = (stufe, schritt) => (stufe ? ` <small>(${plusMinus(stufe * schritt, 0)} %)</small>` : '');
@@ -117,14 +117,14 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
     const ort = a.sondervermoegen ? badge(`Sondervermögen: ${a.sondervermoegen}`) : a.keinBund ? badge(`Aufkommen bei: ${a.keinBund}`) : '';
     const herleitung = `<table><tbody>
       <tr><th scope="row">Basis (Haushalt 2026, mit Wirtschaftsentwicklung)</th><td>${euro(z.basis)}</td></tr>
-      ${z.stufen ? `<tr><th scope="row">Satzänderungen (${plusMinus(z.stufe, 0)} Stufen)</th><td>${euro(z.stufen)}</td></tr>` : ''}
+      ${z.stufen ? `<tr><th scope="row">Satzänderungen (${plusMinus(z.stufe * p.schritt, stellen(p))} ${p.einheit})</th><td>${euro(z.stufen)}</td></tr>` : ''}
       ${z.ausweichen ? `<tr><th scope="row">Ausweichen (Steuerflucht, Gestaltung)</th><td>${euro(z.ausweichen)}</td></tr>` : ''}
       ${z.verzoegerung ? `<tr><th scope="row">Verzögerung im ersten Jahr</th><td>${euro(z.verzoegerung)}</td></tr>` : ''}
       ${z.ausgestaltung ? `<tr><th scope="row">Ausgestaltung</th><td>${euro(z.ausgestaltung)}</td></tr>` : ''}
       ${z.reformen.map((r) => `<tr><th scope="row">Reform: ${r.quelle}</th><td>${euro(r.betrag)}</td></tr>`).join('')}
       <tr><th scope="row"><strong>Summe</strong></th><td><strong>${euro(z.summe)}</strong></td></tr>
     </tbody></table>
-    <p class="klein">${a.erklaerung} Je Stufe: ${a.aufkommenJeStufe ? euro(a.aufkommenJeStufe) : 'keine Bundeseinnahme'}; Wirkung: ${wirkungListe(a.wirkungJeStufe)}.
+    <p class="klein">${a.erklaerung} Je ${zahl(p.schritt, stellen(p))} ${p.einheit}: ${a.aufkommenJeStufe ? euro(a.aufkommenJeStufe * schrittFaktor(a), 3) : 'keine Bundeseinnahme'}; Wirkung je ${zahl(p.eichSchritt ?? p.schritt, stellen(p))} ${p.einheit}: ${wirkungListe(a.wirkungJeStufe)}.
       ${a.bundesrat ? 'Änderungen brauchen den Bundesrat.' : 'Ohne Bundesrat änderbar.'}${a.rechtsrisiko ? ` <span class="gelb" title="${risikoText(a.rechtsrisiko)}">${risikoKurz(a.rechtsrisiko)} bei Erhöhung</span>` : ''}</p>
     ${a.ausgestaltung.length ? `<h4>Ausgestaltung</h4>${a.ausgestaltung.map((s) => {
       const an = entwurf.ausgestaltung[s.id] ?? zustand.haushalt.einnahmen.ausgestaltung.includes(s.id);
@@ -192,7 +192,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
     const gruppen = [...new Set(v.einnahmen.zeilen.map((z) => z.art.gruppe))];
     return `
       ${luecke > 0 && bearbeitbar ? karte(`<p>Es fehlen ${euro(luecke)} bis zur Schuldenbremse. Möglichkeiten (nichts wird festgelegt):</p>
-        <ul class="liste">${vorschlaege.map((x) => `<li>${x.art.name}: ${plusMinus(x.stufen, 0)} ${x.stufen === 1 ? 'Stufe' : 'Stufen'} (${zahl(x.stufen * x.art.parameter.schritt, 1)} ${x.art.parameter.einheit}), Wachstum ${plusMinus(x.wachstum)} Pp
+        <ul class="liste">${vorschlaege.map((x) => `<li>${x.art.name}: ${plusMinus(x.stufen * x.art.parameter.schritt, stellen(x.art.parameter))} ${x.art.parameter.einheit}, Wachstum ${plusMinus(x.wachstum)} Pp
           <button data-gegen="${x.art.id}" data-stufen="${x.stufen}">Übernehmen</button></li>`).join('') || '<li>Keine einzelne Einnahme reicht.</li>'}
           <li>Ausgaben kürzen (Partner-Ministerien zuerst) <button id="kuerzen">Kürzungen vorschlagen</button></li></ul>`, { titel: 'Gegenfinanzierung', klasse: 'ereignis' }) : ''}
       ${bearbeitbar ? `<p class="klein">${erklaerungen.regler}</p>` : ''}

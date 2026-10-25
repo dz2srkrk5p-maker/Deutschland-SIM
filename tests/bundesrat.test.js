@@ -1,4 +1,5 @@
 import { test, expect } from 'vitest';
+import { einnahmearten } from '../src/data/einnahmen.js';
 import { bundesratAbstimmung } from '../src/engine/bundesrat.js';
 import { haushaltBeschliessen, vorschau } from '../src/engine/haushalt.js';
 import { neuesSpiel } from '../src/engine/state.js';
@@ -7,6 +8,9 @@ import { parteien } from '../src/data/parteien.js';
 import { ministerien } from '../src/data/ministerien.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
+
+// Steueränderung in früheren (geeichten) Stufen → Reglerschritte (feinere Schritte seit 2026-10-25)
+const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).parameter; return Math.round((stufen * (p.eichSchritt ?? p.schritt)) / p.schritt); };
 // F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
 const beschliessen = (z, p) => {
   // F14: offene Ereignisse mit der ersten Möglichkeit beantworten
@@ -52,15 +56,15 @@ const imAmt = (partner) => ({
 
 test('Steueränderung ohne Bundesratsmehrheit wird abgelehnt', () => {
   const z = imAmt(['spd']);
-  expect(vorschau(z, { einnahmen: { einkommensteuer: 1 } }).bundesrat.mehrheit).toBe(false);
-  expect(() => beschliessen(z, { einnahmen: { einkommensteuer: 1 } })).toThrow(/Bundesrat/);
+  expect(vorschau(z, { einnahmen: { einkommensteuer: fein('einkommensteuer', 1) } }).bundesrat.mehrheit).toBe(false);
+  expect(() => beschliessen(z, { einnahmen: { einkommensteuer: fein('einkommensteuer', 1) } })).toThrow(/Bundesrat/);
   // Bundessteuern (Energie- und Verbrauchsteuern) brauchen den Bundesrat nicht
-  expect(vorschau(z, { einnahmen: { energie: 1 } }).bundesrat).toBeNull();
+  expect(vorschau(z, { einnahmen: { energie: fein('energie', 1) } }).bundesrat).toBeNull();
 });
 
 test('Steueränderung mit Bundesratsmehrheit geht durch', () => {
   const z = imAmt(['spd', 'gruene']);
-  expect(beschliessen(z, { einnahmen: { einkommensteuer: 1 } }).state.haushalt.jahr).toBe(2);
+  expect(beschliessen(z, { einnahmen: { einkommensteuer: fein('einkommensteuer', 1) } }).state.haushalt.jahr).toBe(2);
 });
 
 test('Haushalt ohne Steueränderung braucht den Bundesrat nicht', () => {

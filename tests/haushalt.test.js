@@ -1,4 +1,5 @@
 import { test, expect } from 'vitest';
+import { einnahmearten } from '../src/data/einnahmen.js';
 import { bilanz, vorschau, haushaltBeschliessen } from '../src/engine/haushalt.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { etats2026, steuern2026, sonstigeEinnahmen2026 } from '../src/data/haushalt.js';
@@ -6,6 +7,9 @@ import { ministerien } from '../src/data/ministerien.js';
 import { config } from '../src/data/config.js';
 import { quartalBeenden, haushaltsQuartal } from '../src/engine/regierung.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
+
+// Steueränderung in früheren (geeichten) Stufen → Reglerschritte (feinere Schritte seit 2026-10-25)
+const fein = (id, stufen) => { const p = einnahmearten.find((a) => a.id === id).parameter; return Math.round((stufen * (p.eichSchritt ?? p.schritt)) / p.schritt); };
 // F12: bis zum Haushaltsquartal weiterschalten, dann beschließen
 const beschliessen = (z, p) => {
   // F14: offene Ereignisse mit der ersten Möglichkeit beantworten
@@ -48,9 +52,9 @@ test('jedes Ministerium hat einen Etat', () => {
 });
 
 test('Schrittgrenzen: Etats höchstens ±ministerMaxProzent, Einnahmen höchstens maxJeJahr Stufen, mehr nicht', () => {
-  expect(() => vorschau(imAmt(), { stufen: { arbeit: -P(hh.ministerMaxProzent) }, einnahmen: { einkommensteuer: 2, umsatz: -1 } })).not.toThrow();
-  expect(() => vorschau(imAmt(), { einnahmen: { umsatz: 2 } })).toThrow();
-  expect(() => vorschau(imAmt(), { einnahmen: { gibtsnicht: 1 } })).toThrow();
+  expect(() => vorschau(imAmt(), { stufen: { arbeit: -P(hh.ministerMaxProzent) }, einnahmen: { einkommensteuer: fein('einkommensteuer', 2), umsatz: fein('umsatz', -1) } })).not.toThrow();
+  expect(() => vorschau(imAmt(), { einnahmen: { umsatz: fein('umsatz', 2) } })).toThrow();
+  expect(() => vorschau(imAmt(), { einnahmen: { gibtsnicht: fein('gibtsnicht', 1) } })).toThrow();
   expect(() => vorschau(imAmt(), { stufen: { arbeit: P(hh.ministerMaxProzent) + 1 } })).toThrow();
   expect(() => vorschau(imAmt(), { stufen: { arbeit: 1.5 } })).toThrow();
   expect(() => vorschau(imAmt(), { stufen: { gibtsnicht: 1 } })).toThrow();
@@ -71,7 +75,7 @@ test('Mehr Verteidigung über der Freigrenze zählt nicht zur Schuldenbremse', (
 
 test('Wirkung trifft die Partei, die das Ministerium hält', () => {
   // Arbeit −5 % = −9,867 Mrd. → Union (Arbeit); Energiesteuern +1 Stufe = +3,5 Mrd. → Union (Finanzen); Bildung +5 % → SPD
-  const v = vorschau(imAmt(), { stufen: { arbeit: -P(5), bildung: P(5) }, einnahmen: { energie: 1 } });
+  const v = vorschau(imAmt(), { stufen: { arbeit: -P(5), bildung: P(5) }, einnahmen: { energie: fein('energie', 1) } });
   expect(v.wirkung.union).toBeCloseTo(-9.867052 * hh.wirkungKuerzungProMrd - 3.5 * hh.wirkungSteuerErhoehungProMrd, 4);
   expect(v.wirkung.spd).toBeCloseTo(0.8332007 * hh.wirkungMehrausgabeProMrd, 4); // Bildung +5 %
   expect(v.bilanz.eingehalten).toBe(true);
