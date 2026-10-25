@@ -1,0 +1,102 @@
+{
+ "nichts tun / mit Ketten": {
+  "sieg": 36,
+  "krisenEnde": 1.52,
+  "maxKrisenMittel": 1.52,
+  "anteilAb8Krisen": 0,
+  "glieder": 1.8,
+  "maxAktiv": 3,
+  "maxWert": 100,
+  "nan": false
+ },
+ "nichts tun / ohne Ketten": {
+  "sieg": 36,
+  "krisenEnde": 1.3,
+  "maxKrisenMittel": 1.32,
+  "anteilAb8Krisen": 0,
+  "glieder": 0,
+  "maxAktiv": 0,
+  "maxWert": 100,
+  "nan": false
+ },
+ "alle Etats maximal kürzen / mit Ketten": {
+  "sieg": 0,
+  "krisenEnde": 0.18,
+  "maxKrisenMittel": 0.18,
+  "anteilAb8Krisen": 0,
+  "glieder": 0.08,
+  "maxAktiv": 3,
+  "maxWert": 100,
+  "nan": false
+ },
+ "alle Etats maximal kürzen / ohne Ketten": {
+  "sieg": 0,
+  "krisenEnde": 0.18,
+  "maxKrisenMittel": 0.18,
+  "anteilAb8Krisen": 0,
+  "glieder": 0,
+  "maxAktiv": 0,
+  "maxWert": 100,
+  "nan": false
+ },
+ "Energiesteuern maximal erhöhen / mit Ketten": {
+  "sieg": 46,
+  "krisenEnde": 1.58,
+  "maxKrisenMittel": 1.6,
+  "anteilAb8Krisen": 2,
+  "glieder": 2.42,
+  "maxAktiv": 3,
+  "maxWert": 100,
+  "nan": false
+ },
+ "Energiesteuern maximal erhöhen / ohne Ketten": {
+  "sieg": 46,
+  "krisenEnde": 1.38,
+  "maxKrisenMittel": 1.4,
+  "anteilAb8Krisen": 0,
+  "glieder": 0,
+  "maxAktiv": 0,
+  "maxWert": 100,
+  "nan": false
+ },
+ "Verteidigung maximal / mit Ketten": {
+  "sieg": 42,
+  "krisenEnde": 1.58,
+  "maxKrisenMittel": 1.6,
+  "anteilAb8Krisen": 2,
+  "glieder": 2.24,
+  "maxAktiv": 3,
+  "maxWert": 100,
+  "nan": false
+ },
+ "Verteidigung maximal / ohne Ketten": {
+  "sieg": 42,
+  "krisenEnde": 1.32,
+  "maxKrisenMittel": 1.32,
+  "anteilAb8Krisen": 0,
+  "glieder": 0,
+  "maxAktiv": 0,
+  "maxWert": 100,
+  "nan": false
+ },
+ "nur national-konservative Reformwege / mit Ketten": {
+  "sieg": 56,
+  "krisenEnde": 1.3,
+  "maxKrisenMittel": 1.32,
+  "anteilAb8Krisen": 0,
+  "glieder": 2.06,
+  "maxAktiv": 3,
+  "maxWert": 100,
+  "nan": false
+ },
+ "nur national-konservative Reformwege / ohne Ketten": {
+  "sieg": 56,
+  "krisenEnde": 1.06,
+  "maxKrisenMittel": 1.1,
+  "anteilAb8Krisen": 0,
+  "glieder": 0,
+  "maxAktiv": 0,
+  "maxWert": 100,
+  "nan": false
+ }
+}

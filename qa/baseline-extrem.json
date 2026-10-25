@@ -1,0 +1,65 @@
+{
+ "unverändert": {
+  "quoteEnde": 74.3,
+  "quoteMax": 74.3,
+  "abgelehnt": 160,
+  "versuche": 404,
+  "pfadSeed1": [
+   65.1,
+   66.7,
+   68.5,
+   69.7,
+   70.4,
+   71.4,
+   72.7,
+   74.1,
+   75.1,
+   76.1,
+   76.8,
+   77.6
+  ],
+  "nan": false
+ },
+ "alles maximal, Steuern minimal": {
+  "quoteEnde": 74.3,
+  "quoteMax": 74.3,
+  "abgelehnt": 348,
+  "versuche": 404,
+  "pfadSeed1": [
+   65.1,
+   66.7,
+   68.5,
+   69.7,
+   70.4,
+   71.4,
+   72.7,
+   74.1,
+   75.1,
+   76.1,
+   76.8,
+   77.6
+  ],
+  "nan": false
+ },
+ "Verteidigung maximal (ausgenommen)": {
+  "quoteEnde": 83.7,
+  "quoteMax": 83.7,
+  "abgelehnt": 190,
+  "versuche": 402,
+  "pfadSeed1": [
+   65.4,
+   67.3,
+   69.3,
+   70.7,
+   71.6,
+   73.2,
+   75.3,
+   78,
+   81,
+   84.3,
+   88.4,
+   93.1
+  ],
+  "nan": false
+ }
+}

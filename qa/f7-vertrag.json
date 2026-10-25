@@ -1,0 +1,1148 @@
+{
+ "erzeugt": "2026-10-25T11:45:44.469Z",
+ "partienJeStrategie": 200,
+ "seeds": "1–200",
+ "dauerSekunden": 174,
+ "nanFunde": 0,
+ "abschnitte": {
+  "Ergebnisse": [
+   {
+    "Strategie": "Haushalt unverändert",
+    "Partei": "CDU/CSU",
+    "Regierung gebildet": 100,
+    "Koalitionsbruch": 36,
+    "Sieg": 12,
+    "Ø Jahre Kanzler": 5.7
+   },
+   {
+    "Strategie": "Haushalt unverändert",
+    "Partei": "AfD",
+    "Regierung gebildet": 0,
+    "Koalitionsbruch": 0,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0
+   },
+   {
+    "Strategie": "Haushalt unverändert",
+    "Partei": "SPD",
+    "Regierung gebildet": 36,
+    "Koalitionsbruch": 14,
+    "Sieg": 6,
+    "Ø Jahre Kanzler": 2.2
+   },
+   {
+    "Strategie": "Haushalt unverändert",
+    "Partei": "Grüne",
+    "Regierung gebildet": 9,
+    "Koalitionsbruch": 3,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0.3
+   },
+   {
+    "Strategie": "Haushalt unverändert",
+    "Partei": "Linke",
+    "Regierung gebildet": 1,
+    "Koalitionsbruch": 0,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0
+   },
+   {
+    "Strategie": "Haushalt unverändert",
+    "Partei": "BSW",
+    "Regierung gebildet": 0,
+    "Koalitionsbruch": 0,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0
+   },
+   {
+    "Strategie": "Haushalt unverändert",
+    "Partei": "FDP",
+    "Regierung gebildet": 2,
+    "Koalitionsbruch": 1,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0.1
+   },
+   {
+    "Strategie": "Partner kürzen",
+    "Partei": "CDU/CSU",
+    "Regierung gebildet": 100,
+    "Koalitionsbruch": 59,
+    "Sieg": 7,
+    "Ø Jahre Kanzler": 5.1
+   },
+   {
+    "Strategie": "Partner kürzen",
+    "Partei": "AfD",
+    "Regierung gebildet": 0,
+    "Koalitionsbruch": 0,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0
+   },
+   {
+    "Strategie": "Partner kürzen",
+    "Partei": "SPD",
+    "Regierung gebildet": 36,
+    "Koalitionsbruch": 36,
+    "Sieg": 1,
+    "Ø Jahre Kanzler": 1.6
+   },
+   {
+    "Strategie": "Partner kürzen",
+    "Partei": "Grüne",
+    "Regierung gebildet": 9,
+    "Koalitionsbruch": 8,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0.3
+   },
+   {
+    "Strategie": "Partner kürzen",
+    "Partei": "Linke",
+    "Regierung gebildet": 1,
+    "Koalitionsbruch": 1,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0
+   },
+   {
+    "Strategie": "Partner kürzen",
+    "Partei": "BSW",
+    "Regierung gebildet": 0,
+    "Koalitionsbruch": 0,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0
+   },
+   {
+    "Strategie": "Partner kürzen",
+    "Partei": "FDP",
+    "Regierung gebildet": 2,
+    "Koalitionsbruch": 2,
+    "Sieg": 0,
+    "Ø Jahre Kanzler": 0
+   }
+  ],
+  "Wahlkampf-Strategien (F08)": [
+   {
+    "Partei": "CDU/CSU",
+    "immer Plakate": 12,
+    "immer Kundgebung": 13.5,
+    "immer Angriff (Stärkster)": 17,
+    "abwechselnd": 36,
+    "klug": 46
+   },
+   {
+    "Partei": "AfD",
+    "immer Plakate": 0,
+    "immer Kundgebung": 0,
+    "immer Angriff (Stärkster)": 0,
+    "abwechselnd": 0,
+    "klug": 0
+   },
+   {
+    "Partei": "SPD",
+    "immer Plakate": 5.5,
+    "immer Kundgebung": 7.5,
+    "immer Angriff (Stärkster)": 5.5,
+    "abwechselnd": 18.5,
+    "klug": 17
+   },
+   {
+    "Partei": "Grüne",
+    "immer Plakate": 0,
+    "immer Kundgebung": 0.5,
+    "immer Angriff (Stärkster)": 0,
+    "abwechselnd": 2,
+    "klug": 2
+   },
+   {
+    "Partei": "Linke",
+    "immer Plakate": 0,
+    "immer Kundgebung": 0,
+    "immer Angriff (Stärkster)": 0,
+    "abwechselnd": 0,
+    "klug": 0
+   },
+   {
+    "Partei": "BSW",
+    "immer Plakate": 0,
+    "immer Kundgebung": 0,
+    "immer Angriff (Stärkster)": 0,
+    "abwechselnd": 0,
+    "klug": 0
+   },
+   {
+    "Partei": "FDP",
+    "immer Plakate": 0,
+    "immer Kundgebung": 0,
+    "immer Angriff (Stärkster)": 0,
+    "abwechselnd": 0,
+    "klug": 0.5
+   }
+  ],
+  "Minderheitsregierung (F11)": [
+   {
+    "Partei": "CDU/CSU",
+    "Regierungsbildung": "Minderheit nur ohne Mehrheit",
+    "Minderheit": 87,
+    "Gescheitert": 128,
+    "Sieg": 36
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Regierungsbildung": "Minderheit wenn möglich",
+    "Minderheit": 100,
+    "Gescheitert": 200,
+    "Sieg": 0
+   },
+   {
+    "Partei": "AfD",
+    "Regierungsbildung": "Minderheit nur ohne Mehrheit",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   },
+   {
+    "Partei": "AfD",
+    "Regierungsbildung": "Minderheit wenn möglich",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   },
+   {
+    "Partei": "SPD",
+    "Regierungsbildung": "Minderheit nur ohne Mehrheit",
+    "Minderheit": 12,
+    "Gescheitert": 17,
+    "Sieg": 19
+   },
+   {
+    "Partei": "SPD",
+    "Regierungsbildung": "Minderheit wenn möglich",
+    "Minderheit": 23,
+    "Gescheitert": 43,
+    "Sieg": 7
+   },
+   {
+    "Partei": "Grüne",
+    "Regierungsbildung": "Minderheit nur ohne Mehrheit",
+    "Minderheit": 1,
+    "Gescheitert": 1,
+    "Sieg": 2
+   },
+   {
+    "Partei": "Grüne",
+    "Regierungsbildung": "Minderheit wenn möglich",
+    "Minderheit": 1,
+    "Gescheitert": 1,
+    "Sieg": 2
+   },
+   {
+    "Partei": "Linke",
+    "Regierungsbildung": "Minderheit nur ohne Mehrheit",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   },
+   {
+    "Partei": "Linke",
+    "Regierungsbildung": "Minderheit wenn möglich",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   },
+   {
+    "Partei": "BSW",
+    "Regierungsbildung": "Minderheit nur ohne Mehrheit",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   },
+   {
+    "Partei": "BSW",
+    "Regierungsbildung": "Minderheit wenn möglich",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   },
+   {
+    "Partei": "FDP",
+    "Regierungsbildung": "Minderheit nur ohne Mehrheit",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   },
+   {
+    "Partei": "FDP",
+    "Regierungsbildung": "Minderheit wenn möglich",
+    "Minderheit": 0,
+    "Gescheitert": 0,
+    "Sieg": 0
+   }
+  ],
+  "Probleme und Lösungen (System 3)": [
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "keine Lösungen",
+    "Sieg": 36,
+    "Koalitionsbruch": 46,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 50,
+    "Ø Krisen": 1.3,
+    "Ø Schuldenquote": 74
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "größtes Problem zuerst",
+    "Sieg": 58,
+    "Koalitionsbruch": 9,
+    "Ø erfolgreiche Lösungen": 20.5,
+    "Ø Problemwert": 36,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 70
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "billigste zuerst",
+    "Sieg": 54,
+    "Koalitionsbruch": 4,
+    "Ø erfolgreiche Lösungen": 18.8,
+    "Ø Problemwert": 38,
+    "Ø Krisen": 0.5,
+    "Ø Schuldenquote": 74
+   },
+   {
+    "Partei": "AfD",
+    "Strategie": "keine Lösungen",
+    "Sieg": 0,
+    "Koalitionsbruch": 0,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "AfD",
+    "Strategie": "größtes Problem zuerst",
+    "Sieg": 0,
+    "Koalitionsbruch": 0,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "AfD",
+    "Strategie": "billigste zuerst",
+    "Sieg": 0,
+    "Koalitionsbruch": 0,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "keine Lösungen",
+    "Sieg": 19,
+    "Koalitionsbruch": 18,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 46,
+    "Ø Krisen": 0.6,
+    "Ø Schuldenquote": 69
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "größtes Problem zuerst",
+    "Sieg": 27,
+    "Koalitionsbruch": 20,
+    "Ø erfolgreiche Lösungen": 10.8,
+    "Ø Problemwert": 38,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 67
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "billigste zuerst",
+    "Sieg": 21,
+    "Koalitionsbruch": 4,
+    "Ø erfolgreiche Lösungen": 9.3,
+    "Ø Problemwert": 40,
+    "Ø Krisen": 0.2,
+    "Ø Schuldenquote": 69
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "keine Lösungen",
+    "Sieg": 2,
+    "Koalitionsbruch": 8,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "größtes Problem zuerst",
+    "Sieg": 4,
+    "Koalitionsbruch": 5,
+    "Ø erfolgreiche Lösungen": 2.7,
+    "Ø Problemwert": 42,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "billigste zuerst",
+    "Sieg": 4,
+    "Koalitionsbruch": 3,
+    "Ø erfolgreiche Lösungen": 2.4,
+    "Ø Problemwert": 42,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Linke",
+    "Strategie": "keine Lösungen",
+    "Sieg": 0,
+    "Koalitionsbruch": 1,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "Linke",
+    "Strategie": "größtes Problem zuerst",
+    "Sieg": 0,
+    "Koalitionsbruch": 1,
+    "Ø erfolgreiche Lösungen": 0.3,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "Linke",
+    "Strategie": "billigste zuerst",
+    "Sieg": 0,
+    "Koalitionsbruch": 0,
+    "Ø erfolgreiche Lösungen": 0.2,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "BSW",
+    "Strategie": "keine Lösungen",
+    "Sieg": 0,
+    "Koalitionsbruch": 1,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "BSW",
+    "Strategie": "größtes Problem zuerst",
+    "Sieg": 2,
+    "Koalitionsbruch": 1,
+    "Ø erfolgreiche Lösungen": 0.6,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "BSW",
+    "Strategie": "billigste zuerst",
+    "Sieg": 1,
+    "Koalitionsbruch": 0,
+    "Ø erfolgreiche Lösungen": 0.4,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "FDP",
+    "Strategie": "keine Lösungen",
+    "Sieg": 0,
+    "Koalitionsbruch": 1,
+    "Ø erfolgreiche Lösungen": 0,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "FDP",
+    "Strategie": "größtes Problem zuerst",
+    "Sieg": 0,
+    "Koalitionsbruch": 1,
+    "Ø erfolgreiche Lösungen": 0.3,
+    "Ø Problemwert": 42,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "FDP",
+    "Strategie": "billigste zuerst",
+    "Sieg": 0,
+    "Koalitionsbruch": 0,
+    "Ø erfolgreiche Lösungen": 0.3,
+    "Ø Problemwert": 43,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   }
+  ],
+  "Reformwege nach Ausrichtung (System 1)": [
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "keine Reformwege",
+    "Sieg": 58,
+    "Koalitionsbruch": 9,
+    "Ø beschlossene Wege": 0,
+    "Ø gescheitert": 0,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 70
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "marktliberal",
+    "Sieg": 55,
+    "Koalitionsbruch": 14,
+    "Ø beschlossene Wege": 5.8,
+    "Ø gescheitert": 1,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 70
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "konservativ",
+    "Sieg": 63,
+    "Koalitionsbruch": 7,
+    "Ø beschlossene Wege": 5.7,
+    "Ø gescheitert": 1.1,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "sozialdemokratisch",
+    "Sieg": 61,
+    "Koalitionsbruch": 5,
+    "Ø beschlossene Wege": 4.1,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "gruen",
+    "Sieg": 57,
+    "Koalitionsbruch": 5,
+    "Ø beschlossene Wege": 2.9,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "links",
+    "Sieg": 60,
+    "Koalitionsbruch": 3,
+    "Ø beschlossene Wege": 2.5,
+    "Ø gescheitert": 1,
+    "Ø Krisen": 0.2,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "national",
+    "Sieg": 56,
+    "Koalitionsbruch": 12,
+    "Ø beschlossene Wege": 1.6,
+    "Ø gescheitert": 0.9,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 70
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "pragmatisch",
+    "Sieg": 66,
+    "Koalitionsbruch": 6,
+    "Ø beschlossene Wege": 4.4,
+    "Ø gescheitert": 1.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "passend",
+    "Sieg": 65,
+    "Koalitionsbruch": 21,
+    "Ø beschlossene Wege": 6.9,
+    "Ø gescheitert": 1.5,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "beliebig",
+    "Sieg": 57,
+    "Koalitionsbruch": 18,
+    "Ø beschlossene Wege": 7.7,
+    "Ø gescheitert": 1.5,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "keine Reformwege",
+    "Sieg": 27,
+    "Koalitionsbruch": 20,
+    "Ø beschlossene Wege": 0,
+    "Ø gescheitert": 0,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 67
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "marktliberal",
+    "Sieg": 23,
+    "Koalitionsbruch": 16,
+    "Ø beschlossene Wege": 3.1,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 67
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "konservativ",
+    "Sieg": 22,
+    "Koalitionsbruch": 36,
+    "Ø beschlossene Wege": 3,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "sozialdemokratisch",
+    "Sieg": 32,
+    "Koalitionsbruch": 4,
+    "Ø beschlossene Wege": 3,
+    "Ø gescheitert": 0.6,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "gruen",
+    "Sieg": 30,
+    "Koalitionsbruch": 8,
+    "Ø beschlossene Wege": 2.8,
+    "Ø gescheitert": 0.6,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "links",
+    "Sieg": 24,
+    "Koalitionsbruch": 3,
+    "Ø beschlossene Wege": 2.1,
+    "Ø gescheitert": 0.6,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "national",
+    "Sieg": 24,
+    "Koalitionsbruch": 7,
+    "Ø beschlossene Wege": 1.9,
+    "Ø gescheitert": 0.5,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "pragmatisch",
+    "Sieg": 30,
+    "Koalitionsbruch": 4,
+    "Ø beschlossene Wege": 3,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "passend",
+    "Sieg": 23,
+    "Koalitionsbruch": 11,
+    "Ø beschlossene Wege": 4.2,
+    "Ø gescheitert": 1,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 69
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "beliebig",
+    "Sieg": 20,
+    "Koalitionsbruch": 21,
+    "Ø beschlossene Wege": 3.9,
+    "Ø gescheitert": 0.9,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "keine Reformwege",
+    "Sieg": 4,
+    "Koalitionsbruch": 5,
+    "Ø beschlossene Wege": 0,
+    "Ø gescheitert": 0,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "marktliberal",
+    "Sieg": 5,
+    "Koalitionsbruch": 15,
+    "Ø beschlossene Wege": 1,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "konservativ",
+    "Sieg": 6,
+    "Koalitionsbruch": 15,
+    "Ø beschlossene Wege": 0.9,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "sozialdemokratisch",
+    "Sieg": 5,
+    "Koalitionsbruch": 9,
+    "Ø beschlossene Wege": 0.8,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "gruen",
+    "Sieg": 7,
+    "Koalitionsbruch": 10,
+    "Ø beschlossene Wege": 0.7,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "links",
+    "Sieg": 6,
+    "Koalitionsbruch": 6,
+    "Ø beschlossene Wege": 0.5,
+    "Ø gescheitert": 0.3,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "national",
+    "Sieg": 7,
+    "Koalitionsbruch": 10,
+    "Ø beschlossene Wege": 0.4,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "pragmatisch",
+    "Sieg": 4,
+    "Koalitionsbruch": 11,
+    "Ø beschlossene Wege": 0.8,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "passend",
+    "Sieg": 6,
+    "Koalitionsbruch": 10,
+    "Ø beschlossene Wege": 1.1,
+    "Ø gescheitert": 0.3,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "beliebig",
+    "Sieg": 6,
+    "Koalitionsbruch": 16,
+    "Ø beschlossene Wege": 1.3,
+    "Ø gescheitert": 0.3,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   }
+  ],
+  "Koalitionsbruch mit Gegenmaßnahme (Block 2)": [
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "keine Reformwege",
+    "Sieg": 57,
+    "Koalitionsbruch": 2,
+    "Ø beschlossene Wege": 0,
+    "Ø gescheitert": 0,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 70
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "marktliberal",
+    "Sieg": 59,
+    "Koalitionsbruch": 8,
+    "Ø beschlossene Wege": 5.9,
+    "Ø gescheitert": 1,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 70
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "konservativ",
+    "Sieg": 65,
+    "Koalitionsbruch": 5,
+    "Ø beschlossene Wege": 5.7,
+    "Ø gescheitert": 1.1,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "sozialdemokratisch",
+    "Sieg": 61,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 4.1,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "gruen",
+    "Sieg": 56,
+    "Koalitionsbruch": 2,
+    "Ø beschlossene Wege": 2.9,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "links",
+    "Sieg": 59,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 2.5,
+    "Ø gescheitert": 1,
+    "Ø Krisen": 0.2,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "national",
+    "Sieg": 56,
+    "Koalitionsbruch": 5,
+    "Ø beschlossene Wege": 1.6,
+    "Ø gescheitert": 1,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 70
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "pragmatisch",
+    "Sieg": 65,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 4.4,
+    "Ø gescheitert": 1.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "passend",
+    "Sieg": 67,
+    "Koalitionsbruch": 11,
+    "Ø beschlossene Wege": 6.9,
+    "Ø gescheitert": 1.5,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "CDU/CSU",
+    "Strategie": "beliebig",
+    "Sieg": 59,
+    "Koalitionsbruch": 9,
+    "Ø beschlossene Wege": 7.7,
+    "Ø gescheitert": 1.6,
+    "Ø Krisen": 0.2,
+    "Ø Schuldenquote": 71
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "keine Reformwege",
+    "Sieg": 25,
+    "Koalitionsbruch": 2,
+    "Ø beschlossene Wege": 0,
+    "Ø gescheitert": 0,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "marktliberal",
+    "Sieg": 24,
+    "Koalitionsbruch": 5,
+    "Ø beschlossene Wege": 3.1,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "konservativ",
+    "Sieg": 19,
+    "Koalitionsbruch": 17,
+    "Ø beschlossene Wege": 2.9,
+    "Ø gescheitert": 0.6,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "sozialdemokratisch",
+    "Sieg": 31,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 3,
+    "Ø gescheitert": 0.6,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "gruen",
+    "Sieg": 31,
+    "Koalitionsbruch": 2,
+    "Ø beschlossene Wege": 2.8,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "links",
+    "Sieg": 24,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 2.1,
+    "Ø gescheitert": 0.6,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "national",
+    "Sieg": 25,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 1.9,
+    "Ø gescheitert": 0.5,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "pragmatisch",
+    "Sieg": 31,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 3,
+    "Ø gescheitert": 0.7,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "passend",
+    "Sieg": 25,
+    "Koalitionsbruch": 2,
+    "Ø beschlossene Wege": 4.2,
+    "Ø gescheitert": 1,
+    "Ø Krisen": 0.1,
+    "Ø Schuldenquote": 69
+   },
+   {
+    "Partei": "SPD",
+    "Strategie": "beliebig",
+    "Sieg": 19,
+    "Koalitionsbruch": 5,
+    "Ø beschlossene Wege": 3.7,
+    "Ø gescheitert": 0.9,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 68
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "keine Reformwege",
+    "Sieg": 4,
+    "Koalitionsbruch": 0,
+    "Ø beschlossene Wege": 0,
+    "Ø gescheitert": 0,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "marktliberal",
+    "Sieg": 4,
+    "Koalitionsbruch": 10,
+    "Ø beschlossene Wege": 1,
+    "Ø gescheitert": 0.3,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 64
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "konservativ",
+    "Sieg": 4,
+    "Koalitionsbruch": 13,
+    "Ø beschlossene Wege": 0.9,
+    "Ø gescheitert": 0.3,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "sozialdemokratisch",
+    "Sieg": 4,
+    "Koalitionsbruch": 4,
+    "Ø beschlossene Wege": 0.8,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "gruen",
+    "Sieg": 6,
+    "Koalitionsbruch": 1,
+    "Ø beschlossene Wege": 0.7,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "links",
+    "Sieg": 7,
+    "Koalitionsbruch": 2,
+    "Ø beschlossene Wege": 0.5,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "national",
+    "Sieg": 6,
+    "Koalitionsbruch": 3,
+    "Ø beschlossene Wege": 0.4,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "pragmatisch",
+    "Sieg": 6,
+    "Koalitionsbruch": 4,
+    "Ø beschlossene Wege": 0.8,
+    "Ø gescheitert": 0.2,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "passend",
+    "Sieg": 4,
+    "Koalitionsbruch": 3,
+    "Ø beschlossene Wege": 1.1,
+    "Ø gescheitert": 0.3,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   },
+   {
+    "Partei": "Grüne",
+    "Strategie": "beliebig",
+    "Sieg": 4,
+    "Koalitionsbruch": 8,
+    "Ø beschlossene Wege": 1.2,
+    "Ø gescheitert": 0.3,
+    "Ø Krisen": 0,
+    "Ø Schuldenquote": 65
+   }
+  ],
+  "Schwierigkeitsanzeige (F06)": [
+   {
+    "Partei": "CDU/CSU",
+    "Siege": 46,
+    "gemessen": "leicht",
+    "eingetragen": "leicht",
+    "Abgleich": "passt"
+   },
+   {
+    "Partei": "AfD",
+    "Siege": 0,
+    "gemessen": "fast unmöglich",
+    "eingetragen": "fast unmöglich",
+    "Abgleich": "passt"
+   },
+   {
+    "Partei": "SPD",
+    "Siege": 18.5,
+    "gemessen": "mittel",
+    "eingetragen": "mittel",
+    "Abgleich": "passt"
+   },
+   {
+    "Partei": "Grüne",
+    "Siege": 2,
+    "gemessen": "schwer",
+    "eingetragen": "schwer",
+    "Abgleich": "passt"
+   },
+   {
+    "Partei": "Linke",
+    "Siege": 0,
+    "gemessen": "fast unmöglich",
+    "eingetragen": "fast unmöglich",
+    "Abgleich": "passt"
+   },
+   {
+    "Partei": "BSW",
+    "Siege": 0,
+    "gemessen": "fast unmöglich",
+    "eingetragen": "fast unmöglich",
+    "Abgleich": "passt"
+   },
+   {
+    "Partei": "FDP",
+    "Siege": 0.5,
+    "gemessen": "fast unmöglich",
+    "eingetragen": "fast unmöglich",
+    "Abgleich": "passt"
+   }
+  ]
+ }
+}

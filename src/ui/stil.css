@@ -1,0 +1,346 @@
+/* Design-System (UI-Umbau): alle Farben, Schriftgrade, Abstände, Radien und Schatten als Tokens.
+   Hell und dunkel über prefers-color-scheme; Komponenten nutzen nur die Tokens. */
+:root {
+  color-scheme: light dark;
+  /* Farben */
+  --hg: #f4f5f7; /* Seitenhintergrund */
+  --flaeche: #ffffff; /* Karten */
+  --flaeche-2: #eef0f3; /* Balken, Tabellenstreifen */
+  --linie: #d5d9df;
+  --text: #16191d;
+  --text-2: #4a525c; /* Sekundärtext, ≥ 7:1 auf --flaeche */
+  --akzent: #1f4e79;
+  --akzent-text: #ffffff;
+  --akzent-hell: #e3ecf5;
+  --ok: #1e7a34;
+  --warn: #8a5a00;
+  --gefahr: #b3261e;
+  --ok-hg: #e6f4ea;
+  --warn-hg: #fff4dc;
+  --gefahr-hg: #fbe9e7;
+  --fokus: #2b6cb0;
+  /* Schrift */
+  --schrift: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --t-klein: 0.8125rem; /* 13 */
+  --t-text: 1rem; /* 16 */
+  --t-gross: 1.25rem; /* 20 */
+  --t-titel: 1.5rem; /* 24 */
+  --t-zahl: 1.75rem; /* 28, Kennzahlen */
+  /* Abstände: 8px-Raster */
+  --a-halb: 4px;
+  --a1: 8px;
+  --a2: 16px;
+  --a3: 24px;
+  --a4: 32px;
+  /* Form */
+  --radius: 8px;
+  --radius-klein: 4px;
+  --schatten: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 8px rgb(0 0 0 / 0.06);
+  --dauer: 180ms;
+  --ziel: 44px; /* Mindestgröße für Touch-Ziele */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hg: #111417;
+    --flaeche: #1b1f24;
+    --flaeche-2: #262b32;
+    --linie: #39404a;
+    --text: #e7e9ec;
+    --text-2: #aab2bc;
+    --akzent: #7fb0e0;
+    --akzent-text: #0d1b29;
+    --akzent-hell: #1d2c3b;
+    --ok: #6cc785;
+    --warn: #e0b04d;
+    --gefahr: #f08a80;
+    --ok-hg: #15301d;
+    --warn-hg: #33280f;
+    --gefahr-hg: #3a1c1a;
+    --fokus: #8cc1f5;
+    --schatten: 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+  /* CDU/CSU hat die Spielfarbe Schwarz: auf dunklem Grund hell nachzeichnen */
+  .verlauf polyline[stroke='#000000'] { stroke: #cfd4da; }
+  .verlauf circle[fill='#000000'], .sitze g[fill='#000000'] { fill: #cfd4da; }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--hg);
+  color: var(--text);
+  font: var(--t-text) / 1.5 var(--schrift);
+}
+h1 { font-size: var(--t-titel); margin: 0 0 var(--a2); }
+h2 { font-size: var(--t-gross); margin: var(--a3) 0 var(--a1); }
+h3 { font-size: var(--t-text); margin: var(--a2) 0 var(--a1); }
+p { margin: var(--a1) 0; }
+small, .klein { font-size: var(--t-klein); color: var(--text-2); }
+:focus-visible { outline: 3px solid var(--fokus); outline-offset: 2px; }
+h1:focus { outline: none; }
+.zahl { font-variant-numeric: tabular-nums; }
+
+/* App-Shell */
+.oben { position: sticky; top: 0; z-index: 10; }
+.kopf { background: var(--flaeche); border-bottom: 1px solid var(--linie); }
+.kopf-innen, .inhalt, .navi-innen { max-width: 960px; margin: 0 auto; padding: 0 var(--a2); }
+.kopf-innen { display: flex; align-items: center; gap: var(--a2); min-height: 56px; flex-wrap: wrap; padding-block: var(--a1); }
+.marke { font-weight: 700; margin-right: auto; }
+.dauer { display: flex; flex-wrap: wrap; gap: var(--a1) var(--a3); margin: 0; }
+.dauer div { display: flex; flex-direction: column; }
+.dauer dt { font-size: var(--t-klein); color: var(--text-2); }
+.dauer dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.navi { background: var(--flaeche); border-bottom: 1px solid var(--linie); }
+.navi-innen { display: flex; gap: var(--a-halb); overflow-x: auto; }
+.navi button {
+  min-height: var(--ziel); padding: 0 var(--a2); border: 0; border-bottom: 3px solid transparent;
+  background: none; color: var(--text-2); font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.navi button[aria-current='page'] { color: var(--akzent); border-bottom-color: var(--akzent); }
+.navi button .badge { margin-left: var(--a-halb); }
+.inhalt { padding-block: var(--a3) var(--a4); }
+.ansicht { animation: einblenden var(--dauer) ease-out; }
+@keyframes einblenden { from { opacity: 0; transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .ansicht { animation: none; } }
+
+/* Schrittanzeige für den geführten Ablauf */
+.schritte { display: flex; gap: var(--a1); list-style: none; padding: 0; margin: 0 0 var(--a3); flex-wrap: wrap; font-size: var(--t-klein); }
+.schritte li { padding: var(--a-halb) var(--a1); border-radius: var(--radius-klein); background: var(--flaeche-2); color: var(--text-2); }
+.schritte li[aria-current='step'] { background: var(--akzent); color: var(--akzent-text); font-weight: 600; }
+.schritte li.erledigt::before { content: '✓ '; }
+
+/* Knöpfe: primär, sekundär, gefährlich */
+button, .knopf {
+  min-height: var(--ziel); padding: var(--a1) var(--a2); border-radius: var(--radius);
+  border: 1px solid var(--linie); background: var(--flaeche); color: var(--text);
+  font: inherit; cursor: pointer; text-align: center;
+}
+button:hover:not(:disabled) { border-color: var(--akzent); }
+button:disabled, button[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; }
+.primaer { background: var(--akzent); color: var(--akzent-text); border-color: var(--akzent); font-weight: 600; }
+.primaer:hover:not(:disabled) { filter: brightness(1.1); }
+.gefahr { color: var(--gefahr); border-color: var(--gefahr); }
+.gefahr.primaer { background: var(--gefahr); color: #fff; }
+.knoepfe { display: flex; flex-wrap: wrap; gap: var(--a1); align-items: center; margin: var(--a2) 0; }
+select, input { min-height: var(--ziel); font: inherit; color: var(--text); background: var(--flaeche); border: 1px solid var(--linie); border-radius: var(--radius-klein); padding: 0 var(--a1); }
+
+/* Karten und Kennzahlen */
+.karte { background: var(--flaeche); border: 1px solid var(--linie); border-radius: var(--radius); box-shadow: var(--schatten); padding: var(--a2); margin: 0 0 var(--a2); }
+.karte > h2:first-child, .karte > h3:first-child { margin-top: 0; }
+.kennzahlen { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--a2); margin-bottom: var(--a2); }
+.kennzahl { margin: 0; display: flex; flex-direction: column; gap: var(--a-halb); }
+.kennzahl .wert { font-size: var(--t-zahl); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.kennzahl .titel { font-size: var(--t-klein); color: var(--text-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* Status: Farbe immer mit Symbol */
+.ok { color: var(--ok); font-weight: 600; }
+.gelb { color: var(--warn); font-weight: 600; }
+.rot { color: var(--gefahr); font-weight: 600; }
+.badge { display: inline-block; padding: 0 var(--a1); border-radius: 999px; font-size: var(--t-klein); font-weight: 600; background: var(--flaeche-2); color: var(--text); }
+.badge.ok { background: var(--ok-hg); }
+.badge.gelb { background: var(--warn-hg); }
+.badge.rot { background: var(--gefahr-hg); }
+.meldung { border-left: 4px solid var(--akzent); background: var(--akzent-hell); padding: var(--a1) var(--a2); border-radius: var(--radius-klein); margin: 0 0 var(--a2); }
+.meldung.rot { border-left-color: var(--gefahr); background: var(--gefahr-hg); }
+.meldung ul { margin: 0; padding-left: var(--a2); }
+.hinweis { background: var(--akzent-hell); border-left: 4px solid var(--akzent); padding: var(--a1) var(--a2); margin: 0 0 var(--a2); border-radius: var(--radius-klein); }
+.hinweis p { margin-top: 0; }
+.hinweis button { min-height: 36px; font-size: var(--t-klein); }
+
+/* Tabs (Unterbereiche) */
+.tabs { display: flex; gap: var(--a-halb); border-bottom: 1px solid var(--linie); margin: 0 0 var(--a2); overflow-x: auto; }
+.tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+.tabs button[aria-selected='true'] { color: var(--akzent); border-bottom-color: var(--akzent); }
+
+/* Fortschrittsbalken (Umfrage, Druck, Kanzlerjahre) */
+.balken { position: relative; display: block; height: 12px; background: var(--flaeche-2); border-radius: var(--radius-klein); overflow: visible; }
+.balken > span { display: block; height: 100%; border-radius: var(--radius-klein); }
+.huerde { position: absolute; top: -3px; bottom: -3px; border-left: 2px dashed var(--gefahr); }
+
+/* Tabellen und Listen */
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: var(--a-halb) var(--a1); border-bottom: 1px solid var(--linie); text-align: right; }
+th:first-child, td:first-child, th[scope='row'] { text-align: left; }
+th[scope='row'] { font-weight: normal; }
+thead th { font-size: var(--t-klein); color: var(--text-2); }
+.eigene th, .eigene td, .zeile.eigene { font-weight: 700; }
+.liste { list-style: none; padding: 0; margin: 0; }
+.liste li { padding: var(--a1) 0; border-bottom: 1px solid var(--linie); }
+.liste li:last-child { border-bottom: 0; }
+.leer { color: var(--text-2); font-style: italic; }
+details > summary { min-height: var(--ziel); display: flex; align-items: center; cursor: pointer; font-weight: 600; }
+.punkt { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; margin-right: 0.4em; border: 1px solid var(--text-2); vertical-align: -0.05em; }
+
+/* Modal (Spielmenü, Bestätigungen) */
+dialog { border: 1px solid var(--linie); border-radius: var(--radius); background: var(--flaeche); color: var(--text); padding: var(--a3); max-width: min(420px, calc(100vw - 32px)); box-shadow: var(--schatten); }
+dialog.breit { max-width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+dialog .knoepfe { flex-direction: column; align-items: stretch; }
+
+/* Wahlkampf */
+.umfrage .zeile { display: grid; grid-template-columns: 6.5em 1fr 8.5em; gap: var(--a1); align-items: center; padding: 3px 0; }
+.umfrage .wert { text-align: right; font-variant-numeric: tabular-nums; }
+.aktionen { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--a2); }
+.aktionen .karte { margin: 0; display: flex; flex-direction: column; gap: var(--a1); }
+.aktionen .karte button { margin-top: auto; }
+
+/* Regierungsbildung */
+.kombi { display: grid; grid-template-columns: 1fr auto 6.5em auto; gap: var(--a1); align-items: center; min-height: var(--ziel); border-bottom: 1px solid var(--linie); padding: var(--a-halb) 0; }
+.kombi > span:nth-child(2), .kombi > span:nth-child(3) { text-align: right; font-variant-numeric: tabular-nums; }
+.partner { display: grid; grid-template-columns: auto 1fr auto 7.5em; gap: var(--a1); align-items: center; min-height: var(--ziel); }
+.partner > span:last-child { text-align: right; }
+.partner.gesperrt { color: var(--text-2); }
+.partner input { width: 22px; height: 22px; min-height: 0; }
+.ministerien { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--a-halb) var(--a2); }
+.ministerium { display: grid; grid-template-columns: 1fr 9em; gap: var(--a1); align-items: center; }
+.ministerium select { min-width: 0; }
+.fehler { color: var(--gefahr); }
+
+/* Haushalt */
+.posten { display: grid; grid-template-columns: 1fr auto 44px 44px; gap: var(--a1); align-items: center; padding: var(--a-halb) 0; border-bottom: 1px solid var(--linie); }
+.posten.nurlesen { grid-template-columns: 1fr auto; }
+.posten button { padding: 0; font-size: 1.2em; }
+.betrag { text-align: right; font-variant-numeric: tabular-nums; }
+.bilanz { display: grid; grid-template-columns: 1fr auto; gap: var(--a-halb) var(--a2); font-variant-numeric: tabular-nums; }
+.bilanz > span:nth-child(even) { text-align: right; }
+.land { display: grid; grid-template-columns: 1fr 1fr 2em 7em; gap: var(--a1); align-items: center; padding: var(--a-halb) 0; border-bottom: 1px solid var(--linie); }
+.land > span:nth-child(3), .land > span:nth-child(4) { text-align: right; }
+
+/* Reformen und Ereignisse */
+.problem-kopf { display: flex; justify-content: space-between; gap: var(--a1); align-items: baseline; }
+.problem-kopf .zahl { white-space: nowrap; font-weight: 700; }
+.problem .balken { margin: var(--a1) 0; }
+.reform { border-top: 1px solid var(--linie); padding: var(--a2) 0 0; margin-top: var(--a2); }
+.ereignis { border-left: 4px solid var(--warn); }
+.optionen { display: grid; gap: var(--a1); }
+.optionen button { text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: var(--a-halb); }
+.ticker ul { list-style: none; margin: 0; padding: 0; }
+.ticker li { padding: var(--a-halb) 0; font-weight: 600; }
+.ticker li::before { content: '▸ '; color: var(--gefahr); }
+
+/* Start und Ende */
+.parteien { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--a1); }
+.partei-wahl { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+.teilen { display: flex; gap: var(--a1); }
+.teilen input { flex: 1; min-width: 0; }
+
+/* Grafiken */
+.verlauf { width: 100%; max-width: 640px; height: auto; display: block; }
+.verlauf text { font-size: 11px; fill: var(--text-2); }
+.verlauf .huerde-linie { stroke: var(--gefahr); stroke-dasharray: 4 3; stroke-width: 1; }
+.sitze text { fill: var(--text); }
+
+.nur-screenreader { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 560px) {
+  /* Handy: Kopfzeile scrollt mit, nur die Navigation bleibt oben */
+  .oben { display: contents; } /* sonst klebt die Navigation nur innerhalb von .oben */
+  .navi { position: sticky; top: 0; z-index: 10; }
+  .kopf-innen { gap: var(--a1); }
+  .dauer { display: grid; grid-template-columns: 1fr 1fr; gap: var(--a-halb) var(--a2); width: 100%; order: 3; }
+  .umfrage .zeile { grid-template-columns: 5.5em 1fr 6.5em; }
+  .kombi { grid-template-columns: 1fr auto; }
+  .land { grid-template-columns: 1fr 2em 6.5em; }
+  .land > span:nth-child(2) { display: none; }
+  .posten { grid-template-columns: 1fr auto 44px 44px; }
+}
+
+/* Einnahmen (System 2) */
+.einnahme { border-bottom: 1px solid var(--linie); padding-bottom: var(--a1); margin-bottom: var(--a1); }
+.einnahme .posten { border-bottom: 0; }
+.einnahme details > summary { min-height: 36px; font-size: var(--t-klein); color: var(--text-2); }
+h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transform: uppercase; color: var(--text-2); }
+
+/* Probleme (System 3) */
+.problem-knopf { width: 100%; text-align: left; display: flex; flex-direction: column; gap: var(--a-halb); border: 0; background: none; padding: var(--a1) 0; }
+.problem-zeile { padding: 0; }
+.tabs button[aria-pressed="true"] { color: var(--akzent); border-bottom-color: var(--akzent); }
+.mini { vertical-align: middle; color: var(--akzent); }
+.mini .huerde-linie { stroke: var(--gefahr); stroke-dasharray: 3 2; stroke-width: 0.5; }
+
+/* Reformwege und Richtungsprofil (System 1) */
+.wege { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--a2); align-items: start; }
+.weg { margin: 0; }
+.weg h3 { margin-top: 0; }
+.weg table { font-size: var(--t-klein); }
+.weg td, .weg th { text-align: left; vertical-align: top; }
+.profil { display: grid; gap: var(--a1); }
+.achse { display: grid; grid-template-columns: 7.5em 1fr 7.5em; gap: var(--a1); align-items: center; }
+.achse > span:last-child { text-align: right; }
+.achse > .klein { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+.achse-balken { position: relative; height: 10px; background: var(--flaeche-2); border-radius: var(--radius-klein); }
+.achse-balken .mitte { position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 1px solid var(--linie); }
+.achse-balken .marke { position: absolute; top: -4px; width: 14px; height: 18px; margin-left: -7px; border-radius: 4px; background: var(--akzent); }
+.achse-balken .vergleich { position: absolute; top: -2px; width: 10px; height: 14px; margin-left: -5px; border-radius: 3px; border: 2px solid var(--text-2); }
+@media (max-width: 560px) { .achse { grid-template-columns: 5em 1fr 5em; font-size: var(--t-klein); } }
+
+/* Wirtschaft als kleine Liniendiagramme (Lage) */
+.mini-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--a2); }
+.mini-kopf { display: flex; flex-direction: column; font-size: var(--t-klein); color: var(--text-2); }
+.mini-kopf .zahl { color: var(--text); font-size: var(--t-text); font-weight: 700; white-space: nowrap; }
+.mini-verlauf { width: 100%; height: auto; display: block; overflow: visible; }
+.mini-verlauf .linie { fill: none; stroke: var(--akzent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.mini-verlauf .punkt-aktuell { fill: var(--akzent); stroke: var(--flaeche); stroke-width: 2; }
+.mini-verlauf .grenze { stroke: var(--text-2); stroke-width: 1; stroke-dasharray: 3 3; }
+.mini-verlauf .spalte rect { fill: transparent; }
+.mini-verlauf .kreuz { opacity: 0; transition: opacity var(--dauer); }
+.mini-verlauf line.kreuz { stroke: var(--text-2); stroke-width: 1; }
+.mini-verlauf text.kreuz { fill: var(--text); font-size: 15px; font-weight: 600; }
+.mini-verlauf .spalte:hover .kreuz { opacity: 1; }
+.tabelle-scroll { overflow-x: auto; }
+.werte-tabelle { font-size: var(--t-klein); }
+.werte-tabelle th, .werte-tabelle td { white-space: nowrap; padding: var(--a-halb) 6px; }
+.werte-tabelle thead th { vertical-align: bottom; line-height: 1.2; }
+/* Etats per Schieberegler (Haushalt → Ausgaben) */
+.etat { display: grid; grid-template-columns: minmax(9em, 1fr) minmax(8em, 2fr) 10em; gap: var(--a1) var(--a2); align-items: center; padding: var(--a-halb) 0; border-bottom: 1px solid var(--linie); }
+.etat.nurlesen { grid-template-columns: 1fr auto; }
+.etat input[type='range'] { width: 100%; min-height: 36px; margin: 0; accent-color: var(--akzent); }
+@media (max-width: 560px) {
+  .etat { grid-template-columns: 1fr auto; }
+  .etat input[type='range'] { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* Zeitstrahl laufender Vorhaben (Lage, Reformen) */
+.vorhaben { padding: var(--a1) 0 var(--a2); border-bottom: 1px solid var(--linie); }
+.vorhaben:last-of-type { border-bottom: 0; }
+.vorhaben-kopf { margin: 0 0 var(--a1); }
+.zeitstrahl { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--a1); }
+.zeitstrahl li { position: relative; display: flex; flex-direction: column; gap: 2px; padding-top: 28px; min-width: 0; }
+/* Verbindungslinie zum nächsten Schritt */
+.zeitstrahl li::before { content: ''; position: absolute; top: 10px; left: 22px; right: calc(-1 * var(--a1)); height: 2px; background: var(--linie); }
+.zeitstrahl li:last-child::before { display: none; }
+.zeitstrahl li.erledigt::before { background: var(--akzent); }
+.zeitstrahl .marke { position: absolute; top: 0; left: 0; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; background: var(--flaeche); border: 2px solid var(--linie); color: var(--text-2); }
+.zeitstrahl .erledigt .marke { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
+.zeitstrahl .aktiv .marke { border-color: var(--akzent); color: var(--akzent); }
+.zeitstrahl .entfaellt { opacity: 0.7; }
+.zeitstrahl .schritt-titel { font-weight: 600; font-size: var(--t-klein); }
+.zeitstrahl small { overflow-wrap: anywhere; }
+.segmente { display: flex; gap: 2px; margin: 2px 0; }
+.segmente i { flex: 1; height: 8px; border-radius: 2px; background: var(--flaeche-2); border: 1px solid var(--linie); }
+.segmente i.voll { background: var(--akzent); border-color: var(--akzent); }
+.segmente i.jetzt { background: var(--akzent-hell); border-color: var(--akzent); }
+@media (max-width: 560px) {
+  .zeitstrahl { grid-auto-flow: row; gap: var(--a2); }
+  .zeitstrahl li { padding: 0 0 0 32px; }
+  .zeitstrahl li::before { top: 24px; bottom: calc(-1 * var(--a2)); left: 10px; right: auto; width: 2px; height: auto; }
+}
+
+/* Einnahmen: Regler wie bei den Etats, daneben die Gesamtwirkung (Haushalt → Einnahmen) */
+.einnahmen-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--a2); align-items: start; }
+.einnahmen-wirkung { position: sticky; top: 120px; }
+.einnahme .etat { border-bottom: 0; }
+.einnahme .grenzen { white-space: nowrap; }
+.gruppen-wirkung { display: grid; grid-template-columns: auto 1fr 3.5em; gap: var(--a-halb) var(--a1); align-items: center; font-size: var(--t-klein); }
+.gruppen-wirkung .zahl { text-align: right; }
+.div-balken { position: relative; height: 10px; background: var(--flaeche-2); border-radius: var(--radius-klein); }
+.div-balken .mitte { position: absolute; left: 50%; top: -2px; bottom: -2px; border-left: 1px solid var(--text-2); }
+.div-balken .wert { position: absolute; top: 0; bottom: 0; background: var(--akzent); border-radius: 2px; }
+@media (max-width: 900px) {
+  .einnahmen-layout { grid-template-columns: 1fr; }
+  .einnahmen-wirkung { position: static; order: -1; }
+}
+.gruppen-wirkung.verbaende { grid-template-columns: auto minmax(40px, 1fr) auto; }
+.gruppen-wirkung.verbaende > span:nth-child(3n) { white-space: nowrap; }
