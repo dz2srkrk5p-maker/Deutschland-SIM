@@ -96,7 +96,7 @@ test('Lösung: Sperren, Kosten, Abschluss mit Erfolg oder Fehlschlag', () => {
   expect(loesungSperre({ ...z, kapital: 2 }, 'wohnen1')).toContain('Kapital');
   const gestartet = loesungStarten(z, { loesungId: 'wohnen1' }).state;
   expect(gestartet.kapital).toBe(z.kapital - loesung('wohnen1').kapital);
-  expect(gestartet.loesungen.wohnen1).toEqual({ status: 'laufend', fertig: z.runde + 4 });
+  expect(gestartet.loesungen.wohnen1).toEqual({ status: 'laufend', fertig: z.runde + 4, start: z.runde });
   expect(laufendeKosten(gestartet)).toBe(2000000);
   expect(loesungSperre(gestartet, 'wohnen1')).toBe('läuft schon');
   expect(loesungSperre({ ...gestartet, aktionenImQuartal: pc.aktionenJeQuartal }, 'pflege1')).toContain('je Quartal');

@@ -10,6 +10,7 @@ import { mrd } from '../../engine/haushalt.js';
 import { profilHtml } from '../components/profil.js';
 import { karte, badge, status, zahl, plusMinus, aufklapp } from '../components/basis.js';
 import { erklaerungen } from '../../data/hinweise.js';
+import { zeitstrahlHtml } from '../components/zeitstrahl.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const gName = (id) => gruppen.find((g) => g.id === id)?.name ?? id;
@@ -87,6 +88,7 @@ function dialogHtml(zustand, wegId, kompromiss = false) {
 
 function uebersicht(zustand) {
   return `${karte(`${profilHtml(richtungsprofil(zustand))}<p class="klein">Aus allen Reformwegen in Umsetzung oder beschlossen. Es wirkt auf Wirtschaft, Koalition, Wählerstimmung, EU und Ereignisse.</p>`, { titel: 'Richtungsprofil des Landes' })}
+    ${zeitstrahlHtml(zustand) ? karte(zeitstrahlHtml(zustand), { titel: 'Laufende Vorhaben' }) : ''}
     <div class="kennzahlen">${bereiche.map((b) => {
       const st = bereichStatus(zustand, b);
       const folge = b.wege.filter((w) => w.braucht && zustand.reformwege[w.braucht]?.status === 'beschlossen' && !zustand.reformwege[w.id]);

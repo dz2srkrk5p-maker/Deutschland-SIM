@@ -8,7 +8,7 @@ import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 19; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 20; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -19,6 +19,8 @@ export const ZUSTAND_VERSION = 19; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 16: verfahren [{ typ, id, name, art, chance, stufen?, faellig }] (Verfassungsrisiko für Steuern, Feature 3)
 // 17: laender { landId: { regierung, geschaeftsfuehrend, wahl: { jahr, quartal } } } (Landtagswahlen, Feature 5)
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
+// 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
+//     ältere Einträge ohne diese Felder bleiben gültig, der Start wird aus fertig − Dauer berechnet
 // 19: wirtschaftVerlauf [{ wachstum, inflation, arbeitslosigkeit, schuldenquote, gini }] je Haushaltsjahr, erster Eintrag = Start
 
 // Neue Felder ab Version 10, auch für die Migration alter Spielstände
@@ -143,6 +145,7 @@ const MIGRATIONEN = {
   17: (z) => ({ ...z, version: 18, ketten: kettenStart() }),
   // Frühere Jahre sind nicht gespeichert: der Verlauf beginnt mit dem aktuellen Stand
   18: (z) => ({ ...z, version: 19, wirtschaftVerlauf: [wirtschaftWerte(z.land)] }),
+  19: (z) => ({ ...z, version: 20 }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

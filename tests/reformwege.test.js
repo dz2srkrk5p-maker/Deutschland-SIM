@@ -72,7 +72,7 @@ test('Beschluss: Kapital, Aufmerksamkeit, Umsetzung, Kosten und Einnahmen mit He
   const z = regierung({ koalition: { partner: ['spd', 'gruene'], startAnteile: { spd: 16.4, gruene: 11.6 }, minderheit: false, fehlschlaege: 0 } });
   const { state, ereignisse } = wegBeschliessen(z, { wegId: 'st_einfach' });
   expect(ereignisse[0]).toContain('Reform beschlossen');
-  expect(state.reformwege.st_einfach).toEqual({ status: 'umsetzung', fertig: z.runde + 4 });
+  expect(state.reformwege.st_einfach).toMatchObject({ status: 'umsetzung', fertig: z.runde + 4, start: z.runde, bundestag: { ja: expect.any(Number), nein: expect.any(Number) } });
   expect(state.kapital).toBe(100 - weg('st_einfach').kapital);
   expect(state.aktionenImQuartal).toBe(1);
   const ek = aufstellung(state).zeilen.find((x) => x.art.id === 'einkommensteuer');

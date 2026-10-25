@@ -18,6 +18,7 @@ import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
 import { wirtschaftsverlaufHtml } from '../components/wirtschaftsverlauf.js';
+import { zeitstrahlHtml } from '../components/zeitstrahl.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const STUFE_TEXT = { ok: 'stabil', gelb: 'angespannt', rot: 'vor dem Bruch' };
@@ -120,6 +121,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onPro
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
       ${karte(wirtschaftsverlaufHtml(zustand), { titel: 'Wirtschaft (Vorjahr)' })}
     </div>
+    ${zeitstrahlHtml(zustand) ? karte(zeitstrahlHtml(zustand), { titel: 'Laufende Vorhaben' }) : ''}
     ${vertragHtml(zustand) ? karte(vertragHtml(zustand), { titel: 'Koalitionsvertrag' }) : ''}
     ${landtagswahlenHtml(zustand) ? karte(landtagswahlenHtml(zustand), { titel: 'Landtagswahlen' }) : ''}
     ${karte(umfrageBilanzHtml(zustand), { titel: 'Warum bewegt sich die Umfrage?' })}

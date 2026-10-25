@@ -311,3 +311,30 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
   .etat { grid-template-columns: 1fr auto; }
   .etat input[type='range'] { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* Zeitstrahl laufender Vorhaben (Lage, Reformen) */
+.vorhaben { padding: var(--a1) 0 var(--a2); border-bottom: 1px solid var(--linie); }
+.vorhaben:last-of-type { border-bottom: 0; }
+.vorhaben-kopf { margin: 0 0 var(--a1); }
+.zeitstrahl { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--a1); }
+.zeitstrahl li { position: relative; display: flex; flex-direction: column; gap: 2px; padding-top: 28px; min-width: 0; }
+/* Verbindungslinie zum nächsten Schritt */
+.zeitstrahl li::before { content: ''; position: absolute; top: 10px; left: 22px; right: calc(-1 * var(--a1)); height: 2px; background: var(--linie); }
+.zeitstrahl li:last-child::before { display: none; }
+.zeitstrahl li.erledigt::before { background: var(--akzent); }
+.zeitstrahl .marke { position: absolute; top: 0; left: 0; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; background: var(--flaeche); border: 2px solid var(--linie); color: var(--text-2); }
+.zeitstrahl .erledigt .marke { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
+.zeitstrahl .aktiv .marke { border-color: var(--akzent); color: var(--akzent); }
+.zeitstrahl .entfaellt { opacity: 0.7; }
+.zeitstrahl .schritt-titel { font-weight: 600; font-size: var(--t-klein); }
+.zeitstrahl small { overflow-wrap: anywhere; }
+.segmente { display: flex; gap: 2px; margin: 2px 0; }
+.segmente i { flex: 1; height: 8px; border-radius: 2px; background: var(--flaeche-2); border: 1px solid var(--linie); }
+.segmente i.voll { background: var(--akzent); border-color: var(--akzent); }
+.segmente i.jetzt { background: var(--akzent-hell); border-color: var(--akzent); }
+@media (max-width: 560px) {
+  .zeitstrahl { grid-auto-flow: row; gap: var(--a2); }
+  .zeitstrahl li { padding: 0 0 0 32px; }
+  .zeitstrahl li::before { top: 24px; bottom: calc(-1 * var(--a2)); left: 10px; right: auto; width: 2px; height: auto; }
+}

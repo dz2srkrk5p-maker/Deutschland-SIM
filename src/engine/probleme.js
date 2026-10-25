@@ -109,7 +109,7 @@ export function loesungStarten(zustand, { loesungId }) {
       ...zustand,
       kapital: zustand.kapital - l.kapital,
       aktionenImQuartal: zustand.aktionenImQuartal + 1,
-      loesungen: { ...zustand.loesungen, [loesungId]: { status: 'laufend', fertig: zustand.runde + l.dauer } },
+      loesungen: { ...zustand.loesungen, [loesungId]: { status: 'laufend', fertig: zustand.runde + l.dauer, start: zustand.runde } },
     },
     ereignisse: [`Lösung gestartet: „${l.name}“ gegen ${l.problem.name} (fertig in ${l.dauer} Quartalen, Chance ${Math.round(erfolgschance(zustand, l) * 100)} %)`],
   };

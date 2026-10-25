@@ -105,6 +105,9 @@ export function wegSperre(zustand, wegId, { kompromiss = false } = {}) {
 }
 
 // Vorschau für den Vergleich und den Bestätigungsdialog (ohne Zufall)
+// Risiko des Scheiterns bei der Umsetzung (Anzeige): Grundrisiko plus Verfassungsrisiko bei umstrittenen Wegen
+export const wegRisiko = (w) => r2(w.risiko + (w.verfassung ? rw.verfassungsRisiko : 0));
+
 export function wegVorschau(zustand, wegId) {
   const w = weg(wegId);
   const belegt = !w.braucht ? bereichStatus(zustand, w.bereich).weg : null;
@@ -117,7 +120,7 @@ export function wegVorschau(zustand, wegId) {
     partner: partnerReaktionen(zustand, w),
     akteure: akteurReaktionen(w),
     ...gewinnerVerlierer(w),
-    risiko: r2(w.risiko + (w.verfassung ? rw.verfassungsRisiko : 0)),
+    risiko: wegRisiko(w),
     kapital: w.kapital + (belegt ? rw.revisionKapital : 0),
     revision: belegt && belegt.id !== w.id ? belegt : null,
     bonus: r2(Math.max(0, 1 - abstand(parteiPosition(zustand.kanzlerParteiId), wegVektor(w))) * rw.beschlussBonus),
@@ -157,7 +160,11 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
     dazu(zustand.kanzlerParteiId, -rw.revisionUmfrage, `Kurswechsel: ${v.revision.name} zurückgenommen`);
     ereignisse.push(`Kurswechsel: „${v.revision.name}“ wird zurückgenommen (Glaubwürdigkeit −${rw.revisionUmfrage.toLocaleString('de-DE')})`);
   }
-  reformwege[w.id] = { status: 'umsetzung', fertig: zustand.runde + w.dauer, ...(alsKompromiss ? { kompromiss: true } : {}) };
+  // start, bundestag, bundesrat: Verlauf des Verfahrens für den Zeitstrahl (Spielstand-Version 20)
+  reformwege[w.id] = {
+    status: 'umsetzung', fertig: zustand.runde + w.dauer, start: zustand.runde, bundestag: { ja: wahl.ja, nein: wahl.nein },
+    bundesrat: v.bundesrat ? { ja: v.bundesrat.ja, noetig: v.bundesrat.noetig } : null, ...(alsKompromiss ? { kompromiss: true } : {}),
+  };
   // Koalitionsvertrag (Feature 7): erfüllt oder gebrochen
   const vertrag = vertragNachBeschluss(zustand, w.id);
   for (const p of vertrag.posten) {

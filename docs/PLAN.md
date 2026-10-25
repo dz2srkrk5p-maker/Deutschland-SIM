@@ -43,3 +43,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | E4 | Erweiterung System 1: Reformwege mit Ausrichtung, Richtungsprofil, Abstimmung nach Inhalt (Version 13) | fertig (2026-10-24) |
 | E5 | Erweiterung: Verknüpfungen, UI-Integration, Balancing nach Ausrichtung | fertig (2026-10-24) |
 | UI2 | Einnahmen per Schieberegler mit Schätzung des Aufkommens (erstes Jahr, dauerhaft) | fertig (2026-10-25) |
+| UI3 | Lage: Top-Probleme anklickbar, Wirtschaft als Diagramme (Version 19), Zeitstrahl laufender Vorhaben (Version 20); Haushalt: Wirkung je Steuer, Etat-Regler 1 % / ±25 % | fertig (2026-10-25) |
