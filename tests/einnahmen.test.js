@@ -4,7 +4,7 @@ import { einnahmearten } from '../src/data/einnahmen.js';
 import { config } from '../src/data/config.js';
 import { neuesSpiel } from '../src/engine/state.js';
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen, gegenfinanzierung, spielraum, aufkommensSchaetzung } from '../src/engine/einnahmen.js';
-import { vorschau, prognose, kuerzungsVorschlag, mrd } from '../src/engine/haushalt.js';
+import { vorschau, prognose, kuerzungsVorschlag, mrd, einnahmeWirkung } from '../src/engine/haushalt.js';
 import { jahresSchritt } from '../src/engine/wirtschaft.js';
 
 const regierung = () => ({
@@ -106,4 +106,16 @@ test('Regler: Schätzung des Aufkommens im ersten Jahr und dauerhaft', () => {
   expect(aufkommensSchaetzung(z, { einnahmen: { sonstige: 2 } }, 'sonstige').dauerhaft).toBe(0); // einmalig
   const kap = aufkommensSchaetzung(z, { einnahmen: { kapitalertrag: 2 } }, 'kapitalertrag');
   expect(kap.dauerhaft).toBeLessThan(2 * 900000); // Ausweichen ab der 2. Stufe
+});
+
+test('Regler: Wirkung einer einzelnen Steueränderung auf Kennzahlen, Gruppen und Umfrage', () => {
+  const z = regierung(); // Union hält Finanzen
+  const w = einnahmeWirkung(z, { einnahmen: { einkommensteuer: 2, umsatz: 1 } }, 'einkommensteuer');
+  expect(w.wirkung.wachstum).toBeCloseTo(-0.12, 5); // 2 Stufen × −0,06, die Umsatzsteuer zählt nicht mit
+  expect(w.wirkung.gruppen.arbeitnehmer).toBe(-6);
+  // Mehraufkommen im 1. Jahr 4,8 Mrd. → Finanzministeriums-Partei verliert wirkungSteuerErhoehungProMrd je Mrd.
+  expect(w.umfrage.union).toBeCloseTo(-4.8 * config.haushalt.wirkungSteuerErhoehungProMrd, 5);
+  expect(einnahmeWirkung(z, { einnahmen: { gewerbe: 1 } }, 'gewerbe').umfrage).toEqual({}); // kein Bundesaufkommen
+  expect(einnahmeWirkung(z, { einnahmen: { gewerbe: 1 } }, 'gewerbe').wirkung.probleme.kommunalfinanzen).toBe(-6);
+  expect(einnahmeWirkung(z, {}, 'umsatz').umfrage).toEqual({});
 });

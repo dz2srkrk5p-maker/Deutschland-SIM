@@ -252,10 +252,13 @@ dialog .knoepfe { flex-direction: column; align-items: stretch; }
 .regler { display: grid; grid-template-columns: 1fr minmax(12em, auto); gap: 0 var(--a2); align-items: center; padding: 0 0 var(--a1); }
 .regler input[type='range'] { width: 100%; min-height: var(--ziel); margin: 0; accent-color: var(--akzent); }
 .regler output { grid-row: span 2; text-align: right; font-variant-numeric: tabular-nums; }
+.regler-wirkung { grid-column: 1 / -1; margin: var(--a-halb) 0 0; }
+.regler-wirkung:empty { display: none; }
 .regler-skala { display: flex; justify-content: space-between; font-size: var(--t-klein); color: var(--text-2); }
 @media (max-width: 560px) {
   .regler { grid-template-columns: 1fr; }
   .regler output { grid-row: auto; order: 1; text-align: left; }
+  .regler-wirkung { order: 2; }
 }
 .einnahme details > summary { min-height: 36px; font-size: var(--t-klein); color: var(--text-2); }
 h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transform: uppercase; color: var(--text-2); }

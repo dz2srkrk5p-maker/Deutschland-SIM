@@ -3,8 +3,9 @@ import { parteien } from '../../data/parteien.js';
 import { ministerien } from '../../data/ministerien.js';
 import { config } from '../../data/config.js';
 import { gruppen as gruppenListe } from '../../data/kennzahlen.js';
+import { probleme as problemListe } from '../../data/probleme.js';
 import { festeAusgaben2026 } from '../../data/haushalt.js';
-import { vorschau, mrd, prognose, kuerzungsVorschlag } from '../../engine/haushalt.js';
+import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmeWirkung } from '../../engine/haushalt.js';
 import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { RECHTSARTEN } from '../../data/einnahmen.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -33,12 +34,14 @@ const TABS = [
 ];
 const KENNZAHL_TEXT = { wachstum: 'Wachstum', inflation: 'Inflation', arbeitslosigkeit: 'Arbeitslosigkeit', gini: 'Ungleichheit (Gini)' };
 const gruppeName = (id) => gruppenListe.find((g) => g.id === id)?.name ?? id;
+const problemName = (id) => problemListe.find((p) => p.id === id)?.name ?? id;
 
-// Wirkung eines Entwurfs auf Kennzahlen und Gruppen als kurze Liste
-function wirkungListe(w) {
+// Wirkung eines Entwurfs auf Kennzahlen und Gruppen als kurze Liste; mitProblemen: auch Probleme (Wert 0–100)
+function wirkungListe(w, mitProblemen = false) {
   const teile = [
     ...Object.entries(KENNZAHL_TEXT).filter(([k]) => Math.abs(w[k] ?? 0) >= 0.005).map(([k, t]) => `${t} ${plusMinus(w[k])}${k === 'gini' ? '' : ' Pp'}`),
     ...Object.entries(w.gruppen ?? {}).filter(([, v]) => Math.abs(v) >= 0.05).map(([g, v]) => `${gruppeName(g)} ${plusMinus(v, 1)}`),
+    ...(mitProblemen ? Object.entries(w.probleme ?? {}).filter(([, v]) => Math.abs(v) >= 0.05).map(([p, v]) => `${problemName(p)} ${plusMinus(v, 1)}`) : []),
   ];
   return teile.length ? teile.join(' · ') : 'keine';
 }
@@ -53,6 +56,13 @@ function schaetzungHtml(art, s, d) {
     <small>${art.parameter.einmalig ? 'einmalig' : `${plusMinus(mrd(s.dauerhaft), 1)} Mrd. ab dem Folgejahr`}</small>`;
 }
 const betragText = (art, summe) => (!art.keinBund ? euro(summe) : '–');
+
+// Wirkung der Änderung neben dem Regler: Wachstum und andere Kennzahlen, Gruppen, Probleme, Umfrage der Finanzministeriums-Partei
+function wirkungText(w, d) {
+  if (!d) return '';
+  const umfrage = Object.entries(w.umfrage).map(([id, v]) => `Umfrage ${partei(id).name} (Finanzen) ${plusMinus(v)}`);
+  return `<strong>Wirkung beim Beschluss:</strong> ${[wirkungListe(w.wirkung, true), ...umfrage].filter((t) => t !== 'keine').join(' · ') || 'keine'}`;
+}
 
 // Haushalt (System 2): Übersicht mit Bilanz und Einbringen, Einnahmen je Art, Ausgaben, Schulden und Mehrjahresprognose.
 // Außerhalb des Haushaltsquartals nur lesbar. entwurf: { jahr, stufen, einnahmen, ausgestaltung, tab } aus app.js.
@@ -105,6 +115,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
           aria-label="${a.name}: ${p.name}" aria-valuetext="${parameterWert(p, z.wert)}" ${r.min === r.max ? 'disabled' : ''}>
         <output for="regler-${a.id}" data-schaetzung="${a.id}" aria-live="polite">${schaetzungHtml(a, aufkommensSchaetzung(zustand, params(), a.id), d)}</output>
         <span class="regler-skala" aria-hidden="true"><span>${parameterWert(p, parameterBei(a, r.min))}</span><span>${parameterWert(p, parameterBei(a, r.max))}</span></span>
+        <p class="regler-wirkung klein" data-wirkung="${a.id}" aria-live="polite">${wirkungText(einnahmeWirkung(zustand, params(), a.id), d)}</p>
       </div>` : '';
     return `<div class="einnahme">
       <div class="posten nurlesen">
@@ -262,6 +273,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         const s = aufkommensSchaetzung(zustand, params(), art.id);
         el.querySelector(`[data-schaetzung="${art.id}"]`).innerHTML = schaetzungHtml(art, s, d);
         el.querySelector(`[data-betrag="${art.id}"]`).textContent = betragText(art, s.aufkommen);
+        el.querySelector(`[data-wirkung="${art.id}"]`).innerHTML = wirkungText(einnahmeWirkung(zustand, params(), art.id), d);
       });
       r.addEventListener('change', () => neuZeichnen(`[data-regler="${art.id}"]`));
     });
