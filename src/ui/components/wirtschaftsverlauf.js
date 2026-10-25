@@ -9,14 +9,16 @@ const RAND = { links: 6, rechts: 6, oben: 22, unten: 6 };
 const g = config.wirtschaft.anzeigeGrenzen;
 // gut: Bewertung wie bisher in der Lage; grenze: gestrichelte Linie (null = keine)
 const KENNZAHLEN = [
-  { id: 'wachstum', name: 'Wachstum', einheit: ' %', grenze: config.wirtschaft.potenzialWachstum, gut: (v) => v >= config.wirtschaft.potenzialWachstum },
-  { id: 'inflation', name: 'Inflation', einheit: ' %', grenze: g.inflation, gut: (v) => v <= g.inflation },
-  { id: 'arbeitslosigkeit', name: 'Arbeitslosenquote', einheit: ' %', grenze: g.arbeitslosigkeit, gut: (v) => v <= g.arbeitslosigkeit },
-  { id: 'schuldenquote', name: 'Schuldenquote', einheit: ' %', grenze: g.schuldenquote, gut: (v) => v <= g.schuldenquote },
-  { id: 'gini', name: 'Ungleichheit (Gini)', einheit: '', grenze: null, gut: () => null },
+  { id: 'wachstum', name: 'Wachstum', kurz: 'Wachstum', einheit: ' %', grenze: config.wirtschaft.potenzialWachstum, gut: (v) => v >= config.wirtschaft.potenzialWachstum },
+  { id: 'inflation', name: 'Inflation', kurz: 'Inflation', einheit: ' %', grenze: g.inflation, gut: (v) => v <= g.inflation },
+  { id: 'arbeitslosigkeit', name: 'Arbeitslosenquote', kurz: 'Arbeitslose', einheit: ' %', grenze: g.arbeitslosigkeit, gut: (v) => v <= g.arbeitslosigkeit },
+  { id: 'schuldenquote', name: 'Schuldenquote', kurz: 'Schulden', einheit: ' %', grenze: g.schuldenquote, gut: (v) => v <= g.schuldenquote },
+  { id: 'gini', name: 'Ungleichheit (Gini)', kurz: 'Gini', einheit: '', grenze: null, gut: () => null },
 ];
 const jahrName = (i) => (i === 0 ? 'Start' : `Jahr ${i}`);
-const wert = (k, v) => `${zahl(v, 1)}${k.einheit}`;
+// eine Nachkommastelle, echtes Minuszeichen, kein „-0,0“
+const eineStelle = (v) => (Math.round(v * 10) === 0 ? zahl(0, 1) : `${v < 0 ? '−' : ''}${zahl(Math.abs(v), 1)}`);
+const wert = (k, v) => `${eineStelle(v)}${k.einheit}`;
 const symbol = (gut) => (gut === null ? '' : gut ? ' <span class="ok">✓</span>' : ' <span class="gelb">⚠</span>');
 
 function diagramm(k, werte) {
@@ -24,10 +26,12 @@ function diagramm(k, werte) {
   let min = Math.min(...alle);
   let max = Math.max(...alle);
   if (max - min < 1) [min, max] = [(min + max) / 2 - 0.5, (min + max) / 2 + 0.5]; // flache Verläufe nicht aufblähen
+  // x-Achse: Start immer ganz links; mindestens eine Wahlperiode breit, damit die Linie nach rechts wächst
   const breite = B - RAND.links - RAND.rechts;
-  const x = (i) => RAND.links + (werte.length > 1 ? (breite * i) / (werte.length - 1) : breite / 2);
+  const jahre = Math.max(werte.length - 1, config.legislaturJahre);
+  const x = (i) => RAND.links + (breite * i) / jahre;
   const y = (v) => RAND.oben + ((H - RAND.oben - RAND.unten) * (max - v)) / (max - min);
-  const spalte = werte.length > 1 ? breite / (werte.length - 1) : breite;
+  const spalte = breite / jahre;
   const label = `${k.name}: ${werte.map((v, i) => `${jahrName(i)} ${wert(k, v)}`).join(', ')}`;
   return `<svg class="mini-verlauf" viewBox="0 0 ${B} ${H}" role="img" aria-label="${label}">
     ${k.grenze === null ? '' : `<line x1="${RAND.links}" x2="${B - RAND.rechts}" y1="${y(k.grenze)}" y2="${y(k.grenze)}" class="grenze" />`}
@@ -51,8 +55,9 @@ export function wirtschaftsverlaufHtml(zustand) {
       ${diagramm(k, werte)}
     </div>`;
   }).join('');
-  const tabelle = `<table><thead><tr><th scope="col">Jahr</th>${KENNZAHLEN.map((k) => `<th scope="col">${k.name}</th>`).join('')}</tr></thead>
-    <tbody>${verlauf.map((e, i) => `<tr><th scope="row">${jahrName(i)}</th>${KENNZAHLEN.map((k) => `<td>${wert(k, e[k.id])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  // Kurze Spaltenköpfe mit Einheit, Werte ohne Einheit; breiter als die Karte → waagerecht scrollen statt umbrechen
+  const tabelle = `<div class="tabelle-scroll"><table class="werte-tabelle"><thead><tr><th scope="col">Jahr</th>${KENNZAHLEN.map((k) => `<th scope="col" title="${k.name}">${k.kurz}${k.einheit ? '<br><small>in %</small>' : '<br><small>Index</small>'}</th>`).join('')}</tr></thead>
+    <tbody>${verlauf.map((e, i) => `<tr><th scope="row">${jahrName(i)}</th>${KENNZAHLEN.map((k) => `<td>${eineStelle(e[k.id])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   return `<div class="mini-raster">${kacheln}</div>
     <p class="klein">${verlauf.length > 1 ? 'Ein Punkt je Haushaltsjahr; gestrichelt: Grenze für ✓.' : 'Der Verlauf beginnt mit dem ersten beschlossenen Haushalt. Gestrichelt: Grenze für ✓.'}</p>
     ${aufklapp('Werte als Tabelle', tabelle)}`;

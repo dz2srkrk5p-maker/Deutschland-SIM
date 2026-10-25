@@ -299,3 +299,7 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
 .mini-verlauf line.kreuz { stroke: var(--text-2); stroke-width: 1; }
 .mini-verlauf text.kreuz { fill: var(--text); font-size: 15px; font-weight: 600; }
 .mini-verlauf .spalte:hover .kreuz { opacity: 1; }
+.tabelle-scroll { overflow-x: auto; }
+.werte-tabelle { font-size: var(--t-klein); }
+.werte-tabelle th, .werte-tabelle td { white-space: nowrap; padding: var(--a-halb) 6px; }
+.werte-tabelle thead th { vertical-align: bottom; line-height: 1.2; }
