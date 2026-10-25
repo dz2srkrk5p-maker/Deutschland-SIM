@@ -76,6 +76,11 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Krisenketten (Paket Groß, Feature 8, Spielwerte): Stärke eines Glieds = Gewicht der bestehenden Wechselwirkung × faktor;
+  // wirkt nach verzoegerung Quartalen, je Kettenstufe × daempfung, höchstens maxTiefe Stufen und maxAktiv gleichzeitig
+  // aktive Glieder; ein Problem löst frühestens nach abklingQuartale erneut eine Kette aus. verlaufLaenge: Anzeige.
+  krisenketten: { faktor: 40, verzoegerung: 2, daempfung: 0.5, maxTiefe: 2, maxAktiv: 3, abklingQuartale: 8, verlaufLaenge: 6 },
+
   // Koalitionsvertrag (Paket Groß, Feature 7, Spielwerte): je Partner vorschlaegeJePartner Vorschläge, 1 bis maxJePartner
   // aufnehmen. Erfüllt (Vorhaben beschlossen): Partner +bonusUmsetzung. Gebrochen (anderer Weg im zugesagten Bereich):
   // −strafeBruch. Beim Haushalt: Kürzung um kuerzungStufen Stufen (10 %) oder mehr in einem Partner-Ressort −strafeKuerzung;

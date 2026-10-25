@@ -201,6 +201,14 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
 - Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
 
+## System: Krisenketten (Paket Groß, Feature 8, freigegeben 2026-10-25)
+- Dateien: `src/engine/krisenketten.js`, Anbindung in `src/engine/probleme.js` (`problemeQuartal`). Zahlen: `config.krisenketten` (Spielwerte).
+- Kein zweites System: Erreicht ein Problem die Stufe „Krise“, verschärft es die Probleme, die es laut den bestehenden Wechselwirkungen treibt (`treiber` mit `problem` in `src/data/probleme.js`). Stärke eines Glieds = Gewicht × 40.
+- Dämpfung: wirkt nach 2 Quartalen; löst ein Glied seinerseits eine Krise aus, folgt Stufe 2 mit halber Stärke; höchstens 2 Stufen; höchstens 3 Glieder gleichzeitig aktiv; dasselbe Problem löst frühestens nach 8 Quartalen erneut eine Kette aus (Abklingen). Eine durch eine Kette ausgelöste Krise setzt die Kette nur über die Stufe fort (sonst ließe sich die Höchsttiefe umgehen).
+- Anzeige: Problemliste mit Hinweis „Krisenkette: +x droht“; Problem-Detail mit Karte „Krisenketten“ (was die Krise hier verschärfen würde, was droht und woher, was läuft, was zuletzt gewirkt hat, Abklingzeit) und Erklärtext; Meldungen beim Auslösen und Wirken.
+- Spielstand-Version 18: `ketten` { aktiv, zuletzt, verlauf }; ältere Stände bekommen einen leeren Stand.
+- Todesspiralen-Test (`qa/ketten.mjs`, 5 Extremstrategien ohne Lösungen, CDU/CSU, 50 Seeds, mit/ohne Ketten): Ø Krisen am Ende +0 bis +0,26; höchstens 3 aktive Glieder; Anteil Partien mit 8+ gleichzeitigen Krisen 0–2 % (ohne Ketten 0 %); Siegquoten unverändert; kein NaN. Gesamtmessung (qa/f8-ketten.json): 38 Zeilen geändert, alle um 1 Punkt bzw. 0,1–0,3 Krisen.
+
 ## System: Koalitionsvertrag (Paket Groß, Feature 7, freigegeben 2026-10-25)
 - Dateien: `src/engine/koalitionsvertrag.js`, `src/engine/kabinett.js` (`bestaetigen` mit `vorhaben`, `vorhabenVorschlag`), Anbindung in `reformwege.js` (Beschluss), `haushalt.js` (Haushalt, Koalitionsbruch). Zahlen: `config.koalitionsvertrag` (Spielwerte).
 - Eine zusätzliche Entscheidung zu Beginn: Der Kabinett-Schritt heißt bei Koalitionen „Koalitionsvertrag und Kabinett“. Jeder Partner schlägt 2 Grundwege aus noch freien Bereichen vor, die seinem Profil (CHES) am nächsten liegen (jeder Bereich höchstens einmal im Vertrag); der Spieler nimmt 1–2 je Partner auf, vorausgewählt ist der erste. Die Ressortverteilung wird festgeschrieben. Alleinregierung und Minderheitsregierung: kein Vertrag.

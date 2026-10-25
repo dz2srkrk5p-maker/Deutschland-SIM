@@ -49,6 +49,8 @@ export function hilfeHtml() {
       <li>Gruppenstimmung (${gruppen.map((g) => g.name).join(', ')}), Start 50</li>
       <li>Wirtschaftsdynamik (Rückkehr zum Potenzialwachstum, Okun, Zinsen und Zinsaufschlag), politisches Kapital, Koalitionsbruch, Wahlkampf</li>
       <li>Landtagswahlen: Wechselchance, wer bei einem Wechsel in die Landesregierung kommt, Termine nach 2030 (Fortschreibung der Wahlperiode), Neubildung in Berlin, Sachsen-Anhalt und Mecklenburg-Vorpommern</li>
+      <li>Koalitionsvertrag: Vorschläge der Partner, Bonus und Abzüge bei Umsetzung, Bruch, Kürzung und Rückstand</li>
+      <li>Krisenketten: Stärke, Verzögerung, Dämpfung, Obergrenze und Abklingzeit (die Richtung kommt aus den Wechselwirkungen der Probleme)</li>
       <li>Rechtsrisiken von Steueränderungen (Chance, dass das Bundesverfassungsgericht eine Änderung kippt); belegt sind nur die Grundlagen Art. 3 und Art. 14 GG</li>
       <li>Alle übrigen Konstanten in <code>src/data/config.js</code></li>
     </ul>`)}

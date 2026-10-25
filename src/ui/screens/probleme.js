@@ -7,6 +7,7 @@ import { problemListe, ursachen, loesungSperre, erfolgschance, problem as proble
 import { mrd } from '../../engine/haushalt.js';
 import { bereiche } from '../../data/reformwege.js';
 import { erklaerungen } from '../../data/hinweise.js';
+import { kettenZiele } from '../../engine/krisenketten.js';
 import { karte, badge, balken, zahl, plusMinus, leer, aufklapp } from '../components/basis.js';
 
 const gName = (id) => gruppen.find((g) => g.id === id)?.name ?? id;
@@ -33,13 +34,31 @@ function verlaufSvg(werte) {
     <polyline points="${pkt}" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
 }
 
-function zeile(e) {
+function zeile(e, zustand) {
+  const kommt = (zustand.ketten?.aktiv ?? []).filter((g) => g.nach === e.problem.id);
   return `<li class="problem-zeile">
     <button data-problem="${e.problem.id}" class="problem-knopf">
       <span class="problem-kopf"><strong>${e.problem.name}</strong><span class="zahl">${pfeil(e.trend)} ${Math.round(e.wert)}</span></span>
       ${balken(e.wert, farbe(e.wert), { marke: pc.stufen[2].ab, label: `${e.problem.name}: ${Math.round(e.wert)} von 100` })}
-      <span class="klein">${e.problem.kategorie} · ${stufeBadge(e.stufe)}${e.fruehwarnung ? ' ' + badge('Frühwarnung', 'gelb') : ''}</span>
+      <span class="klein">${e.problem.kategorie} · ${stufeBadge(e.stufe)}${e.fruehwarnung ? ' ' + badge('Frühwarnung', 'gelb') : ''}${kommt.length ? ' ' + badge(`Krisenkette: +${zahl(kommt.reduce((s, g) => s + g.staerke, 0), 1)} droht`, 'rot') : ''}</span>
     </button></li>`;
+}
+
+// Krisenketten (Feature 8): was dieses Problem in der Krise auslöst, was ihm droht, was zuletzt gewirkt hat
+function kettenHtml(zustand, p) {
+  const k = zustand.ketten ?? { aktiv: [], zuletzt: {}, verlauf: [] };
+  const n = (id) => problemVon(id).name;
+  const ziele = kettenZiele(p.id);
+  const kommt = k.aktiv.filter((g) => g.nach === p.id);
+  const geht = k.aktiv.filter((g) => g.von === p.id);
+  const war = k.verlauf.filter((g) => g.nach === p.id || g.von === p.id);
+  const sperre = k.zuletzt[p.id] !== undefined && zustand.runde - k.zuletzt[p.id] < config.krisenketten.abklingQuartale;
+  return `<p class="klein">${erklaerungen.ketten}</p>
+    <p>${ziele.length ? `In der Krise verschärft es: ${ziele.map((z) => `${n(z.nach)} (+${zahl(z.staerke, 1)})`).join(', ')}.` : 'In der Krise löst es keine Kette aus.'}</p>
+    ${kommt.length ? `<p class="rot">Droht: ${kommt.map((g) => `+${zahl(g.staerke, 1)} in ${Math.max(1, g.faellig - zustand.runde)} Quartalen wegen der Krise bei ${n(g.von)}`).join('; ')}.</p>` : ''}
+    ${geht.length ? `<p class="gelb">Läuft: Die Krise hier verschärft bald ${geht.map((g) => `${n(g.nach)} (+${zahl(g.staerke, 1)})`).join(', ')}.</p>` : ''}
+    ${war.length ? `<p class="klein">Zuletzt gewirkt: ${war.map((g) => `${n(g.von)} → ${n(g.nach)} +${zahl(g.staerke, 1)}`).join('; ')}.</p>` : ''}
+    ${sperre ? '<p class="klein">Abklingzeit: Dieses Problem löst vorerst keine neue Kette aus.</p>' : ''}`;
 }
 
 function detail(zustand, id) {
@@ -84,6 +103,7 @@ function detail(zustand, id) {
         ...['wachstum', 'inflation', 'arbeitslosigkeit', 'gini'].filter((k) => p.folgen[k]).map((k) => `${kName(k)} ${plusMinus(p.folgen[k])}`),
         ...Object.entries(p.folgen.gruppen ?? {}).map(([g, v]) => `${gName(g)} ${plusMinus(v, 0)}`),
       ].join(' · ') || 'keine'}.</p>`, { titel: 'Ursachen und Wechselwirkungen' })}
+    ${karte(kettenHtml(zustand, p), { titel: 'Krisenketten' })}
     ${karte(loesungen, { titel: 'Lösungsoptionen' })}
     ${bereiche.some((b) => b.probleme.includes(p.id)) ? karte(`<p>Dauerhaft wirken Reformwege: ${bereiche.filter((b) => b.probleme.includes(p.id)).map((b) => `<button data-reformbereich="${b.id}">${b.name}</button>`).join(' ')}</p>
       <p class="klein">Lösungen helfen schnell; Reformwege verändern den Trend dauerhaft und prägen das Richtungsprofil.</p>`, { titel: 'Reformen' }) : ''}`;
@@ -103,9 +123,9 @@ export function problemeScreen(el, zustand, { auswahl, filter, onAuswahl, onFilt
         <button data-filter="" aria-pressed="${!filter}">Alle</button>
         ${kategorien.map((k) => `<button data-filter="${k}" aria-pressed="${filter === k}">${k}</button>`).join('')}
       </div>
-      ${karte(prominent.length ? `<ul class="liste">${prominent.map(zeile).join('')}</ul>` : leer('Keine drängenden Probleme in dieser Kategorie.'), { titel: `Drängend (${prominent.length})` })}
+      ${karte(prominent.length ? `<ul class="liste">${prominent.map((e) => zeile(e, zustand)).join('')}</ul>` : leer('Keine drängenden Probleme in dieser Kategorie.'), { titel: `Drängend (${prominent.length})` })}
       <p class="klein">${erklaerungen.beobachtung}</p>
-      ${karte(beobachtung.length ? aufklapp(`Beobachtungsliste (${beobachtung.length}${beobachtung.some((e) => e.fruehwarnung) ? `, ${beobachtung.filter((e) => e.fruehwarnung).length} mit Frühwarnung` : ''})`, `<ul class="liste">${beobachtung.map(zeile).join('')}</ul>`, beobachtung.some((e) => e.fruehwarnung)) : leer('Nichts auf der Beobachtungsliste.'))}`}
+      ${karte(beobachtung.length ? aufklapp(`Beobachtungsliste (${beobachtung.length}${beobachtung.some((e) => e.fruehwarnung) ? `, ${beobachtung.filter((e) => e.fruehwarnung).length} mit Frühwarnung` : ''})`, `<ul class="liste">${beobachtung.map((e) => zeile(e, zustand)).join('')}</ul>`, beobachtung.some((e) => e.fruehwarnung)) : leer('Nichts auf der Beobachtungsliste.'))}`}
   </div>`;
   el.querySelectorAll('[data-problem]').forEach((b) => b.addEventListener('click', () => onAuswahl(b.dataset.problem)));
   el.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => onFilter(b.dataset.filter || null)));

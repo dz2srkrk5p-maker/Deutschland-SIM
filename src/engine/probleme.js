@@ -10,6 +10,7 @@ import { mitVerlauf } from './state.js';
 import { richtungsprofil, abstand } from './profil.js';
 import { wirkungSumme, skaliert } from './wirtschaft.js';
 import { umfrageBuchen } from './umfragebilanz.js';
+import { kettenSchritt } from './krisenketten.js';
 import { wegTrends } from './reformwege.js';
 
 // Problem-Engine (System 3): Probleme entstehen und eskalieren aus dem Zustand des Landes, Lösungen senken sie.
@@ -175,6 +176,11 @@ export function problemeQuartal(zustand) {
     }
   }
 
+  // Krisenketten (Feature 8): Krisen verschärfen abhängige Probleme, verzögert und gedämpft
+  const kette = kettenSchritt(zustand, neu);
+  Object.assign(neu, kette.probleme);
+  ereignisse.push(...kette.ereignisse);
+
   // prominente ernste Probleme und Krisen kosten die Kanzlerpartei
   const zwischen = { ...zustand, probleme: neu };
   const belastend = problemListe(zwischen).filter((e) => e.prominent && pc.umfrageJeQuartal[e.stufe.id]);
@@ -186,6 +192,7 @@ export function problemeQuartal(zustand) {
     ...zustand,
     rngZustand,
     probleme: neu,
+    ketten: kette.ketten,
     loesungen,
     jahresWirkung,
     gruppen: gruppenNeu,
