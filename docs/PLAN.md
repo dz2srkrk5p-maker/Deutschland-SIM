@@ -50,5 +50,5 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 |--------|--------|-------|
 | 0a | Monatstakt statt Quartale (Version 22) | fertig (2026-10-25) |
 | 0b | Partie ohne Ende, Opposition spielbar, Kalenderjahr (Version 23) | fertig (2026-10-25) |
-| 0c | Schwierigkeitsstufen 1–4 beim Spielstart | offen |
+| 0c | Spielstufen 1–4 beim Spielstart (Version 24) | fertig (2026-10-25) |
 | 1–10 | Epochen, Wege, Merkmale, Ursachen, Generationen, Großprojekte, Bestände, Bevölkerung, UI | offen |

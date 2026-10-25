@@ -10,7 +10,7 @@ import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 23; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 24; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -22,6 +22,7 @@ export const ZUSTAND_VERSION = 23; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 17: laender { landId: { regierung, geschaeftsfuehrend, wahl: { jahr, quartal } } } (Landtagswahlen, Feature 5)
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
 // 23: jahr (Kalenderjahr); Partie ohne Ende: Phase opposition ist spielbar (Regierung der anderen), kein sieg mehr
+// 24: stufe (Spielstufe 1–4, vor Spielbeginn gewählt)
 // 22: Monatstakt: monat (1–12) statt quartal, aktionenImMonat statt aktionenImQuartal; runde und alle Fristen in Monaten
 // 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
@@ -41,10 +42,11 @@ export const regierungImAmt = (zustand) => zustand.phase === 'regierung' || zust
 export const spielerRegiert = (zustand) => zustand.phase === 'regierung';
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
-export function neuesSpiel(spielerParteiId, seed) {
+export function neuesSpiel(spielerParteiId, seed, stufe = config.spielstufen.standard) {
   const partei = parteien.find((p) => p.id === spielerParteiId);
   if (!partei || partei.sonstige) throw new Error(`Unbekannte oder nicht spielbare Partei: ${spielerParteiId}`);
   if (!Number.isInteger(seed)) throw new Error('Seed muss eine ganze Zahl sein');
+  if (!(stufe in config.spielstufen.stufen)) throw new Error(`Unbekannte Spielstufe: ${stufe}`);
 
   return {
     version: ZUSTAND_VERSION,
@@ -87,6 +89,7 @@ export function neuesSpiel(spielerParteiId, seed) {
     gruppen: gruppenStart(), // Zustimmung je Gruppe 0–100
     kapital: config.kapital.start, // politisches Kapital 0–100
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
+    stufe, // Spielstufe (Etappe 0c), bleibt die ganze Partie gleich
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
   };
@@ -197,6 +200,8 @@ const MIGRATIONEN = {
     if (z.phase === 'opposition') return zurueckInDenWahlkampf({ ...neu, monat: 1 });
     return neu;
   },
+  // Spielstufen: bisherige Partien laufen als Standardstufe (Fortgeschritten) weiter
+  23: (z) => ({ ...z, version: 24, stufe: config.spielstufen.standard }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

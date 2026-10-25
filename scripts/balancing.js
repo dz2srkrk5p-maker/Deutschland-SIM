@@ -26,7 +26,7 @@ const zielErreicht = (z) => z.statistik.jahreKanzler >= ZIEL_KANZLERJAHRE;
 const partieVorbei = (z) => zielErreicht(z) || z.jahr >= config.kalender.startJahr + FENSTER_JAHRE;
 
 
-const PARTIEN = 200;
+const PARTIEN = Number(process.env.PARTIEN) || 200; // kleiner für schnelle Läufe: PARTIEN=40 npm run balancing
 const MAX_ZUEGE = 8000; // Schutz gegen Endlosschleifen
 let festgefahren = 0; // Partien ohne gültigen Haushalt (siehe beschliessen)
 

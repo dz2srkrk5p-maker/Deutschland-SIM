@@ -167,9 +167,9 @@ function neuesSpielStarten() {
   fokusOben();
 }
 
-function starten(parteiId) {
+function starten(parteiId, stufe) {
   // Zufall außerhalb der Engine ist erlaubt: nur der Seed für ein neues Spiel (außer er kommt aus einem Link)
-  zustand = neuesSpiel(parteiId, link ? link.seed : Math.floor(Math.random() * 2 ** 31));
+  zustand = neuesSpiel(parteiId, link ? link.seed : Math.floor(Math.random() * 2 ** 31), stufe);
   link = null;
   protokoll = [];
   neu();

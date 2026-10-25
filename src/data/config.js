@@ -14,6 +14,19 @@ export const config = {
   // Kalender (Etappe 0b, 2026-10-25): Die Partie endet nicht; das Kalenderjahr beginnt mit startJahr und zählt mit jedem
   // Dezember weiter, in Regierung wie Opposition. Wahlkampf und Regierungsbildung kosten keine Monate (Vereinfachung).
   kalender: { startJahr: 2026 },
+  // Spielstufen (Epochen-Etappe 0c, freigegeben 2026-10-25): vor Spielbeginn gewählt, legen fest, welche Teile des
+  // Epochen-Systems mitspielen. Die Teile selbst kommen in späteren Etappen; bis dahin wirken nur die Schalter.
+  // wegeJeWeiche: wie viele Wege eine Epochen-Weiche anbietet; ursachen/generationen/wertverlust/kurswechsel/
+  // grossprojekte/bestaende/altersgruppen: System an oder aus; zweiterWeg: zweiter Weg statt Kurswechsel.
+  spielstufen: {
+    standard: 2, // auch für Spielstände von vor Etappe 0c
+    stufen: {
+      1: { name: 'Einsteiger', text: 'Zwei Wege je Weiche, ohne Ursachen, Generationen, Wertverlust und Großprojekte.', wegeJeWeiche: 2, ursachen: false, generationen: false, wertverlust: false, kurswechsel: false, grossprojekte: false, bestaende: false, altersgruppen: false, zweiterWeg: false },
+      2: { name: 'Fortgeschritten', text: 'Drei Wege je Weiche, mit Ursachen, Generationen-Stammbaum und Wertverlust.', wegeJeWeiche: 3, ursachen: true, generationen: true, wertverlust: true, kurswechsel: false, grossprojekte: false, bestaende: false, altersgruppen: false, zweiterWeg: false },
+      3: { name: 'Erfahren', text: 'Dazu Kurswechsel, Großprojekte, Bestände (Energiesystem, Klimaanpassung) und Altersgruppen.', wegeJeWeiche: 3, ursachen: true, generationen: true, wertverlust: true, kurswechsel: true, grossprojekte: true, bestaende: true, altersgruppen: true, zweiterWeg: false },
+      4: { name: 'Profi', text: 'Wie Erfahren, aber ein zweiter Weg statt Kurswechsel.', wegeJeWeiche: 3, ursachen: true, generationen: true, wertverlust: true, kurswechsel: false, grossprojekte: true, bestaende: true, altersgruppen: true, zweiterWeg: true },
+    },
+  },
 
   // Regierung der anderen, wenn der Spieler in der Opposition ist (Etappe 0b, Spielwerte): Sie beschließt den Haushalt
   // unverändert (oder mit dem Kürzungsvorschlag, wenn die Schuldenbremse sonst reißt) und je Monat mit reformChanceJeMonat

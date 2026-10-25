@@ -220,6 +220,9 @@ dialog .knoepfe { flex-direction: column; align-items: stretch; }
 .ticker li::before { content: '▸ '; color: var(--gefahr); }
 
 /* Start und Ende */
+.stufen { border: 0; padding: 0; margin: 0 0 var(--a1); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--a1); }
+.stufen legend { font-weight: 600; margin-bottom: var(--a1); }
+.stufe-wahl { display: flex; gap: .5em; align-items: flex-start; }
 .parteien { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--a1); }
 .partei-wahl { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
 .teilen { display: flex; gap: var(--a1); }
