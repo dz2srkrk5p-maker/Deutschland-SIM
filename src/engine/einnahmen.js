@@ -64,6 +64,32 @@ export function aufstellung(zustand, entwurf = {}, reformPosten = wegEinnahmen(z
   return { zeilen, kern, ktf: zeilen.find((z) => z.art.sondervermoegen)?.summe ?? 0 };
 }
 
+// Spielraum des Reglers einer Einnahmeart in diesem Jahr: Änderung in Stufen gegenüber dem beschlossenen Stand,
+// begrenzt durch maxJeJahr und die absoluten Grenzen min/max des Parameters
+export function spielraum(zustand, id) {
+  const p = einnahmeart(id).parameter;
+  const wert = p.startwert + (p.einmalig ? 0 : (zustand.haushalt.einnahmen.stufen[id] ?? 0)) * p.schritt;
+  return {
+    min: Math.max(-p.maxJeJahr, Math.ceil((p.min - wert) / p.schritt - 1e-9)) || 0, // || 0: kein −0
+    max: Math.min(p.maxJeJahr, Math.floor((p.max - wert) / p.schritt + 1e-9)),
+  };
+}
+
+// Geschätztes Aufkommen einer Einnahmeart im Entwurf und die Änderung gegenüber dem beschlossenen Stand (tausend €):
+// erstesJahr mit Verzögerung und Ausweichen, dauerhaft ab dem Folgejahr (0 bei einmaligen Posten).
+// Bei heutiger Wirtschaft: Rückwirkungen der Änderung auf Wachstum und Steuerbasis sind nicht enthalten.
+export function aufkommensSchaetzung(zustand, entwurf, id) {
+  const zeile = (e) => aufstellung(zustand, e).zeilen.find((z) => z.art.id === id);
+  const mit = zeile(entwurf);
+  const ohne = zeile({ ...entwurf, einnahmen: { ...entwurf.einnahmen, [id]: 0 } });
+  const dauerhaft = (z) => z.stufen + z.ausweichen;
+  return {
+    aufkommen: mit.summe,
+    erstesJahr: mit.summe - ohne.summe,
+    dauerhaft: mit.art.parameter.einmalig ? 0 : dauerhaft(mit) - dauerhaft(ohne),
+  };
+}
+
 // Wirkung eines Entwurfs auf Kennzahlen, Gruppen und Probleme (einmalig beim Beschluss) und ob der Bundesrat zustimmen muss
 export function entwurfWirkung(zustand, entwurf = {}) {
   const teile = [];

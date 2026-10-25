@@ -42,3 +42,4 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | E3 | Erweiterung System 3: Problem-Engine mit 25 Bereichen, Lösungen, Beobachtungsliste (Version 12; F13/F14 aufgegangen) | fertig (2026-10-24) |
 | E4 | Erweiterung System 1: Reformwege mit Ausrichtung, Richtungsprofil, Abstimmung nach Inhalt (Version 13) | fertig (2026-10-24) |
 | E5 | Erweiterung: Verknüpfungen, UI-Integration, Balancing nach Ausrichtung | fertig (2026-10-24) |
+| UI2 | Einnahmen per Schieberegler mit Schätzung des Aufkommens (erstes Jahr, dauerhaft) | fertig (2026-10-25) |

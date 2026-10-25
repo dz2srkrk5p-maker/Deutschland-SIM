@@ -3,7 +3,7 @@ import { ministerien } from '../src/data/ministerien.js';
 import { einnahmearten } from '../src/data/einnahmen.js';
 import { config } from '../src/data/config.js';
 import { neuesSpiel } from '../src/engine/state.js';
-import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen, gegenfinanzierung } from '../src/engine/einnahmen.js';
+import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen, gegenfinanzierung, spielraum, aufkommensSchaetzung } from '../src/engine/einnahmen.js';
 import { vorschau, prognose, kuerzungsVorschlag, mrd } from '../src/engine/haushalt.js';
 import { jahresSchritt } from '../src/engine/wirtschaft.js';
 
@@ -79,4 +79,31 @@ test('Prognose: 5 Jahre, ohne Zufall, ändert den Spielstand nicht; Entwurf mit 
   expect(senkung[1].einnahmen).toBeLessThan(plan[1].einnahmen);
   expect(mrd(plan[0].einnahmen)).toBeCloseTo(426.57, 1);
   expect(z.haushalt.einnahmen.stufen).toEqual({});
+});
+
+test('Regler: Spielraum je Jahr und absolut, jede Stellung ist ein gültiger Entwurf', () => {
+  const z = regierung();
+  expect(spielraum(z, 'umsatz')).toEqual({ min: -1, max: 1 }); // maxJeJahr 1
+  expect(spielraum(z, 'vermoegen')).toEqual({ min: 0, max: 2 }); // Satz 0 % ist die Untergrenze
+  const z3 = { ...z, haushalt: { ...z.haushalt, einnahmen: { ...z.haushalt.einnahmen, stufen: { einkommensteuer: 2 } } } };
+  expect(spielraum(z3, 'einkommensteuer')).toEqual({ min: -2, max: 1 }); // max +3 Pp
+  for (const a of einnahmearten) {
+    const r = spielraum(z, a.id);
+    for (const d of [r.min, r.max]) expect(() => entwurfPruefen(z, { einnahmen: { [a.id]: d } })).not.toThrow();
+    expect(() => entwurfPruefen(z, { einnahmen: { [a.id]: r.max + 1 } })).toThrow();
+  }
+});
+
+test('Regler: Schätzung des Aufkommens im ersten Jahr und dauerhaft', () => {
+  const z = regierung();
+  const ek = aufkommensSchaetzung(z, { einnahmen: { einkommensteuer: 1 } }, 'einkommensteuer');
+  expect(ek.erstesJahr).toBe(2400000); // 3 Mrd. je Stufe, 80 % im ersten Jahr
+  expect(ek.dauerhaft).toBe(3000000);
+  expect(ek.aufkommen).toBe(aufstellung(z, { einnahmen: { einkommensteuer: 1 } }).zeilen.find((x) => x.art.id === 'einkommensteuer').summe);
+  expect(aufkommensSchaetzung(z, {}, 'umsatz')).toMatchObject({ erstesJahr: 0, dauerhaft: 0 });
+  // Andere Änderungen im Entwurf zählen nicht mit
+  expect(aufkommensSchaetzung(z, { einnahmen: { einkommensteuer: 1, umsatz: 1 } }, 'einkommensteuer').erstesJahr).toBe(2400000);
+  expect(aufkommensSchaetzung(z, { einnahmen: { sonstige: 2 } }, 'sonstige').dauerhaft).toBe(0); // einmalig
+  const kap = aufkommensSchaetzung(z, { einnahmen: { kapitalertrag: 2 } }, 'kapitalertrag');
+  expect(kap.dauerhaft).toBeLessThan(2 * 900000); // Ausweichen ab der 2. Stufe
 });
