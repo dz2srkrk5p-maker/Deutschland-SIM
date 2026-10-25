@@ -49,9 +49,10 @@ function wirtschaftHtml(l) {
 
 function topProblemeHtml(zustand) {
   const liste = problemListe(zustand).slice(0, 4);
-  return `<ul class="liste">${liste.map((e) => `<li>
+  // Jede Zeile führt direkt zum Problem (Ursachen, Lösungen)
+  return `<ul class="liste">${liste.map((e) => `<li class="problem-zeile"><button data-problem="${e.problem.id}" class="problem-knopf">
     <span class="problem-kopf"><span>${e.problem.name} ${e.wert >= pc.stufen[2].ab ? badge(e.stufe.name, 'rot') : ''}</span><span class="zahl">${Math.round(e.wert)}</span></span>
-    ${balken(e.wert, e.wert >= pc.stufen[2].ab ? 'var(--gefahr)' : 'var(--warn)', { marke: pc.stufen[2].ab, label: `${e.problem.name}: ${Math.round(e.wert)} von 100` })}</li>`).join('')}</ul>
+    ${balken(e.wert, e.wert >= pc.stufen[2].ab ? 'var(--gefahr)' : 'var(--warn)', { marke: pc.stufen[2].ab, label: `${e.problem.name}: ${Math.round(e.wert)} von 100` })}</button></li>`).join('')}</ul>
     <div class="knoepfe"><button data-gehe="probleme">Alle Probleme und Lösungen</button></div>`;
 }
 
@@ -96,7 +97,7 @@ function koalitionHtml(zustand) {
     <div class="knoepfe">${knoepfe}</div>`;
 }
 
-export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onZugestaendnis, zusatz = '' }) {
+export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onProblem, onZugestaendnis, zusatz = '' }) {
   const e = offenesEreignis(zustand);
   const regierung = koalitionsParteien(zustand);
   const sitze = regierung.reduce((s, id) => s + zustand.sitze[id], 0);
@@ -141,4 +142,5 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onZug
   el.querySelectorAll('[data-zugestaendnis]').forEach((k) => k.addEventListener('click', () => onZugestaendnis({ partnerId: k.dataset.zugestaendnis })));
   el.querySelectorAll('[data-wahl]').forEach((k) => k.addEventListener('click', () => onEreignis({ wahl: Number(k.dataset.wahl) })));
   el.querySelectorAll('[data-gehe]').forEach((k) => k.addEventListener('click', () => onBereich(k.dataset.gehe)));
+  el.querySelectorAll('[data-problem]').forEach((k) => k.addEventListener('click', () => onProblem(k.dataset.problem)));
 }
