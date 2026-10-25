@@ -7,6 +7,7 @@ import { festeAusgaben2026 } from '../../data/haushalt.js';
 import { vorschau, mrd, prognose, kuerzungsVorschlag } from '../../engine/haushalt.js';
 import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { RECHTSARTEN } from '../../data/einnahmen.js';
+import { erklaerungen } from '../../data/hinweise.js';
 import { gegenfinanzierung } from '../../engine/einnahmen.js';
 import { haushaltsQuartal } from '../../engine/regierung.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
@@ -46,7 +47,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
   const bearbeitbar = haushaltsQuartal(zustand) && !zustand.offenesEreignis;
   const maxMinister = hh.ministerMaxProzent / hh.ministerSchrittProzent;
   const verteilung = zustand.kabinett.verteilung;
-  const params = () => ({ stufen: entwurf.stufen, einnahmen: entwurf.einnahmen, ausgestaltung: entwurf.ausgestaltung });
+  const params = () => ({ stufen: entwurf.stufen, einnahmen: entwurf.einnahmen, ausgestaltung: entwurf.ausgestaltung, kompromiss: Boolean(entwurf.kompromiss) });
 
   const etatZeile = (m, v) => {
     const stufe = entwurf.stufen[m.id] ?? 0;
@@ -132,7 +133,8 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       ${bearbeitbar ? karte(`
         ${durchfallen ? `<p class="rot">✗ Keine Mehrheit. Einbringen heißt: Der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} ${plusMinus(-config.minderheit.umfrageVerlustHaushaltGescheitert, 1)} Punkte (Fehlschlag ${(zustand.koalition.fehlschlaege ?? 0) + 1} von ${config.minderheit.fehlschlaegeBisSpielende} bis zum Spielende).</p>` : ''}
         ${!b.eingehalten && !durchfallen ? '<p class="rot">✗ Schuldenbremse überschritten: unter „Einnahmen“ gibt es Vorschläge zur Gegenfinanzierung.</p>' : ''}
-        ${v.bundesrat?.mehrheit === false && !durchfallen ? '<p class="rot">✗ Für die Steueränderung fehlt die Mehrheit im Bundesrat.</p>' : ''}
+        ${v.bundesrat?.mehrheit === false && !durchfallen ? `<p class="rot">✗ Für die Steueränderung fehlt die Mehrheit im Bundesrat.</p>${v.bundesrat.kompromissMoeglich ? `<p class="klein">${erklaerungen.kompromiss}</p><div class="knoepfe"><button id="kompromiss" ${zustand.kapital < config.kompromiss.kapital ? 'disabled' : ''}>Kompromiss mit den Ländern</button></div>` : ''}` : ''}
+        ${v.bundesrat?.kompromiss ? `<p class="gelb">⚠ Kompromiss im Bundesrat: Ausgleichszahlung an die Länder ${euro(v.ausgleich)} (in den Ausgaben enthalten), ${config.kompromiss.kapital} Kapital. <button id="kompromiss-weg">Kompromiss zurücknehmen</button></p>` : ''}
         <div class="knoepfe"><button id="beschliessen" class="${durchfallen ? 'gefahr primaer' : 'primaer'}" ${kannEinbringen ? '' : 'disabled'}>${durchfallen ? 'Trotzdem einbringen' : 'Haushalt einbringen'}</button></div>`) : ''}`;
   }
 
@@ -252,6 +254,8 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       entwurf.tab = 'ausgaben';
       neuZeichnen('[data-tab="ausgaben"]');
     });
+    el.querySelector('#kompromiss')?.addEventListener('click', () => ((entwurf.kompromiss = true), neuZeichnen('#beschliessen')));
+    el.querySelector('#kompromiss-weg')?.addEventListener('click', () => ((entwurf.kompromiss = false), neuZeichnen('#beschliessen')));
     el.querySelector('#beschliessen')?.addEventListener('click', () => onBeschliessen(params()));
   }
   zeichne();

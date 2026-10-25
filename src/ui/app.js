@@ -204,7 +204,7 @@ const ausfuehren = (aktion) => (params) => {
     neu();
     if (zustand.phase === 'koalition') ui.wahlabendGesehen = false;
   }
-  if (aktion === haushaltBeschliessen) Object.assign(ui.entwurf, { stufen: {}, einnahmen: {}, ausgestaltung: {}, tab: 'ueberblick' });
+  if (aktion === haushaltBeschliessen) Object.assign(ui.entwurf, { stufen: {}, einnahmen: {}, ausgestaltung: {}, kompromiss: false, tab: 'ueberblick' });
   ui.meldung = { texte: ergebnis.ereignisse, fehler: false };
   zeichne();
   fokusOben();

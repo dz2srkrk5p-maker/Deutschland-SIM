@@ -59,16 +59,18 @@ function wegKarte(zustand, w) {
     </tbody></table>
     ${aufklapp('Verbände und EU', `<table><tbody>${v.akteure.map((r) => `<tr><th scope="row">${r.akteur.name}</th><td>${haltung(r.haltung)}</td></tr>`).join('')}
       ${w.verfassung ? '<tr><th scope="row">Bundesverfassungsgericht</th><td><span class="gelb">⚠ Klage wahrscheinlich</span></td></tr>' : ''}</tbody></table>`)}
-    ${stand && stand.status !== 'gescheitert' ? '' : v.sperre ? `<p class="klein">✗ ${v.sperre.grund}</p>` : `<button class="primaer" data-waehlen="${w.id}">${v.revision ? 'Kurs wechseln …' : 'Diesen Weg wählen …'}</button>`}
+    ${stand && stand.status !== 'gescheitert' ? '' : v.sperre ? `<p class="klein">✗ ${v.sperre.grund}</p>${v.sperre.kompromiss && !v.kompromissSperre ? `<p class="klein">${erklaerungen.kompromiss}</p><button data-waehlen="${w.id}" data-kompromiss="1">Kompromiss im Bundesrat …</button>` : ''}` : `<button class="primaer" data-waehlen="${w.id}">${v.revision ? 'Kurs wechseln …' : 'Diesen Weg wählen …'}</button>`}
   </article>`;
 }
 
 // Bestätigungsdialog mit Zusammenfassung der Folgen
-function dialogHtml(zustand, wegId) {
+function dialogHtml(zustand, wegId, kompromiss = false) {
   const v = wegVorschau(zustand, wegId);
   const w = v.weg;
+  const km = config.kompromiss;
   return `<dialog id="weg-bestaetigen" aria-labelledby="weg-titel">
-    <h2 id="weg-titel">„${w.name}“ verbindlich beschließen?</h2>
+    <h2 id="weg-titel">„${w.name}“ ${kompromiss ? 'als Kompromiss im Bundesrat' : 'verbindlich'} beschließen?</h2>
+    ${kompromiss ? `<p class="gelb">⚠ Kompromiss: Im Bundesrat fehlen ${v.bundesrat.noetig - v.bundesrat.ja} Stimmen. Die Länder stimmen einer abgeschwächten Fassung zu: alle Wirkungen und Einnahmen nur zu ${Math.round(km.wirkungFaktor * 100)} %, politisches Kapital ${v.kompromissKapital} statt ${v.kapital}. Die Angaben unten gelten für die volle Fassung.</p>` : ''}
     <p>${badge(v.ausrichtung)} im Bereich ${w.bereich.name}. ${v.revision ? `<strong class="gelb">⚠ Kurswechsel: „${v.revision.name}“ wird zurückgenommen (Glaubwürdigkeit −${zahl(config.reformwege.revisionUmfrage, 1)}).</strong>` : 'Andere Wege in diesem Bereich sind danach nur mit hohem politischem Preis möglich.'}</p>
     <ul>
       <li>Bundestag: ${v.abstimmung.ja} Ja, ${v.abstimmung.nein} Nein – ${v.abstimmung.angenommen ? 'angenommen' : '<strong class="rot">abgelehnt (Kapital trotzdem teilweise verbraucht)</strong>'}</li>
@@ -118,10 +120,11 @@ export function reformenScreen(el, zustand, { auswahl, onAuswahl, onBeschliessen
   el.querySelectorAll('[data-bereich-auswahl]').forEach((k) => k.addEventListener('click', () => onAuswahl(k.dataset.bereichAuswahl)));
   el.querySelector('#zurueck')?.addEventListener('click', () => onAuswahl(null));
   el.querySelectorAll('[data-waehlen]').forEach((k) => k.addEventListener('click', () => {
-    el.querySelector('#dialog-platz').innerHTML = dialogHtml(zustand, k.dataset.waehlen);
+    const kompromiss = k.dataset.kompromiss === '1';
+    el.querySelector('#dialog-platz').innerHTML = dialogHtml(zustand, k.dataset.waehlen, kompromiss);
     const d = el.querySelector('#weg-bestaetigen');
     d.querySelector('[data-abbrechen]').addEventListener('click', () => (d.close(), k.focus()));
-    d.querySelector('[data-beschliessen]').addEventListener('click', () => (d.close(), onBeschliessen({ wegId: k.dataset.waehlen })));
+    d.querySelector('[data-beschliessen]').addEventListener('click', () => (d.close(), onBeschliessen({ wegId: k.dataset.waehlen, kompromiss })));
     d.showModal();
   }));
 }

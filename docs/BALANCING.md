@@ -94,25 +94,25 @@ Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
 | CDU/CSU | keine Reformwege | 58 % | 1 % | 0.0 | 0.0 | 0.1 | 70 % |
-| CDU/CSU | marktliberal | 64 % | 7 % | 5.0 | 1.1 | 0.1 | 70 % |
-| CDU/CSU | konservativ | 67 % | 8 % | 4.2 | 0.9 | 0.0 | 70 % |
-| CDU/CSU | sozialdemokratisch | 61 % | 1 % | 2.5 | 0.5 | 0.1 | 71 % |
-| CDU/CSU | gruen | 60 % | 1 % | 2.3 | 0.6 | 0.1 | 71 % |
-| CDU/CSU | links | 57 % | 1 % | 1.5 | 0.8 | 0.1 | 71 % |
+| CDU/CSU | marktliberal | 63 % | 8 % | 5.1 | 1.1 | 0.1 | 70 % |
+| CDU/CSU | konservativ | 66 % | 12 % | 4.6 | 0.8 | 0.1 | 70 % |
+| CDU/CSU | sozialdemokratisch | 56 % | 1 % | 3.3 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | gruen | 57 % | 0 % | 2.8 | 0.7 | 0.1 | 71 % |
+| CDU/CSU | links | 55 % | 1 % | 1.9 | 1.0 | 0.1 | 71 % |
 | CDU/CSU | national | 58 % | 18 % | 1.0 | 0.8 | 0.1 | 70 % |
-| CDU/CSU | pragmatisch | 67 % | 2 % | 3.4 | 0.9 | 0.0 | 70 % |
+| CDU/CSU | pragmatisch | 67 % | 2 % | 4.0 | 1.0 | 0.0 | 70 % |
 | CDU/CSU | passend | 67 % | 11 % | 6.9 | 1.6 | 0.0 | 70 % |
-| CDU/CSU | beliebig | 65 % | 7 % | 7.7 | 1.4 | 0.1 | 70 % |
+| CDU/CSU | beliebig | 62 % | 14 % | 8.0 | 1.5 | 0.2 | 70 % |
 | SPD | keine Reformwege | 26 % | 0 % | 0.0 | 0.0 | 0.0 | 67 % |
-| SPD | marktliberal | 26 % | 44 % | 3.2 | 0.7 | 0.0 | 67 % |
+| SPD | marktliberal | 26 % | 44 % | 3.3 | 0.7 | 0.0 | 67 % |
 | SPD | konservativ | 21 % | 45 % | 2.7 | 0.5 | 0.0 | 67 % |
 | SPD | sozialdemokratisch | 29 % | 4 % | 2.0 | 0.5 | 0.0 | 69 % |
-| SPD | gruen | 27 % | 13 % | 1.7 | 0.4 | 0.0 | 68 % |
+| SPD | gruen | 26 % | 13 % | 1.7 | 0.4 | 0.0 | 68 % |
 | SPD | links | 27 % | 5 % | 0.6 | 0.3 | 0.0 | 68 % |
 | SPD | national | 24 % | 27 % | 0.5 | 0.4 | 0.0 | 67 % |
 | SPD | pragmatisch | 27 % | 9 % | 2.5 | 0.7 | 0.0 | 68 % |
 | SPD | passend | 25 % | 19 % | 4.0 | 1.0 | 0.0 | 69 % |
-| SPD | beliebig | 21 % | 42 % | 4.1 | 0.8 | 0.0 | 67 % |
+| SPD | beliebig | 23 % | 43 % | 4.0 | 0.8 | 0.0 | 67 % |
 | Grüne | keine Reformwege | 8 % | 2 % | 0.0 | 0.0 | 0.0 | 65 % |
 | Grüne | marktliberal | 3 % | 16 % | 1.1 | 0.2 | 0.0 | 64 % |
 | Grüne | konservativ | 5 % | 12 % | 0.9 | 0.2 | 0.0 | 65 % |
@@ -130,25 +130,25 @@ Wie der Abschnitt davor, aber der Spieler reagiert auf jedes Ultimatum mit einem
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
 | CDU/CSU | keine Reformwege | 58 % | 0 % | 0.0 | 0.0 | 0.1 | 70 % |
-| CDU/CSU | marktliberal | 66 % | 5 % | 5.0 | 1.0 | 0.1 | 70 % |
-| CDU/CSU | konservativ | 70 % | 2 % | 4.1 | 0.9 | 0.0 | 70 % |
-| CDU/CSU | sozialdemokratisch | 61 % | 0 % | 2.5 | 0.5 | 0.1 | 71 % |
-| CDU/CSU | gruen | 59 % | 0 % | 2.3 | 0.6 | 0.1 | 71 % |
-| CDU/CSU | links | 57 % | 0 % | 1.5 | 0.8 | 0.1 | 71 % |
+| CDU/CSU | marktliberal | 63 % | 6 % | 5.2 | 1.1 | 0.1 | 70 % |
+| CDU/CSU | konservativ | 70 % | 3 % | 4.6 | 0.8 | 0.1 | 70 % |
+| CDU/CSU | sozialdemokratisch | 56 % | 0 % | 3.4 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | gruen | 56 % | 0 % | 2.8 | 0.7 | 0.1 | 71 % |
+| CDU/CSU | links | 54 % | 0 % | 1.9 | 1.0 | 0.1 | 71 % |
 | CDU/CSU | national | 58 % | 3 % | 1.0 | 0.8 | 0.1 | 71 % |
-| CDU/CSU | pragmatisch | 68 % | 1 % | 3.4 | 0.9 | 0.1 | 70 % |
+| CDU/CSU | pragmatisch | 67 % | 0 % | 4.0 | 1.0 | 0.0 | 70 % |
 | CDU/CSU | passend | 70 % | 3 % | 6.9 | 1.6 | 0.1 | 70 % |
-| CDU/CSU | beliebig | 63 % | 3 % | 7.7 | 1.4 | 0.1 | 70 % |
+| CDU/CSU | beliebig | 61 % | 3 % | 8.1 | 1.5 | 0.2 | 71 % |
 | SPD | keine Reformwege | 26 % | 0 % | 0.0 | 0.0 | 0.0 | 67 % |
-| SPD | marktliberal | 21 % | 25 % | 3.3 | 0.6 | 0.0 | 67 % |
-| SPD | konservativ | 24 % | 27 % | 2.6 | 0.5 | 0.0 | 68 % |
+| SPD | marktliberal | 21 % | 24 % | 3.3 | 0.6 | 0.0 | 67 % |
+| SPD | konservativ | 26 % | 27 % | 2.6 | 0.5 | 0.0 | 68 % |
 | SPD | sozialdemokratisch | 28 % | 1 % | 2.0 | 0.5 | 0.0 | 69 % |
-| SPD | gruen | 27 % | 3 % | 1.7 | 0.4 | 0.0 | 68 % |
+| SPD | gruen | 26 % | 3 % | 1.7 | 0.4 | 0.0 | 68 % |
 | SPD | links | 26 % | 1 % | 0.6 | 0.3 | 0.0 | 68 % |
 | SPD | national | 23 % | 10 % | 0.5 | 0.4 | 0.0 | 68 % |
-| SPD | pragmatisch | 29 % | 0 % | 2.5 | 0.7 | 0.0 | 68 % |
-| SPD | passend | 30 % | 1 % | 4.1 | 1.0 | 0.1 | 69 % |
-| SPD | beliebig | 25 % | 28 % | 4.2 | 0.9 | 0.0 | 68 % |
+| SPD | pragmatisch | 28 % | 0 % | 2.5 | 0.7 | 0.0 | 68 % |
+| SPD | passend | 30 % | 1 % | 4.1 | 1.0 | 0.0 | 69 % |
+| SPD | beliebig | 26 % | 29 % | 4.2 | 0.9 | 0.1 | 68 % |
 | Grüne | keine Reformwege | 7 % | 1 % | 0.0 | 0.0 | 0.0 | 65 % |
 | Grüne | marktliberal | 2 % | 9 % | 1.0 | 0.2 | 0.0 | 64 % |
 | Grüne | konservativ | 4 % | 5 % | 0.9 | 0.2 | 0.0 | 65 % |
@@ -230,15 +230,19 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `probleme.passungBonus` | 0.15 | System 3 |
 | `probleme.verlaufLaenge` | 16 | System 3 |
 | `ereignisse.chanceJeQuartal` | 0.3 | F14 |
-| `landtagswahlen.startJahr` | 2026 | M1/M3 (Quelle in config.js) |
-| `landtagswahlen.basis` | 0.35 | M1/M3 (Quelle in config.js) |
-| `landtagswahlen.jePunkt` | 0.08 | M1/M3 (Quelle in config.js) |
-| `landtagswahlen.min` | 0.1 | M1/M3 (Quelle in config.js) |
-| `landtagswahlen.max` | 0.85 | M1/M3 (Quelle in config.js) |
-| `landtagswahlen.verlustUmfrage` | 0.15 | M1/M3 (Quelle in config.js) |
-| `landtagswahlen.gewinnUmfrage` | 0.1 | M1/M3 (Quelle in config.js) |
-| `verfassungsrisiko.dauerQuartale` | 4 | M1/M3 (Quelle in config.js) |
-| `verfassungsrisiko.verlustUmfrage` | 0.3 | M1/M3 (Quelle in config.js) |
+| `kompromiss.maxFehlend` | 15 | M1/M3 (Quelle in config.js) |
+| `kompromiss.wirkungFaktor` | 0.6 | M1/M3 (Quelle in config.js) |
+| `kompromiss.kapital` | 10 | M1/M3 (Quelle in config.js) |
+| `kompromiss.laenderAusgleich` | 2000000 | M1/M3 (Quelle in config.js) |
+| `landtagswahlen.startJahr` | 2026 | Paket Mittel |
+| `landtagswahlen.basis` | 0.35 | Paket Mittel |
+| `landtagswahlen.jePunkt` | 0.08 | Paket Mittel |
+| `landtagswahlen.min` | 0.1 | Paket Mittel |
+| `landtagswahlen.max` | 0.85 | Paket Mittel |
+| `landtagswahlen.verlustUmfrage` | 0.15 | Paket Mittel |
+| `landtagswahlen.gewinnUmfrage` | 0.1 | Paket Mittel |
+| `verfassungsrisiko.dauerQuartale` | 4 | Paket Klein |
+| `verfassungsrisiko.verlustUmfrage` | 0.3 | Paket Klein |
 | `umfrageBilanz.runden` | 8 | Paket Klein |
 | `ticker.anzahl` | 3 | F15 |
 | `ticker.trendSchritte` | 3 | F15 |

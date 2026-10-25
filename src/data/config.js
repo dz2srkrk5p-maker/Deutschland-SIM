@@ -76,6 +76,12 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Kompromiss im Bundesrat (Paket Mittel, Feature 6, Spielwerte): vereinfachter Ersatz für den Vermittlungsausschuss.
+  // Möglich, wenn höchstens maxFehlend Stimmen zur Mehrheit fehlen. Reformweg: abgeschwächte Fassung (alle Wirkungen und
+  // Einnahmen × wirkungFaktor) gegen zusätzliches Kapital. Haushalt mit Steueränderung: einmalige Ausgleichszahlung an die
+  // Länder (laenderAusgleich, tausend €, zählt zur Schuldenbremse) plus Kapital.
+  kompromiss: { maxFehlend: 15, wirkungFaktor: 0.6, kapital: 10, laenderAusgleich: 2000000 },
+
   // Landtagswahlen (Paket Mittel, Feature 5, Spielwerte): Einzelmodell. Je Wahl bleibt die Landesregierung oder es
   // wechselt genau eine Partei. Wechselchance = basis ∓ jePunkt × Stimmung, Stimmung = Gewinn/Verlust der
   // Bundesregierungsparteien seit der Bundestagswahl in Punkten; begrenzt auf min…max. Eine Bundespartei, die eine

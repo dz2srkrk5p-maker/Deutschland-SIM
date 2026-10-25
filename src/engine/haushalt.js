@@ -4,7 +4,7 @@ import { ministerien } from '../data/ministerien.js';
 import { festeAusgaben2026 } from '../data/haushalt.js';
 import { startSchulden, startBip, kennzahlen } from '../data/kennzahlen.js';
 import { umverteilen, schwankung, runden } from './wahlkampf.js';
-import { bundesratAbstimmung } from './bundesrat.js';
+import { bundesratAbstimmung, kompromissMoeglich } from './bundesrat.js';
 import { abstimmung, abstimmen } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
@@ -47,7 +47,7 @@ const stufeOk = (stufe, max) => Number.isInteger(stufe) && Math.abs(stufe) <= ma
 
 // Haushalt nach dem Entwurf und seine Wirkung auf die Umfragen (vor der Schwankung) und auf Kennzahlen.
 // stufen: { ministeriumId: ganzzahlige Stufe }; einnahmen: { artId: Stufenänderung }; ausgestaltung: { schalterId: an/aus }
-export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung = {} } = {}) {
+export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung = {}, kompromiss = false } = {}) {
   const maxMinister = hh.ministerMaxProzent / hh.ministerSchrittProzent;
   for (const [id, stufe] of Object.entries(stufen)) {
     if (!(id in zustand.haushalt.etats) || !stufeOk(stufe, maxMinister)) throw new Error(`Ungültige Stufe für ${id}: ${stufe}`);
@@ -75,11 +75,15 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   }
   const ew = entwurfWirkung(zustand, entwurf);
   // Änderungen an Gemeinschafts-, Länder- und Gemeindesteuern brauchen den Bundesrat (Art. 105 GG)
-  const bundesrat = ew.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender) : null;
+  const br = ew.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender) : null;
+  // Kompromiss im Bundesrat (Feature 6): Ausgleichszahlung an die Länder statt Scheitern, wenn nicht zu viele Stimmen fehlen
+  const mitKompromiss = Boolean(kompromiss && br && kompromissMoeglich(br));
+  const bundesrat = br && { ...br, kompromissMoeglich: kompromissMoeglich(br), ...(mitKompromiss ? { mehrheit: true, kompromiss: true } : {}) };
+  const ausgleich = mitKompromiss ? config.kompromiss.laenderAusgleich : 0;
   // Der Haushalt braucht die einfache Mehrheit im Bundestag (F10); mit Koalitionsmehrheit immer erfüllt
   const bundestag = abstimmung(zustand, 'haushalt');
   return {
-    etats, einnahmen: einnahmenNeu, bilanz: bilanz(etats, einnahmenNeu.kern, laufendeKosten(zustand), zinsen(zustand), schuldenbremseGrenze(zustand)),
+    etats, einnahmen: einnahmenNeu, bilanz: bilanz(etats, einnahmenNeu.kern, laufendeKosten(zustand) + ausgleich, zinsen(zustand), schuldenbremseGrenze(zustand)), ausgleich,
     wirkung, posten, kennzahlWirkung: ew.wirkung, verfassung: ew.verfassung, rechtsrisiken: ew.rechtsrisiken, bundesrat, bundestag,
     // anteile: nach fester Wirkung, ohne Schwankung (für die Vorschau des Koalitionsbruchs)
     anteile: runden(umverteilen(zustand.anteile, wirkung)),
@@ -137,6 +141,8 @@ export function haushaltBeschliessen(zustand, params = {}) {
   if (gescheitert && !zustand.koalition.minderheit) throw new Error('Keine Mehrheit im Bundestag für den Haushalt');
   if (!gescheitert && !v.bilanz.eingehalten) throw new Error('Schuldenbremse überschritten');
   if (!gescheitert && v.bundesrat && !v.bundesrat.mehrheit) throw new Error('Keine Mehrheit im Bundesrat für die Steueränderung');
+  const kompromissPreis = !gescheitert && v.bundesrat?.kompromiss ? config.kompromiss.kapital : 0;
+  if (zustand.kapital < kompromissPreis) throw new Error(`Für den Kompromiss im Bundesrat fehlt politisches Kapital (${kompromissPreis} nötig)`);
 
   const jahr = zustand.haushalt.jahr;
   const alt = zustand.haushalt;
@@ -171,12 +177,13 @@ export function haushaltBeschliessen(zustand, params = {}) {
     (gescheitert
       ? `Haushalt Jahr ${jahr} im Bundestag gescheitert (${bundestag.ja} Ja, ${bundestag.nein} Nein): vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter, neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`
       : `Haushalt Jahr ${jahr} beschlossen: neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`) + (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
+    ...(kompromissPreis ? [`Kompromiss im Bundesrat: Ausgleichszahlung an die Länder ${zahl(mrd(v.ausgleich))} Mrd., ${kompromissPreis} Kapital`] : []),
     `Wirtschaft: Wachstum ${zahl(w.land.wachstum, 1)} %, Inflation ${zahl(w.land.inflation, 1)} %, Arbeitslosigkeit ${zahl(w.land.arbeitslosigkeit, 1)} %, Schuldenquote ${zahl(w.land.schuldenquote, 1)} %`,
   ];
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme() }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
+  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme(), kapital: zustand.kapital - kompromissPreis }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

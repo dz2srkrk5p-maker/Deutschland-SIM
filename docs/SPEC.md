@@ -201,6 +201,15 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
 - Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
 
+## System: Kompromiss im Bundesrat (Paket Mittel, Feature 6, freigegeben 2026-10-25)
+- Dateien: `src/engine/bundesrat.js` (`kompromissMoeglich`), `src/engine/reformwege.js` (`wegSperre`/`wegBeschliessen` mit `kompromiss`, `wegFuer`), `src/engine/haushalt.js` (`vorschau`/`haushaltBeschliessen` mit `kompromiss`). Zahlen: `config.kompromiss` (Spielwerte). Vereinfachter Ersatz für den Vermittlungsausschuss.
+- Möglich, wenn im Bundesrat höchstens 15 Stimmen zur Mehrheit fehlen (z. B. Union + SPD mit 24 von 35); fehlen mehr, scheitert das Vorhaben wie bisher.
+- Reformweg als Kompromiss: abgeschwächte Fassung, alle Wirkungen (sofort, nach Umsetzung, Trends) und Einnahmen × 0,6; politisches Kapital +10. Gekennzeichnet am Weg (`reformwege[id].kompromiss`), in Haushalt-Herleitung „(Kompromiss)“. Laufende Kosten unverändert.
+- Haushalt mit zustimmungspflichtiger Steueränderung: Die Steuerstufen lassen sich nicht teilen; der Kompromiss ist eine einmalige Ausgleichszahlung an die Länder (2 Mrd., in den Ausgaben, zählt zur Schuldenbremse) plus 10 Kapital.
+- Anzeige: Wegekarte mit Knopf „Kompromiss im Bundesrat …“ und Bestätigungsdialog (fehlende Stimmen, Abschwächung, Kapital); Haushalt-Übersicht mit „Kompromiss mit den Ländern“ und „Kompromiss zurücknehmen“; Erklärtext in `hinweise.js` (`erklaerungen.kompromiss`).
+- Kein neues Pflichtfeld im Spielstand (`kompromiss` am Weg ist optional, fehlt = kein Kompromiss).
+- Balancing: Die Reformweg-Strategien nutzen den Kompromiss, wenn ein Weg nur am Bundesrat scheitert. Messung (qa/f6-kompromiss.json): CDU/CSU +0,4–0,8 beschlossene Wege, Siegquote −1 bis −5 Punkte, Koalitionsbruch bei Wegen gegen den Partner höher (konservativ 8 → 12 %, beliebig 7 → 14 %).
+
 ## System: Landtagswahlen (Paket Mittel, Feature 5, freigegeben 2026-10-25: Einzelmodell schlank, echte Termine, Neubildung per Spielregel)
 - Dateien: `src/data/laender.js` (Feld `wahl` je Land mit Quelle, `wahlperiode`), `src/engine/landtagswahlen.js`, `src/engine/bundesrat.js` (liest die Landesregierungen aus dem Spielstand). Zahlen: `config.landtagswahlen` (Spielwerte).
 - Termine: wahlrecht.de, Termine (Stand 2026): Saarland, Schleswig-Holstein, Nordrhein-Westfalen, Bremen 2027 Q2; Niedersachsen 2027 Q3; Bayern, Hessen 2028 Q3 („Herbst“); Sachsen, Thüringen, Brandenburg 2029 Q3; Hamburg 2030 Q1 („Winter“). Länder mit Wahl 2026 und alle späteren Termine: Fortschreibung um die Wahlperiode (5 Jahre, Bremen 4), Spielwert.

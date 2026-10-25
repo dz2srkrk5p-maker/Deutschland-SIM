@@ -58,6 +58,6 @@ export function hilfeHtml() {
         Ebenen ist ein fester Anteil des BIP.</li>
       <li><strong>Zinsmarkt</strong> fehlt. Zinsen wachsen mit dem Schuldenstand, dazu kommt ein gedämpfter Zinsaufschlag bei
         hoher Schuldenquote oder hoher Neuverschuldung (höchstens 30 %, Spielwerte). Eine Zinskurve oder Reaktionen der Märkte gibt es nicht.</li>
-      <li><strong>Vermittlungsausschuss</strong> fehlt. Ohne Mehrheit im Bundesrat lässt sich ein Zustimmungsgesetz nicht beschließen; es gibt keine Kompromissrunde.</li>
+      <li><strong>Vermittlungsausschuss</strong> fehlt als Verfahren. Fehlen im Bundesrat höchstens 15 Stimmen, gibt es einen vereinfachten Kompromiss (abgeschwächter Reformweg bzw. Ausgleichszahlung an die Länder, Spielwerte); fehlen mehr, scheitert das Vorhaben.</li>
     </ul>`)}`;
 }

@@ -30,8 +30,11 @@ Diese Teile fehlen absichtlich, damit das Modell überschaubar bleibt:
   mit dem Schuldenstand; dazu kommt seit Paket Klein ein gedämpfter **Zinsaufschlag** (`config.haushalt.zinsaufschlag`,
   Spielwerte): Er steigt, wenn die Schuldenquote über 70 % liegt oder der Bund mehr als 1,5 % des BIP neu leiht, passt sich
   je Jahr nur zu 30 % an, sinkt wieder, wenn sich die Lage bessert, und ist bei 30 % auf die Zinslast gedeckelt.
-- **Vermittlungsausschuss.** Fehlt im Bundesrat die Mehrheit für ein Zustimmungsgesetz, ist das Vorhaben gescheitert;
-  es gibt keine Kompromissrunde.
+- **Vermittlungsausschuss.** Es gibt kein Verfahren mit Sitzungen und Einigungsvorschlag. Stattdessen seit Paket Mittel ein
+  vereinfachter **Kompromiss im Bundesrat** (`config.kompromiss`, Spielwerte): Fehlen höchstens 15 Stimmen, stimmen die
+  Länder einem Reformweg in abgeschwächter Fassung zu (60 % der Wirkung, 10 Kapital mehr) bzw. einer Steueränderung im
+  Haushalt gegen eine einmalige Ausgleichszahlung von 2 Mrd. plus 10 Kapital. Fehlen mehr Stimmen, scheitert das Vorhaben.
+- **Landtagswahlen** gibt es seit Paket Mittel (Einzelmodell, echte Termine bis 2030); Länderhaushalte weiterhin nicht.
 
 Verbleibende Verzerrung: Verteidigungsausgaben über der Freigrenze zählen weiter nicht zur Schuldenbremse. Der
 Zinsaufschlag verteuert diesen Weg inzwischen (Messung: Schuldenquote nach 12 Jahren im Mittel 82 % statt 84 %, Aufschlag

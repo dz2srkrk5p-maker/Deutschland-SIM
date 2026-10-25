@@ -195,15 +195,17 @@ const loesungZeilen = spielbar.flatMap((p) =>
 // System 1: Reformwege nach Ausrichtung. Je Quartal zuerst ein Weg der Ausrichtung, der laut Vorschau angenommen wird
 // (Anschlussreformen vor Grundwegen), sonst eine Lösung für das größte Problem. „beliebig“: der Weg mit dem kleinsten Risiko.
 const alleWege = bereiche.flatMap((b) => b.wege);
+// Feature 6: ein Weg, der nur am Bundesrat scheitert, wird als Kompromiss beschlossen, wenn das möglich ist
+const frei = (z, id) => !wegSperre(z, id) || !wegSperre(z, id, { kompromiss: true });
 const wegWahl = (passt) => (z) => alleWege
-  .filter((w) => passt(w) && !z.reformwege[w.id] && !wegSperre(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision)
+  .filter((w) => passt(w) && !z.reformwege[w.id] && frei(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision)
   .sort((a, b) => !!b.braucht - !!a.braucht || a.risiko - b.risiko)[0];
 const REFORM = {
   'keine Reformwege': () => null,
   ...Object.fromEntries(Object.keys(AUSRICHTUNGEN).map((r) => [r, wegWahl((w) => w.richtung === r)])),
   // Wege nahe an der Position der Kanzlerpartei (Abstand bis 1), der nächste zuerst
   passend: (z) => alleWege
-    .filter((w) => abstand(wegVektor(w), parteiPosition(z.kanzlerParteiId)) <= 1 && !z.reformwege[w.id] && !wegSperre(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision)
+    .filter((w) => abstand(wegVektor(w), parteiPosition(z.kanzlerParteiId)) <= 1 && !z.reformwege[w.id] && frei(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision)
     .sort((a, b) => abstand(wegVektor(a), parteiPosition(z.kanzlerParteiId)) - abstand(wegVektor(b), parteiPosition(z.kanzlerParteiId)))[0],
   beliebig: wegWahl(() => true),
 };
@@ -228,7 +230,7 @@ function reformZeile(id, name, wahl, reagieren) {
         else if (z.phase === 'regierung' && haushaltsQuartal(z)) r = beschliessen(z, {});
         else if (z.phase === 'regierung') {
           const w = wahl(z);
-          r = w ? wegBeschliessen(z, { wegId: w.id }) : regierenMit(LOESUNG['größtes Problem zuerst'])(z);
+          r = w ? wegBeschliessen(z, { wegId: w.id, kompromiss: Boolean(wegSperre(z, w.id)) }) : regierenMit(LOESUNG['größtes Problem zuerst'])(z);
           if (w && r.state === z) r = quartalBeenden(z);
         } else break;
         if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
@@ -250,7 +252,7 @@ const bruchZeilen = REFORM_PARTEIEN.flatMap((id) => Object.entries(REFORM).map((
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2', reformwege: 'System 1', koalitionsbruch: 'Block 2', umfrageBilanz: 'Paket Klein', landtagswahlen: 'Paket Mittel', verfassungsrisiko: 'Paket Klein' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2', reformwege: 'System 1', koalitionsbruch: 'Block 2', umfrageBilanz: 'Paket Klein', landtagswahlen: 'Paket Mittel', verfassungsrisiko: 'Paket Klein', kompromiss: 'Paket Mittel' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht
