@@ -37,7 +37,7 @@ const STRATEGIEN = {
   'Haushalt unverändert': () => ({}),
   // jedes Ministerium eines Partners jedes Jahr −5 %
   'Partner kürzen': (z) => ({
-    stufen: Object.fromEntries(Object.entries(z.kabinett.verteilung).filter(([, id]) => id !== z.spielerParteiId).map(([m]) => [m, -1])),
+    stufen: Object.fromEntries(Object.entries(z.kabinett.verteilung).filter(([, id]) => id !== z.spielerParteiId).map(([m]) => [m, -5 / config.haushalt.ministerSchrittProzent])),
   }),
 };
 

@@ -5,7 +5,7 @@ import { config } from '../../data/config.js';
 import { gruppen as gruppenListe } from '../../data/kennzahlen.js';
 import { probleme as problemListe } from '../../data/probleme.js';
 import { festeAusgaben2026 } from '../../data/haushalt.js';
-import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmeWirkung } from '../../engine/haushalt.js';
+import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmeWirkung, etatNeu } from '../../engine/haushalt.js';
 import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { RECHTSARTEN } from '../../data/einnahmen.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -75,15 +75,16 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
   const parameterBei = (art, d) => art.parameter.startwert + ((art.parameter.einmalig ? 0 : (zustand.haushalt.einnahmen.stufen[art.id] ?? 0)) + d) * art.parameter.schritt;
   const params = () => ({ stufen: entwurf.stufen, einnahmen: entwurf.einnahmen, ausgestaltung: entwurf.ausgestaltung, kompromiss: Boolean(entwurf.kompromiss) });
 
-  const etatZeile = (m, v) => {
+  // Etat je Ministerium: Betrag und Änderung, im Haushaltsquartal mit Schieberegler (Schritt und Grenze aus config)
+  const etatProzent = (stufe) => `${plusMinus(stufe * hh.ministerSchrittProzent, 0)} %`;
+  const etatBetrag = (m, stufe) => `${euro(etatNeu(zustand.haushalt.etats[m.id], stufe))}${prozentStufe(stufe, hh.ministerSchrittProzent)}`;
+  const etatZeile = (m) => {
     const stufe = entwurf.stufen[m.id] ?? 0;
-    return `
-    <div class="posten ${bearbeitbar ? '' : 'nurlesen'}">
-      <span>${punkt(partei(verteilung[m.id]).farbe)}${m.kurz}</span>
-      <span class="betrag">${euro(v.etats[m.id])}${prozentStufe(stufe, hh.ministerSchrittProzent)}</span>
-      ${bearbeitbar ? `
-      <button data-etat="${m.id}" data-dir="-1" ${stufe <= -maxMinister ? 'aria-disabled="true"' : ''} aria-label="${m.kurz} senken">−</button>
-      <button data-etat="${m.id}" data-dir="1" ${stufe >= maxMinister ? 'aria-disabled="true"' : ''} aria-label="${m.kurz} erhöhen">+</button>` : ''}
+    return `<div class="etat ${bearbeitbar ? '' : 'nurlesen'}">
+      <span class="etat-name">${punkt(partei(verteilung[m.id]).farbe)}${m.kurz} <small>${partei(verteilung[m.id]).name}</small></span>
+      ${bearbeitbar ? `<input type="range" data-etat-regler="${m.id}" min="${-maxMinister}" max="${maxMinister}" step="1" value="${stufe}"
+        aria-label="Etat ${m.kurz}" aria-valuetext="${etatProzent(stufe)}">` : ''}
+      <span class="betrag" data-etat-betrag="${m.id}">${etatBetrag(m, stufe)}</span>
     </div>`;
   };
 
@@ -183,7 +184,9 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
 
   function ausgabenTab(v) {
     const b = v.bilanz;
-    return karte(ministerien.map((m) => etatZeile(m, v)).join(''), { titel: `Ministerien <small>(je Schritt ${hh.ministerSchrittProzent} %, höchstens ±${hh.ministerMaxProzent} %)</small>` })
+    const saldo = `<div class="bilanz"><span>Schuldenbremse mit diesem Entwurf</span><span>${status(b.eingehalten ? 'ok' : 'rot', `${euro(b.schuldenbremse)} von ${euro(b.grenze)}`)}</span>
+      <span>Ministerien zusammen</span><span>${euro(Object.values(v.etats).reduce((s, x) => s + x, 0))}</span></div>`;
+    return karte(saldo + ministerien.map(etatZeile).join(''), { titel: `Ministerien <small>(je Schritt ${hh.ministerSchrittProzent} %, höchstens ±${hh.ministerMaxProzent} % gegenüber dem Vorjahr)</small>` })
       + karte(`<div class="bilanz">
         <span>Zinsen (Bundesschuld, wächst mit dem Schuldenstand)</span><span>${euro(b.zinsen)}</span>
         <span>Allgemeine Finanzverwaltung</span><span>${euro(festeAusgaben2026.finanzverwaltung)}</span>
@@ -256,11 +259,17 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
 
   function binden() {
     el.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => ((entwurf.tab = t.dataset.tab), neuZeichnen(`[data-tab="${t.dataset.tab}"]`))));
-    el.querySelectorAll('[data-etat]').forEach((k) => k.addEventListener('click', () => {
-      if (k.getAttribute('aria-disabled') === 'true') return;
-      entwurf.stufen[k.dataset.etat] = (entwurf.stufen[k.dataset.etat] ?? 0) + Number(k.dataset.dir);
-      neuZeichnen(`[data-etat="${k.dataset.etat}"][data-dir="${k.dataset.dir}"]`);
-    }));
+    // Etat-Regler: beim Ziehen nur den Betrag daneben aktualisieren, beim Loslassen alles neu zeichnen (Schuldenbremse)
+    el.querySelectorAll('[data-etat-regler]').forEach((r) => {
+      const m = ministerien.find((x) => x.id === r.dataset.etatRegler);
+      r.addEventListener('input', () => {
+        const stufe = Number(r.value);
+        entwurf.stufen[m.id] = stufe;
+        r.setAttribute('aria-valuetext', etatProzent(stufe));
+        el.querySelector(`[data-etat-betrag="${m.id}"]`).innerHTML = etatBetrag(m, stufe);
+      });
+      r.addEventListener('change', () => neuZeichnen(`[data-etat-regler="${m.id}"]`));
+    });
     // Regler: beim Ziehen nur Wert und Schätzung daneben aktualisieren, beim Loslassen alles neu zeichnen
     el.querySelectorAll('[data-regler]').forEach((r) => {
       const art = einnahmeart(r.dataset.regler);

@@ -46,6 +46,9 @@ export function bilanz(etats, einnahmen, reformen = 0, zinsAusgaben = festeAusga
 
 const stufeOk = (stufe, max) => Number.isInteger(stufe) && Math.abs(stufe) <= max;
 
+// Etat nach einer Änderung um stufe Schritte (ministerSchrittProzent je Schritt) gegenüber dem Vorjahr
+export const etatNeu = (alt, stufe) => Math.round(alt * (1 + (stufe * hh.ministerSchrittProzent) / 100));
+
 // Haushalt nach dem Entwurf und seine Wirkung auf die Umfragen (vor der Schwankung) und auf Kennzahlen.
 // stufen: { ministeriumId: ganzzahlige Stufe }; einnahmen: { artId: Stufenänderung }; ausgestaltung: { schalterId: an/aus }
 export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung = {}, kompromiss = false } = {}) {
@@ -64,7 +67,7 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   const etats = {};
   for (const m of ministerien) {
     const alt = zustand.haushalt.etats[m.id];
-    etats[m.id] = Math.round(alt * (1 + ((stufen[m.id] ?? 0) * hh.ministerSchrittProzent) / 100));
+    etats[m.id] = etatNeu(alt, stufen[m.id] ?? 0);
     const delta = mrd(etats[m.id] - alt);
     if (delta) dazu(verteilung[m.id], delta * (delta > 0 ? hh.wirkungMehrausgabeProMrd : hh.wirkungKuerzungProMrd), `Haushalt: Etat ${m.kurz} ${delta > 0 ? 'erhöht' : 'gekürzt'}`);
   }

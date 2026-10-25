@@ -85,9 +85,9 @@ export const config = {
 
   // Koalitionsvertrag (Paket Groß, Feature 7, Spielwerte): je Partner vorschlaegeJePartner Vorschläge, 1 bis maxJePartner
   // aufnehmen. Erfüllt (Vorhaben beschlossen): Partner +bonusUmsetzung. Gebrochen (anderer Weg im zugesagten Bereich):
-  // −strafeBruch. Beim Haushalt: Kürzung um kuerzungStufen Stufen (10 %) oder mehr in einem Partner-Ressort −strafeKuerzung;
+  // −strafeBruch. Beim Haushalt: Kürzung um kuerzungAbProzent oder mehr in einem Partner-Ressort −strafeKuerzung;
   // je Vorhaben im Rückstand (anteilig fällig über die Wahlperiode) −strafeRueckstand.
-  koalitionsvertrag: { vorschlaegeJePartner: 2, maxJePartner: 2, bonusUmsetzung: 0.3, strafeBruch: 0.5, kuerzungStufen: 2, strafeKuerzung: 0.2, strafeRueckstand: 0.15 },
+  koalitionsvertrag: { vorschlaegeJePartner: 2, maxJePartner: 2, bonusUmsetzung: 0.3, strafeBruch: 0.5, kuerzungAbProzent: 10, strafeKuerzung: 0.2, strafeRueckstand: 0.15 },
 
   // Kompromiss im Bundesrat (Paket Mittel, Feature 6, Spielwerte): vereinfachter Ersatz für den Vermittlungsausschuss.
   // Möglich, wenn höchstens maxFehlend Stimmen zur Mehrheit fehlen. Reformweg: abgeschwächte Fassung (alle Wirkungen und
@@ -143,8 +143,10 @@ export const config = {
 
   // Haushalt, freigegeben 2026-10-20 (M8). Geldbeträge in tausend Euro. Ein Haushalt pro Jahr, legislaturJahre Jahre.
   haushalt: {
-    ministerSchrittProzent: 5,
-    ministerMaxProzent: 20, // je Jahr gegenüber Vorjahr
+    // Etat je Ministerium per Schieberegler: Schritt 1 %, höchstens ±25 % je Jahr gegenüber Vorjahr
+    // (Wunsch des Nutzers 2026-10-25; vorher 5 %-Schritte, ±20 %)
+    ministerSchrittProzent: 1,
+    ministerMaxProzent: 25,
     // Für die Schuldenbremse zählende Kreditaufnahme 2026: 40,39 Mrd. = Obergrenze (Haushaltsausschuss, hib 622/2025)
     schuldenbremseGrenze: 40390000,
     // Verteidigungsausgaben über dieser Freigrenze zählen nicht zur Schuldenbremse. Kalibriert, damit der echte

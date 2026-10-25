@@ -81,7 +81,7 @@ export function vertragHaushalt(zustand, stufen = {}) {
   if (!vertrag) return [];
   const posten = [];
   for (const [m, id] of Object.entries(vertrag.ressorts)) {
-    if (!zustand.koalition.partner.includes(id) || (stufen[m] ?? 0) > -kv.kuerzungStufen) continue;
+    if (!zustand.koalition.partner.includes(id) || (stufen[m] ?? 0) * config.haushalt.ministerSchrittProzent > -kv.kuerzungAbProzent) continue;
     posten.push({ ursache: `Koalitionsvertrag: Ressort ${ministerien.find((x) => x.id === m).kurz} deutlich gekürzt`, partei: id, wert: -kv.strafeKuerzung });
   }
   for (const id of zustand.koalition.partner) {

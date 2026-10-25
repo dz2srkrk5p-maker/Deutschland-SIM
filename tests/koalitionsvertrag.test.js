@@ -56,7 +56,7 @@ test('Feature 7: Haushalt – Kürzung im Partner-Ressort und Rückstand kosten 
   const z = kabinett();
   const imAmt = { ...bestaetigen(z, { verteilung: vorschlag(z) }).state, quartal: 4 };
   const partnerRessort = Object.keys(imAmt.koalition.vertrag.ressorts)[0];
-  const posten = vertragHaushalt({ ...imAmt, haushalt: { ...imAmt.haushalt, jahr: 2 } }, { [partnerRessort]: -kv.kuerzungStufen });
+  const posten = vertragHaushalt({ ...imAmt, haushalt: { ...imAmt.haushalt, jahr: 2 } }, { [partnerRessort]: -kv.kuerzungAbProzent / config.haushalt.ministerSchrittProzent });
   expect(posten.some((p) => p.ursache.includes('deutlich gekürzt') && p.wert === -kv.strafeKuerzung)).toBe(true);
   expect(faellig(1, 1)).toBe(0);
   expect(faellig(1, 4)).toBe(1);

@@ -303,3 +303,11 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
 .werte-tabelle { font-size: var(--t-klein); }
 .werte-tabelle th, .werte-tabelle td { white-space: nowrap; padding: var(--a-halb) 6px; }
 .werte-tabelle thead th { vertical-align: bottom; line-height: 1.2; }
+/* Etats per Schieberegler (Haushalt → Ausgaben) */
+.etat { display: grid; grid-template-columns: minmax(9em, 1fr) minmax(8em, 2fr) 10em; gap: var(--a1) var(--a2); align-items: center; padding: var(--a-halb) 0; border-bottom: 1px solid var(--linie); }
+.etat.nurlesen { grid-template-columns: 1fr auto; }
+.etat input[type='range'] { width: 100%; min-height: 36px; margin: 0; accent-color: var(--akzent); }
+@media (max-width: 560px) {
+  .etat { grid-template-columns: 1fr auto; }
+  .etat input[type='range'] { grid-column: 1 / -1; grid-row: 2; }
+}
