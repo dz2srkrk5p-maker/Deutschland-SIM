@@ -201,6 +201,18 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
 - Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
 
+## System: Landtagswahlen (Paket Mittel, Feature 5, freigegeben 2026-10-25: Einzelmodell schlank, echte Termine, Neubildung per Spielregel)
+- Dateien: `src/data/laender.js` (Feld `wahl` je Land mit Quelle, `wahlperiode`), `src/engine/landtagswahlen.js`, `src/engine/bundesrat.js` (liest die Landesregierungen aus dem Spielstand). Zahlen: `config.landtagswahlen` (Spielwerte).
+- Termine: wahlrecht.de, Termine (Stand 2026): Saarland, Schleswig-Holstein, Nordrhein-Westfalen, Bremen 2027 Q2; Niedersachsen 2027 Q3; Bayern, Hessen 2028 Q3 („Herbst“); Sachsen, Thüringen, Brandenburg 2029 Q3; Hamburg 2030 Q1 („Winter“). Länder mit Wahl 2026 und alle späteren Termine: Fortschreibung um die Wahlperiode (5 Jahre, Bremen 4), Spielwert.
+- Kalenderjahr = 2026 + Kanzlerjahre (das Spiel hatte keine absolute Jahreszahl). Wahlen finden am Ende des Quartals statt, nur in der Regierungszeit.
+- Ergebnis: Wechselchance = 0,35 − 0,08 × Stimmung, wo eine Bundesregierungspartei mitregiert, sonst 0,35 + 0,08 × Stimmung; Stimmung = Gewinn/Verlust der Bundesregierungsparteien seit der Bundestagswahl in Punkten; begrenzt auf 10–85 %. Bei Wechsel tauscht genau eine Partei: die größte Bundesregierungspartei im Land raus, die inhaltlich nächste Partei (CHES) außerhalb von Bundes- und Landesregierung rein, die in der Umfrage mindestens an der Sperrklausel liegt und nicht hinter der Brandmauer steht; ohne Ersatz scheidet sie aus. Regiert keine Bundespartei mit, kommt die nächste Bundesregierungspartei hinzu.
+- Koalitionsstimmung: Bundespartei verliert eine Landesregierung −0,15, gewinnt eine +0,1 (Umfrage-Bilanz; über die Ultimatum-Logik wirkt das auf die Koalition).
+- Berlin, Sachsen-Anhalt und Mecklenburg-Vorpommern (geschäftsführend): Neubildung am ersten Quartalsende nach derselben Wechselregel (Spielregel, ohne Umfragewirkung).
+- Anzeige: Lage, Karte „Landtagswahlen“ ein Quartal vorher (Regierung, Wechselchance, was sich bei Wechsel ändert, Bundesratsstimmen vorher/nachher); Parlament → Bundesrat mit Stand und nächster Wahl je Land; Ergebnis als Meldung.
+- Spielstand-Version 17: `laender` (alte Stände: Stand 09/2026).
+- Messung (qa/f5-landtagswahlen.json): CDU/CSU verliert 1–7 Punkte Siegquote, Koalitionsbrüche steigen (CDU/CSU Haushalt unverändert 2 → 8 %, Partner kürzen 32 → 43 %), SPD +2 bis +4; Grüne in vier Zeilen unter 5 % (3–6 Partien von 200).
+- Bekannte Grenze: Bei Union-SPD-Koalitionen kommen über 5 % und ohne AfD nur Grüne und Linke als Ersatz in Frage; ein Wechsel in Union-geführten Ländern bringt daher oft die Linke.
+
 ## System: Verfassungsrisiko für Steuern (Paket Klein, Feature 3, freigegeben 2026-10-24)
 - Dateien: `src/data/einnahmen.js` (`RECHTSARTEN`, Feld `rechtsrisiko` an Einnahmearten und Ausgestaltungen), `src/engine/einnahmen.js` (`rechtsrisiken`), `src/engine/verfahren.js` (`verfahrenAnlegen`, `verfahrenQuartal`). Zahlen: `config.verfassungsrisiko`. Alle Chancen sind Spielwerte, keine Rechtsauskunft.
 - Arten: Eingriff in das Eigentum (Art. 14 GG): Vermögensteuer erhöhen 35 %, einmalige Vermögensabgabe 40 %. Gleichbehandlung (Art. 3 GG): Entlastung für Mittelstand und Handwerk, ermäßigter Satz Gastronomie, Industriestrom, Agrardiesel je 10 %. Rückwirkung: nicht anwendbar, das Spiel kennt keine rückwirkenden Änderungen. Ersetzt das frühere Ja/Nein-Merkmal `verfassung` (nur Warnhinweis).

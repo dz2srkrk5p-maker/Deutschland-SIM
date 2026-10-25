@@ -4,6 +4,7 @@ import { reformwegeQuartal } from './reformwege.js';
 import { ereignisZiehen } from './ereignisse.js';
 import { koalitionPruefen } from './haushalt.js';
 import { verfahrenQuartal } from './verfahren.js';
+import { landtagswahlenQuartal } from './landtagswahlen.js';
 import { zurueckInDenWahlkampf } from './state.js';
 
 const letztes = config.regierung.quartaleJeJahr;
@@ -22,8 +23,9 @@ export function quartalBeenden(zustand) {
   const umsetzung = reformwegeQuartal(entwicklung.state);
   // Ultimaten und Koalitionsbruch nach Fristablauf (Block 2)
   const urteile = verfahrenQuartal(umsetzung.state);
-  const lage = koalitionPruefen(urteile.state);
-  const vorher = [`Haushaltsjahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal} vorbei`, ...entwicklung.ereignisse, ...umsetzung.ereignisse, ...urteile.ereignisse, ...lage.ereignisse];
+  const land = landtagswahlenQuartal(urteile.state);
+  const lage = koalitionPruefen(land.state);
+  const vorher = [`Haushaltsjahr ${zustand.haushalt.jahr}, Quartal ${zustand.quartal} vorbei`, ...entwicklung.ereignisse, ...umsetzung.ereignisse, ...urteile.ereignisse, ...land.ereignisse, ...lage.ereignisse];
   if (lage.neuwahl) return { state: zurueckInDenWahlkampf(lage.state), ereignisse: vorher };
   const neu = ereignisZiehen({ ...lage.state, quartal: zustand.quartal + 1 });
   return { state: neu.state, ereignisse: [...vorher, ...neu.ereignisse] };

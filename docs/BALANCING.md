@@ -1,6 +1,6 @@
 # Balancing-Bericht
 
-Erzeugt mit `npm run balancing` am 2026-10-24. 200 Partien je Partei und Strategie (Seeds 1–200).
+Erzeugt mit `npm run balancing` am 2026-10-25. 200 Partien je Partei und Strategie (Seeds 1–200).
 
 ## Strategien der Simulation
 - Wahlkampf: jede Woche Plakate und Werbung (Hauptergebnisse); weitere Wahlkampf-Strategien siehe eigener Abschnitt.
@@ -13,16 +13,16 @@ Erzeugt mit `npm run balancing` am 2026-10-24. 200 Partien je Partei und Strateg
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |
 |---|---|---|---|---|---|
-| Haushalt unverändert | CDU/CSU | 100 % | 2 % | 24 % | 6.4 |
+| Haushalt unverändert | CDU/CSU | 100 % | 8 % | 17 % | 6.0 |
 | Haushalt unverändert | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Haushalt unverändert | SPD | 36 % | 0 % | 2 % | 2.0 |
-| Haushalt unverändert | Grüne | 9 % | 0 % | 0 % | 0.4 |
+| Haushalt unverändert | SPD | 36 % | 3 % | 4 % | 2.2 |
+| Haushalt unverändert | Grüne | 9 % | 1 % | 0 % | 0.4 |
 | Haushalt unverändert | Linke | 1 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | BSW | 0 % | 0 % | 0 % | 0.0 |
 | Haushalt unverändert | FDP | 2 % | 0 % | 0 % | 0.1 |
-| Partner kürzen | CDU/CSU | 100 % | 32 % | 15 % | 6.1 |
+| Partner kürzen | CDU/CSU | 100 % | 43 % | 15 % | 5.7 |
 | Partner kürzen | AfD | 0 % | 0 % | 0 % | 0.0 |
-| Partner kürzen | SPD | 36 % | 34 % | 3 % | 2.1 |
+| Partner kürzen | SPD | 36 % | 35 % | 3 % | 1.8 |
 | Partner kürzen | Grüne | 9 % | 6 % | 0 % | 0.3 |
 | Partner kürzen | Linke | 1 % | 1 % | 0 % | 0.0 |
 | Partner kürzen | BSW | 0 % | 0 % | 0 % | 0.0 |
@@ -33,12 +33,12 @@ Siege in Prozent, Haushalt unverändert. „klug“: jede Woche die Aktion mit d
 
 | Partei | immer Plakate | immer Kundgebung | immer Angriff (Stärkster) | abwechselnd | klug |
 |---|---|---|---|---|---|
-| CDU/CSU | 23.5 | 28.0 | 21.0 | 49.5 | **54.0** |
+| CDU/CSU | 16.5 | 19.0 | 18.0 | 43.0 | **53.0** |
 | AfD | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
-| SPD | 2.0 | 5.5 | 6.0 | **19.0** | 12.5 |
+| SPD | 4.0 | 5.0 | 7.5 | **20.0** | 11.5 |
 | Grüne | 0.0 | 0.0 | 0.0 | **3.5** | 1.0 |
 | Linke | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
-| BSW | 0.0 | 0.0 | 0.0 | 0.0 | **0.5** |
+| BSW | 0.0 | 0.0 | 0.0 | **0.5** | 0.0 |
 | FDP | 0.0 | 0.0 | 0.0 | 0.0 | **1.0** |
 
 ## Minderheitsregierung (F11)
@@ -46,18 +46,18 @@ Wahlkampf abwechselnd, Haushalt unverändert. „Minderheit“: Anteil der Parti
 
 | Partei | Regierungsbildung | Minderheit | Gescheitert | Sieg |
 |---|---|---|---|---|
-| CDU/CSU | Minderheit nur ohne Mehrheit | 56 % | 101 | 50 % |
+| CDU/CSU | Minderheit nur ohne Mehrheit | 62 % | 114 | 43 % |
 | CDU/CSU | Minderheit wenn möglich | 100 % | 200 | 0 % |
 | AfD | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
 | AfD | Minderheit wenn möglich | 0 % | 0 | 0 % |
-| SPD | Minderheit nur ohne Mehrheit | 9 % | 17 | 19 % |
-| SPD | Minderheit wenn möglich | 21 % | 41 | 7 % |
-| Grüne | Minderheit nur ohne Mehrheit | 1 % | 1 | 4 % |
-| Grüne | Minderheit wenn möglich | 2 % | 4 | 2 % |
+| SPD | Minderheit nur ohne Mehrheit | 11 % | 20 | 20 % |
+| SPD | Minderheit wenn möglich | 24 % | 48 | 7 % |
+| Grüne | Minderheit nur ohne Mehrheit | 1 % | 2 | 4 % |
+| Grüne | Minderheit wenn möglich | 3 % | 5 | 3 % |
 | Linke | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
 | Linke | Minderheit wenn möglich | 0 % | 0 | 0 % |
-| BSW | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
-| BSW | Minderheit wenn möglich | 0 % | 0 | 0 % |
+| BSW | Minderheit nur ohne Mehrheit | 0 % | 0 | 1 % |
+| BSW | Minderheit wenn möglich | 0 % | 0 | 1 % |
 | FDP | Minderheit nur ohne Mehrheit | 0 % | 0 | 0 % |
 | FDP | Minderheit wenn möglich | 0 % | 0 | 0 % |
 
@@ -66,108 +66,108 @@ Wahlkampf abwechselnd, Minderheit nur ohne Mehrheit, Haushalt mit Kürzungen nur
 
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø erfolgreiche Lösungen | Ø Problemwert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
-| CDU/CSU | keine Lösungen | 50 % | 4 % | 0.0 | 51 | 1.6 | 75 % |
-| CDU/CSU | größtes Problem zuerst | 65 % | 0 % | 21.3 | 36 | 0.1 | 70 % |
-| CDU/CSU | billigste zuerst | 62 % | 0 % | 19.6 | 38 | 0.5 | 74 % |
+| CDU/CSU | keine Lösungen | 43 % | 9 % | 0.0 | 50 | 1.4 | 74 % |
+| CDU/CSU | größtes Problem zuerst | 58 % | 1 % | 20.4 | 36 | 0.1 | 70 % |
+| CDU/CSU | billigste zuerst | 55 % | 0 % | 19.0 | 38 | 0.5 | 74 % |
 | AfD | keine Lösungen | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
 | AfD | größtes Problem zuerst | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
 | AfD | billigste zuerst | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
-| SPD | keine Lösungen | 19 % | 1 % | 0.0 | 46 | 0.6 | 69 % |
-| SPD | größtes Problem zuerst | 24 % | 1 % | 10.3 | 38 | 0.0 | 67 % |
-| SPD | billigste zuerst | 20 % | 1 % | 8.7 | 40 | 0.1 | 68 % |
-| Grüne | keine Lösungen | 4 % | 1 % | 0.0 | 44 | 0.2 | 65 % |
-| Grüne | größtes Problem zuerst | 8 % | 2 % | 3.2 | 42 | 0.0 | 65 % |
-| Grüne | billigste zuerst | 7 % | 0 % | 2.7 | 42 | 0.0 | 65 % |
+| SPD | keine Lösungen | 20 % | 2 % | 0.0 | 46 | 0.6 | 69 % |
+| SPD | größtes Problem zuerst | 26 % | 0 % | 10.5 | 38 | 0.0 | 67 % |
+| SPD | billigste zuerst | 24 % | 1 % | 9.2 | 40 | 0.2 | 69 % |
+| Grüne | keine Lösungen | 4 % | 1 % | 0.0 | 44 | 0.1 | 65 % |
+| Grüne | größtes Problem zuerst | 8 % | 2 % | 3.5 | 42 | 0.0 | 65 % |
+| Grüne | billigste zuerst | 5 % | 0 % | 2.6 | 42 | 0.0 | 65 % |
 | Linke | keine Lösungen | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
-| Linke | größtes Problem zuerst | 0 % | 1 % | 0.3 | 43 | 0.0 | 64 % |
-| Linke | billigste zuerst | 0 % | 0 % | 0.3 | 43 | 0.0 | 64 % |
-| BSW | keine Lösungen | 0 % | 1 % | 0.0 | 43 | 0.0 | 64 % |
-| BSW | größtes Problem zuerst | 1 % | 1 % | 0.5 | 43 | 0.0 | 64 % |
+| Linke | größtes Problem zuerst | 0 % | 0 % | 0.3 | 43 | 0.0 | 64 % |
+| Linke | billigste zuerst | 1 % | 0 % | 0.3 | 43 | 0.0 | 64 % |
+| BSW | keine Lösungen | 1 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
+| BSW | größtes Problem zuerst | 1 % | 1 % | 0.6 | 43 | 0.0 | 64 % |
 | BSW | billigste zuerst | 1 % | 0 % | 0.4 | 43 | 0.0 | 64 % |
 | FDP | keine Lösungen | 0 % | 0 % | 0.0 | 43 | 0.0 | 64 % |
-| FDP | größtes Problem zuerst | 1 % | 1 % | 0.4 | 42 | 0.0 | 64 % |
-| FDP | billigste zuerst | 1 % | 0 % | 0.4 | 43 | 0.0 | 64 % |
+| FDP | größtes Problem zuerst | 0 % | 0 % | 0.3 | 42 | 0.0 | 64 % |
+| FDP | billigste zuerst | 0 % | 0 % | 0.3 | 43 | 0.0 | 64 % |
 
 ## Reformwege nach Ausrichtung (System 1)
 Wie bei den Lösungen; je Quartal zuerst ein Reformweg der Ausrichtung, der laut Vorschau eine Mehrheit hat, sonst eine Lösung für das größte Problem. „passend“: Wege mit Abstand bis 1 zur eigenen Parteiposition. Maßstab: keine Ausrichtung dominiert klar, „passend“ liegt 3–8 Punkte über „keine Reformwege“, die Schuldenquote läuft nicht davon.
 
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
-| CDU/CSU | keine Reformwege | 65 % | 0 % | 0.0 | 0.0 | 0.1 | 70 % |
-| CDU/CSU | marktliberal | 62 % | 8 % | 5.1 | 1.0 | 0.1 | 70 % |
-| CDU/CSU | konservativ | 68 % | 7 % | 4.1 | 0.9 | 0.1 | 70 % |
-| CDU/CSU | sozialdemokratisch | 63 % | 1 % | 2.6 | 0.5 | 0.1 | 71 % |
-| CDU/CSU | gruen | 59 % | 0 % | 2.3 | 0.5 | 0.1 | 71 % |
-| CDU/CSU | links | 57 % | 0 % | 1.5 | 0.8 | 0.1 | 71 % |
-| CDU/CSU | national | 57 % | 14 % | 1.0 | 0.7 | 0.1 | 70 % |
-| CDU/CSU | pragmatisch | 68 % | 1 % | 3.5 | 0.8 | 0.0 | 70 % |
-| CDU/CSU | passend | 69 % | 8 % | 7.0 | 1.4 | 0.0 | 70 % |
-| CDU/CSU | beliebig | 67 % | 5 % | 7.9 | 1.5 | 0.1 | 71 % |
-| SPD | keine Reformwege | 24 % | 1 % | 0.0 | 0.0 | 0.0 | 67 % |
-| SPD | marktliberal | 22 % | 43 % | 3.2 | 0.7 | 0.0 | 67 % |
+| CDU/CSU | keine Reformwege | 58 % | 1 % | 0.0 | 0.0 | 0.1 | 70 % |
+| CDU/CSU | marktliberal | 64 % | 7 % | 5.0 | 1.1 | 0.1 | 70 % |
+| CDU/CSU | konservativ | 67 % | 8 % | 4.2 | 0.9 | 0.0 | 70 % |
+| CDU/CSU | sozialdemokratisch | 61 % | 1 % | 2.5 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | gruen | 60 % | 1 % | 2.3 | 0.6 | 0.1 | 71 % |
+| CDU/CSU | links | 57 % | 1 % | 1.5 | 0.8 | 0.1 | 71 % |
+| CDU/CSU | national | 58 % | 18 % | 1.0 | 0.8 | 0.1 | 70 % |
+| CDU/CSU | pragmatisch | 67 % | 2 % | 3.4 | 0.9 | 0.0 | 70 % |
+| CDU/CSU | passend | 67 % | 11 % | 6.9 | 1.6 | 0.0 | 70 % |
+| CDU/CSU | beliebig | 65 % | 7 % | 7.7 | 1.4 | 0.1 | 70 % |
+| SPD | keine Reformwege | 26 % | 0 % | 0.0 | 0.0 | 0.0 | 67 % |
+| SPD | marktliberal | 26 % | 44 % | 3.2 | 0.7 | 0.0 | 67 % |
 | SPD | konservativ | 21 % | 45 % | 2.7 | 0.5 | 0.0 | 67 % |
-| SPD | sozialdemokratisch | 27 % | 6 % | 2.0 | 0.5 | 0.0 | 69 % |
-| SPD | gruen | 27 % | 11 % | 1.7 | 0.4 | 0.0 | 68 % |
-| SPD | links | 24 % | 5 % | 0.6 | 0.3 | 0.0 | 68 % |
-| SPD | national | 19 % | 28 % | 0.5 | 0.4 | 0.0 | 67 % |
-| SPD | pragmatisch | 23 % | 10 % | 2.5 | 0.7 | 0.0 | 67 % |
-| SPD | passend | 28 % | 21 % | 4.0 | 0.9 | 0.0 | 68 % |
-| SPD | beliebig | 23 % | 39 % | 4.1 | 0.8 | 0.0 | 67 % |
+| SPD | sozialdemokratisch | 29 % | 4 % | 2.0 | 0.5 | 0.0 | 69 % |
+| SPD | gruen | 27 % | 13 % | 1.7 | 0.4 | 0.0 | 68 % |
+| SPD | links | 27 % | 5 % | 0.6 | 0.3 | 0.0 | 68 % |
+| SPD | national | 24 % | 27 % | 0.5 | 0.4 | 0.0 | 67 % |
+| SPD | pragmatisch | 27 % | 9 % | 2.5 | 0.7 | 0.0 | 68 % |
+| SPD | passend | 25 % | 19 % | 4.0 | 1.0 | 0.0 | 69 % |
+| SPD | beliebig | 21 % | 42 % | 4.1 | 0.8 | 0.0 | 67 % |
 | Grüne | keine Reformwege | 8 % | 2 % | 0.0 | 0.0 | 0.0 | 65 % |
-| Grüne | marktliberal | 6 % | 16 % | 1.1 | 0.2 | 0.0 | 64 % |
-| Grüne | konservativ | 7 % | 13 % | 0.9 | 0.2 | 0.0 | 65 % |
-| Grüne | sozialdemokratisch | 5 % | 4 % | 0.6 | 0.2 | 0.0 | 65 % |
-| Grüne | gruen | 9 % | 9 % | 0.6 | 0.2 | 0.0 | 65 % |
-| Grüne | links | 6 % | 3 % | 0.2 | 0.1 | 0.0 | 65 % |
-| Grüne | national | 5 % | 7 % | 0.2 | 0.2 | 0.0 | 65 % |
-| Grüne | pragmatisch | 8 % | 5 % | 0.8 | 0.2 | 0.0 | 65 % |
-| Grüne | passend | 10 % | 10 % | 1.1 | 0.2 | 0.0 | 65 % |
-| Grüne | beliebig | 5 % | 15 % | 1.3 | 0.2 | 0.0 | 65 % |
+| Grüne | marktliberal | 3 % | 16 % | 1.1 | 0.2 | 0.0 | 64 % |
+| Grüne | konservativ | 5 % | 12 % | 0.9 | 0.2 | 0.0 | 65 % |
+| Grüne | sozialdemokratisch | 6 % | 3 % | 0.6 | 0.2 | 0.0 | 65 % |
+| Grüne | gruen | 11 % | 9 % | 0.6 | 0.2 | 0.0 | 65 % |
+| Grüne | links | 8 % | 2 % | 0.2 | 0.1 | 0.0 | 65 % |
+| Grüne | national | 5 % | 5 % | 0.2 | 0.2 | 0.0 | 64 % |
+| Grüne | pragmatisch | 6 % | 6 % | 0.7 | 0.2 | 0.0 | 65 % |
+| Grüne | passend | 6 % | 10 % | 1.0 | 0.2 | 0.0 | 65 % |
+| Grüne | beliebig | 3 % | 12 % | 1.2 | 0.2 | 0.0 | 64 % |
 
 ## Koalitionsbruch mit Gegenmaßnahme (Block 2)
 Wie der Abschnitt davor, aber der Spieler reagiert auf jedes Ultimatum mit einem Zugeständnis, sobald es geht (fehlt nur Kapital, wird gespart). Ziele (vor der Änderung festgelegt): klar koalitionsfeindlicher Kurs (SPD marktliberal, konservativ, beliebig) bleibt bei mindestens 25 % Bruch; moderater Kurs (SPD passend, grün, pragmatisch; CDU/CSU marktliberal, konservativ, passend) mindestens halbiert gegenüber dem Abschnitt davor.
 
 | Partei | Strategie | Sieg | Koalitionsbruch | Ø beschlossene Wege | Ø gescheitert | Ø Krisen | Ø Schuldenquote |
 |---|---|---|---|---|---|---|---|
-| CDU/CSU | keine Reformwege | 65 % | 0 % | 0.0 | 0.0 | 0.1 | 70 % |
-| CDU/CSU | marktliberal | 65 % | 4 % | 5.1 | 1.0 | 0.1 | 70 % |
-| CDU/CSU | konservativ | 71 % | 3 % | 4.1 | 0.9 | 0.1 | 70 % |
-| CDU/CSU | sozialdemokratisch | 63 % | 0 % | 2.5 | 0.5 | 0.1 | 71 % |
-| CDU/CSU | gruen | 59 % | 0 % | 2.3 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | keine Reformwege | 58 % | 0 % | 0.0 | 0.0 | 0.1 | 70 % |
+| CDU/CSU | marktliberal | 66 % | 5 % | 5.0 | 1.0 | 0.1 | 70 % |
+| CDU/CSU | konservativ | 70 % | 2 % | 4.1 | 0.9 | 0.0 | 70 % |
+| CDU/CSU | sozialdemokratisch | 61 % | 0 % | 2.5 | 0.5 | 0.1 | 71 % |
+| CDU/CSU | gruen | 59 % | 0 % | 2.3 | 0.6 | 0.1 | 71 % |
 | CDU/CSU | links | 57 % | 0 % | 1.5 | 0.8 | 0.1 | 71 % |
-| CDU/CSU | national | 61 % | 2 % | 1.0 | 0.7 | 0.1 | 71 % |
-| CDU/CSU | pragmatisch | 68 % | 0 % | 3.5 | 0.8 | 0.0 | 70 % |
-| CDU/CSU | passend | 70 % | 3 % | 7.1 | 1.4 | 0.1 | 71 % |
-| CDU/CSU | beliebig | 67 % | 4 % | 7.9 | 1.5 | 0.1 | 71 % |
-| SPD | keine Reformwege | 23 % | 0 % | 0.0 | 0.0 | 0.0 | 67 % |
-| SPD | marktliberal | 22 % | 26 % | 3.2 | 0.7 | 0.1 | 68 % |
-| SPD | konservativ | 20 % | 28 % | 2.6 | 0.5 | 0.0 | 67 % |
-| SPD | sozialdemokratisch | 26 % | 2 % | 2.0 | 0.5 | 0.0 | 69 % |
-| SPD | gruen | 26 % | 1 % | 1.7 | 0.4 | 0.0 | 68 % |
-| SPD | links | 25 % | 0 % | 0.6 | 0.3 | 0.0 | 68 % |
-| SPD | national | 19 % | 11 % | 0.5 | 0.4 | 0.0 | 67 % |
-| SPD | pragmatisch | 23 % | 1 % | 2.5 | 0.7 | 0.0 | 67 % |
-| SPD | passend | 32 % | 2 % | 4.0 | 1.0 | 0.1 | 69 % |
-| SPD | beliebig | 22 % | 28 % | 3.9 | 0.9 | 0.0 | 67 % |
-| Grüne | keine Reformwege | 7 % | 0 % | 0.0 | 0.0 | 0.0 | 65 % |
-| Grüne | marktliberal | 5 % | 9 % | 1.1 | 0.2 | 0.0 | 65 % |
-| Grüne | konservativ | 5 % | 5 % | 0.9 | 0.2 | 0.0 | 65 % |
-| Grüne | sozialdemokratisch | 4 % | 1 % | 0.6 | 0.2 | 0.0 | 65 % |
-| Grüne | gruen | 7 % | 3 % | 0.6 | 0.2 | 0.0 | 65 % |
-| Grüne | links | 7 % | 0 % | 0.2 | 0.1 | 0.0 | 65 % |
-| Grüne | national | 5 % | 3 % | 0.2 | 0.2 | 0.0 | 65 % |
-| Grüne | pragmatisch | 7 % | 2 % | 0.8 | 0.2 | 0.0 | 65 % |
-| Grüne | passend | 7 % | 1 % | 1.1 | 0.2 | 0.0 | 65 % |
-| Grüne | beliebig | 3 % | 9 % | 1.3 | 0.2 | 0.0 | 65 % |
+| CDU/CSU | national | 58 % | 3 % | 1.0 | 0.8 | 0.1 | 71 % |
+| CDU/CSU | pragmatisch | 68 % | 1 % | 3.4 | 0.9 | 0.1 | 70 % |
+| CDU/CSU | passend | 70 % | 3 % | 6.9 | 1.6 | 0.1 | 70 % |
+| CDU/CSU | beliebig | 63 % | 3 % | 7.7 | 1.4 | 0.1 | 70 % |
+| SPD | keine Reformwege | 26 % | 0 % | 0.0 | 0.0 | 0.0 | 67 % |
+| SPD | marktliberal | 21 % | 25 % | 3.3 | 0.6 | 0.0 | 67 % |
+| SPD | konservativ | 24 % | 27 % | 2.6 | 0.5 | 0.0 | 68 % |
+| SPD | sozialdemokratisch | 28 % | 1 % | 2.0 | 0.5 | 0.0 | 69 % |
+| SPD | gruen | 27 % | 3 % | 1.7 | 0.4 | 0.0 | 68 % |
+| SPD | links | 26 % | 1 % | 0.6 | 0.3 | 0.0 | 68 % |
+| SPD | national | 23 % | 10 % | 0.5 | 0.4 | 0.0 | 68 % |
+| SPD | pragmatisch | 29 % | 0 % | 2.5 | 0.7 | 0.0 | 68 % |
+| SPD | passend | 30 % | 1 % | 4.1 | 1.0 | 0.1 | 69 % |
+| SPD | beliebig | 25 % | 28 % | 4.2 | 0.9 | 0.0 | 68 % |
+| Grüne | keine Reformwege | 7 % | 1 % | 0.0 | 0.0 | 0.0 | 65 % |
+| Grüne | marktliberal | 2 % | 9 % | 1.0 | 0.2 | 0.0 | 64 % |
+| Grüne | konservativ | 4 % | 5 % | 0.9 | 0.2 | 0.0 | 65 % |
+| Grüne | sozialdemokratisch | 6 % | 0 % | 0.6 | 0.2 | 0.0 | 65 % |
+| Grüne | gruen | 10 % | 1 % | 0.6 | 0.2 | 0.0 | 65 % |
+| Grüne | links | 8 % | 1 % | 0.2 | 0.1 | 0.0 | 65 % |
+| Grüne | national | 6 % | 2 % | 0.2 | 0.2 | 0.0 | 65 % |
+| Grüne | pragmatisch | 5 % | 1 % | 0.7 | 0.2 | 0.0 | 65 % |
+| Grüne | passend | 8 % | 3 % | 1.1 | 0.2 | 0.0 | 65 % |
+| Grüne | beliebig | 6 % | 8 % | 1.4 | 0.2 | 0.0 | 65 % |
 
 ## Schwierigkeitsanzeige (F06)
 Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Grenzen aus `config.schwierigkeit`, eingetragen in `src/data/parteien.js`.
 
 | Partei | Siege | gemessen | eingetragen | Abgleich |
 |---|---|---|---|---|
-| CDU/CSU | 54.0 % | leicht | leicht | passt |
+| CDU/CSU | 53.0 % | leicht | leicht | passt |
 | AfD | 0.0 % | fast unmöglich | fast unmöglich | passt |
-| SPD | 19.0 % | mittel | mittel | passt |
+| SPD | 20.0 % | mittel | mittel | passt |
 | Grüne | 3.5 % | schwer | schwer | passt |
 | Linke | 0.0 % | fast unmöglich | fast unmöglich | passt |
 | BSW | 0.5 % | fast unmöglich | fast unmöglich | passt |
@@ -230,6 +230,13 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 | `probleme.passungBonus` | 0.15 | System 3 |
 | `probleme.verlaufLaenge` | 16 | System 3 |
 | `ereignisse.chanceJeQuartal` | 0.3 | F14 |
+| `landtagswahlen.startJahr` | 2026 | M1/M3 (Quelle in config.js) |
+| `landtagswahlen.basis` | 0.35 | M1/M3 (Quelle in config.js) |
+| `landtagswahlen.jePunkt` | 0.08 | M1/M3 (Quelle in config.js) |
+| `landtagswahlen.min` | 0.1 | M1/M3 (Quelle in config.js) |
+| `landtagswahlen.max` | 0.85 | M1/M3 (Quelle in config.js) |
+| `landtagswahlen.verlustUmfrage` | 0.15 | M1/M3 (Quelle in config.js) |
+| `landtagswahlen.gewinnUmfrage` | 0.1 | M1/M3 (Quelle in config.js) |
 | `verfassungsrisiko.dauerQuartale` | 4 | M1/M3 (Quelle in config.js) |
 | `verfassungsrisiko.verlustUmfrage` | 0.3 | M1/M3 (Quelle in config.js) |
 | `umfrageBilanz.runden` | 8 | Paket Klein |

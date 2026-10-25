@@ -28,6 +28,7 @@ export function hilfeHtml() {
     ['Grenze der Schuldenbremse 2026', '40,39 Mrd. €', configQuellen['haushalt.schuldenbremseGrenze']],
     ['Stimmen im Bundesrat, Landesregierungen', `${laender.length} Länder`, einheitlich(laender.map((l) => l.quelle))],
     ['Ministerien', `${ministerien.length}`, einheitlich(ministerien.map((m) => m.quelle))],
+    ['Termine der Landtagswahlen bis 2030, Wahlperioden', `${laender.filter((l) => l.wahl.quelle !== 'Spielwert').length} Länder`, 'Quelle: wahlrecht.de, Termine, 2026'],
   ];
   const einnahmen = einnahmearten.map((a) => [a.name, `Startbetrag: ${q(a.quelle.start)}<br>Satz: ${q(a.quelle.satz)}`, a.quelle.wirkung]);
   const spiel = parteien.filter((p) => !p.sonstige);
@@ -47,6 +48,7 @@ export function hilfeHtml() {
       <li>${ereignisse.length} Ereignisse und ihre Folgen</li>
       <li>Gruppenstimmung (${gruppen.map((g) => g.name).join(', ')}), Start 50</li>
       <li>Wirtschaftsdynamik (Rückkehr zum Potenzialwachstum, Okun, Zinsen und Zinsaufschlag), politisches Kapital, Koalitionsbruch, Wahlkampf</li>
+      <li>Landtagswahlen: Wechselchance, wer bei einem Wechsel in die Landesregierung kommt, Termine nach 2030 (Fortschreibung der Wahlperiode), Neubildung in Berlin, Sachsen-Anhalt und Mecklenburg-Vorpommern</li>
       <li>Rechtsrisiken von Steueränderungen (Chance, dass das Bundesverfassungsgericht eine Änderung kippt); belegt sind nur die Grundlagen Art. 3 und Art. 14 GG</li>
       <li>Alle übrigen Konstanten in <code>src/data/config.js</code></li>
     </ul>`)}

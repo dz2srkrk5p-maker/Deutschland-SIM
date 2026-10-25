@@ -81,7 +81,7 @@ export function wegSperre(zustand, wegId) {
   const belegt = !w.braucht && bereichStatus(zustand, w.bereich).weg;
   const kapital = w.kapital + (belegt ? rw.revisionKapital : 0);
   if (zustand.kapital < kapital) return { grund: `zu wenig politisches Kapital (${kapital} nötig)` };
-  if (w.bundesrat && !bundesratAbstimmung(koalitionsParteien(zustand)).mehrheit) return { grund: 'keine Mehrheit im Bundesrat' };
+  if (w.bundesrat && !bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender).mehrheit) return { grund: 'keine Mehrheit im Bundesrat' };
   if (w.haushalt) {
     const b = vorschau(zustand, {}).bilanz;
     if (b.grenze - b.schuldenbremse < w.kosten) return { grund: 'kein Spielraum in der Schuldenbremse für die Kosten' };
@@ -98,7 +98,7 @@ export function wegVorschau(zustand, wegId) {
     vektor: wegVektor(w),
     ausrichtung: ausrichtungName(w),
     abstimmung: abstimmung(zustand, { id: w.id, vektor: wegVektor(w) }),
-    bundesrat: w.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand)) : null,
+    bundesrat: w.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender) : null,
     partner: partnerReaktionen(zustand, w),
     akteure: akteurReaktionen(w),
     ...gewinnerVerlierer(w),

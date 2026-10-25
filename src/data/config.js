@@ -76,6 +76,12 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Landtagswahlen (Paket Mittel, Feature 5, Spielwerte): Einzelmodell. Je Wahl bleibt die Landesregierung oder es
+  // wechselt genau eine Partei. Wechselchance = basis ∓ jePunkt × Stimmung, Stimmung = Gewinn/Verlust der
+  // Bundesregierungsparteien seit der Bundestagswahl in Punkten; begrenzt auf min…max. Eine Bundespartei, die eine
+  // Landesregierung verliert, verliert Umfragepunkte, eine, die hinzukommt, gewinnt.
+  landtagswahlen: { startJahr: 2026, basis: 0.35, jePunkt: 0.08, min: 0.1, max: 0.85, verlustUmfrage: 0.15, gewinnUmfrage: 0.1 },
+
   // Verfassungsrisiko für Steuern (Paket Klein, Feature 3, Spielwerte): Nach dauerQuartale Quartalen entscheidet das
   // Gericht; kippt es eine Änderung, wird sie zurückgenommen (Einnahmeausfall ab dann) und die Kanzlerpartei verliert.
   verfassungsrisiko: { dauerQuartale: 4, verlustUmfrage: 0.3 },

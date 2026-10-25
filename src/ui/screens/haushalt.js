@@ -125,7 +125,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       </div>
       ${v.rechtsrisiken.length ? `<p class="gelb">⚠ Rechtsrisiko vor dem Bundesverfassungsgericht:</p><ul>${v.rechtsrisiken.map((r) => `<li><strong>${r.name}</strong>: ${risikoText(r)}</li>`).join('')}</ul>` : ''}
       ${(zustand.verfahren ?? []).length ? `<p><strong>Anhängige Verfahren:</strong> ${zustand.verfahren.map((x) => `${x.name} (Urteil in ${Math.max(1, x.faellig - zustand.runde)} Quartalen, Risiko ${Math.round(x.chance * 100)} %)`).join('; ')}</p>` : ''}
-      ${aufklapp('Abstimmungen im Detail', abstimmungHtml(v.bundestag, 'Bundestag über den Haushalt', true) + bundesratHtml(bundesratAbstimmung(koalitionsParteien(zustand))))}`, { titel: 'Saldo und Schuldenbremse' })}
+      ${aufklapp('Abstimmungen im Detail', abstimmungHtml(v.bundestag, 'Bundestag über den Haushalt', true) + bundesratHtml(bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender)))}`, { titel: 'Saldo und Schuldenbremse' })}
       ${karte(`<p><strong>Umfragen:</strong> ${wirkung.length ? wirkung.map(([id, w]) => `${partei(id).name} ${plusMinus(w)}`).join(' · ') : 'keine Änderung'}</p>
         <p><strong>Kennzahlen und Gruppen:</strong> ${wirkungListe(v.kennzahlWirkung)}</p>`, { titel: 'Wirkung des Entwurfs' })}
       ${karte(koalitionslageHtml(zustand, v.anteile), { titel: 'Koalition' })}

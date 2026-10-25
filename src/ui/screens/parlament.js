@@ -34,7 +34,7 @@ export function parlamentScreen(el, zustand, { tab, onTab }) {
         <tr><th scope="row">${kanzleramt.kurz}</th><td>${partei(zustand.kanzlerParteiId).name}</td></tr>
         ${ministerien.map((m) => `<tr><th scope="row" title="${m.name}">${m.kurz}</th><td>${punkt(partei(zustand.kabinett.verteilung[m.id]).farbe)}${partei(zustand.kabinett.verteilung[m.id]).name}</td></tr>`).join('')}
       </tbody></table>`, { titel: 'Kabinett' }),
-    bundesrat: () => karte(bundesratHtml(bundesratAbstimmung(regierung)), { titel: 'Länder' }),
+    bundesrat: () => karte(bundesratHtml(bundesratAbstimmung(regierung, zustand.laender)), { titel: 'Länder' }),
     // Haltung der Akteure zum Kurs des Landes (System 1): 2 − 2 × Abstand zum Richtungsprofil
     akteure: () => {
       const p = richtungsprofil(zustand);

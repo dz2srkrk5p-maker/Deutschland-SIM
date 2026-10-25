@@ -75,7 +75,7 @@ export function vorschau(zustand, { stufen = {}, einnahmen = {}, ausgestaltung =
   }
   const ew = entwurfWirkung(zustand, entwurf);
   // Änderungen an Gemeinschafts-, Länder- und Gemeindesteuern brauchen den Bundesrat (Art. 105 GG)
-  const bundesrat = ew.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand)) : null;
+  const bundesrat = ew.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender) : null;
   // Der Haushalt braucht die einfache Mehrheit im Bundestag (F10); mit Koalitionsmehrheit immer erfüllt
   const bundestag = abstimmung(zustand, 'haushalt');
   return {

@@ -11,6 +11,8 @@ import { problemListe } from '../../engine/probleme.js';
 import { tickerHtml } from '../components/ticker.js';
 import { erklaerungen } from '../../data/hinweise.js';
 import { umfrageBilanzHtml } from '../components/umfragebilanz.js';
+import { naechsteWahlen, wechselChance, wechsel } from '../../engine/landtagswahlen.js';
+import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
 
@@ -52,6 +54,22 @@ function topProblemeHtml(zustand) {
 }
 
 // Lage: Dashboard jedes Quartals. Offenes Ereignis zuerst, dann Kennzahlen, Top-Probleme, Wirtschaft, Schlagzeilen, Hauptaktion.
+// Landtagswahlen (Feature 5): Termine dieses und des nächsten Quartals mit Chance und Folge für den Bundesrat
+function landtagswahlenHtml(zustand) {
+  const wahlen = naechsteWahlen(zustand, 2);
+  if (!wahlen.length) return '';
+  const name = (id) => partei(id)?.name ?? id;
+  const bund = koalitionsParteien(zustand);
+  const jetzt = bundesratAbstimmung(bund, zustand.laender).ja;
+  return `<p class="klein">${erklaerungen.landtagswahl}</p><ul class="liste">${wahlen.map((w) => {
+    const l = zustand.laender[w.land.id];
+    const neu = wechsel(zustand, w.land.id);
+    const danach = bundesratAbstimmung(bund, { ...zustand.laender, [w.land.id]: { ...l, regierung: neu.regierung } }).ja;
+    return `<li><span><strong>${w.land.name}</strong> ${w.inQuartalen === 0 ? 'am Ende dieses Quartals' : 'am Ende des nächsten Quartals'} · Regierung: ${l.regierung.map(name).join(', ')}<br>
+      <small>Wechselchance ${Math.round(wechselChance(zustand, w.land.id) * 100)} %. Bei Wechsel: ${[neu.raus && `${name(neu.raus)} raus`, neu.rein && `${name(neu.rein)} rein`].filter(Boolean).join(', ') || 'keine Änderung möglich'}; Bundesrat für deine Koalition ${jetzt} → ${danach} Stimmen.</small></span></li>`;
+  }).join('')}</ul>`;
+}
+
 // Koalition unter Druck (Block 2): Lage der Partner, Fristen, Gegenmaßnahme Zugeständnis
 function koalitionHtml(zustand) {
   const kb = config.koalitionsbruch;
@@ -98,6 +116,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onZug
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
       ${karte(wirtschaftHtml(zustand.land), { titel: 'Wirtschaft (Vorjahr)' })}
     </div>
+    ${landtagswahlenHtml(zustand) ? karte(landtagswahlenHtml(zustand), { titel: 'Landtagswahlen' }) : ''}
     ${karte(umfrageBilanzHtml(zustand), { titel: 'Warum bewegt sich die Umfrage?' })}
     ${zusatz}
     ${tickerHtml(zustand) ? karte(tickerHtml(zustand), { titel: 'Schlagzeilen' }) : ''}
