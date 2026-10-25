@@ -17,6 +17,7 @@ export const laufendeKosten = (zustand) => loesungsKosten(zustand) + wegKosten(z
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { verfahrenAnlegen } from './verfahren.js';
+import { vertragHaushalt, vertragOhne } from './koalitionsvertrag.js';
 import { jahresSchritt, gruppenSchritt, lageUmfrage, lageTeile, wirkungSumme } from './wirtschaft.js';
 
 const hh = config.haushalt;
@@ -155,6 +156,12 @@ export function haushaltBeschliessen(zustand, params = {}) {
   // Wirtschaft: ein Jahr weiter mit den Wirkungen des Haushalts; die Lage wirkt auf die Kanzlerpartei
   // dazu die Folgen der Probleme, die Wirkungen aus dem Jahr (System 3) und das Richtungsprofil (System 1)
   const profil = profilWirkung(zustand);
+  // Koalitionsvertrag (Feature 7): Kürzungen in Partner-Ressorts, Rückstand bei den Vorhaben
+  const vertragPosten = vertragHaushalt(zustand, gescheitert ? {} : params.stufen);
+  for (const p of vertragPosten) {
+    wirkung[p.partei] = (wirkung[p.partei] ?? 0) + p.wert;
+    posten.push(p);
+  }
   for (const [id, x] of Object.entries(profil.umfrage)) {
     if (!x) continue;
     wirkung[id] = (wirkung[id] ?? 0) + x;
@@ -177,6 +184,7 @@ export function haushaltBeschliessen(zustand, params = {}) {
     (gescheitert
       ? `Haushalt Jahr ${jahr} im Bundestag gescheitert (${bundestag.ja} Ja, ${bundestag.nein} Nein): vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter, neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`
       : `Haushalt Jahr ${jahr} beschlossen: neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`) + (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
+    ...vertragPosten.map((p) => `${p.ursache}: ${name(p.partei)} −${zahl(Math.abs(p.wert))}`),
     ...(kompromissPreis ? [`Kompromiss im Bundesrat: Ausgleichszahlung an die Länder ${zahl(mrd(v.ausgleich))} Mrd., ${kompromissPreis} Kapital`] : []),
     `Wirtschaft: Wachstum ${zahl(w.land.wachstum, 1)} %, Inflation ${zahl(w.land.inflation, 1)} %, Arbeitslosigkeit ${zahl(w.land.arbeitslosigkeit, 1)} %, Schuldenquote ${zahl(w.land.schuldenquote, 1)} %`,
   ];
@@ -228,7 +236,7 @@ export function koalitionsbruch(zustand, kandidaten = zustand.koalition.partner)
     delete anspruch[id];
   }
   const ultimatum = Object.fromEntries(Object.entries(zustand.koalition.ultimatum ?? {}).filter(([id]) => !gehen.includes(id)));
-  const state = { ...zustand, koalition: { ...zustand.koalition, partner: bleiben, ultimatum }, kabinett: { anspruch, verteilung } };
+  const state = { ...zustand, koalition: { ...zustand.koalition, partner: bleiben, ultimatum, vertrag: vertragOhne(zustand.koalition.vertrag, gehen) ?? null }, kabinett: { anspruch, verteilung } };
   const ereignisse = gehen.map((id) => `Koalitionsbruch: ${parteien.find((p) => p.id === id).name} verlässt die Koalition`);
   const sitze = [spieler, ...bleiben].reduce((s, id) => s + zustand.sitze[id], 0);
   if (sitze >= mehrheit(zustand.sitze)) return { state, ereignisse: [...ereignisse, `Regierung behält die Mehrheit (${sitze} Sitze)`], neuwahl: false };

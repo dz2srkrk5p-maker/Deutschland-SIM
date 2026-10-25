@@ -12,6 +12,8 @@ import { tickerHtml } from '../components/ticker.js';
 import { erklaerungen } from '../../data/hinweise.js';
 import { umfrageBilanzHtml } from '../components/umfragebilanz.js';
 import { naechsteWahlen, wechselChance, wechsel } from '../../engine/landtagswahlen.js';
+import { faellig } from '../../engine/koalitionsvertrag.js';
+import { weg } from '../../engine/reformwege.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
@@ -70,6 +72,18 @@ function landtagswahlenHtml(zustand) {
   }).join('')}</ul>`;
 }
 
+// Koalitionsvertrag (Feature 7): Stand der Vorhaben, was bis Jahresende fällig ist
+const STATUS_VORHABEN = { offen: 'offen', umgesetzt: '✓ beschlossen', gebrochen: '✗ gebrochen' };
+function vertragHtml(zustand) {
+  const vorhaben = zustand.koalition?.vertrag?.vorhaben ?? [];
+  if (!vorhaben.length) return '';
+  const erfuellt = vorhaben.filter((v) => v.status === 'umgesetzt').length;
+  const soll = zustand.koalition.partner.reduce((s, id) => s + faellig(vorhaben.filter((v) => v.partei === id).length, zustand.haushalt.jahr), 0);
+  return `<p>${erfuellt} von ${vorhaben.length} Vorhaben beschlossen; bis zum Haushalt dieses Jahres fällig: ${soll}.</p>
+    <ul class="liste">${vorhaben.map((v) => `<li><span>${weg(v.wegId).name} <small>(${partei(v.partei).name})</small></span> <span>${STATUS_VORHABEN[v.status]}</span></li>`).join('')}</ul>
+    <p class="klein">${erklaerungen.vertrag}</p><div class="knoepfe"><button data-gehe="reformen">Zu den Reformen</button></div>`;
+}
+
 // Koalition unter Druck (Block 2): Lage der Partner, Fristen, Gegenmaßnahme Zugeständnis
 function koalitionHtml(zustand) {
   const kb = config.koalitionsbruch;
@@ -116,6 +130,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onZug
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
       ${karte(wirtschaftHtml(zustand.land), { titel: 'Wirtschaft (Vorjahr)' })}
     </div>
+    ${vertragHtml(zustand) ? karte(vertragHtml(zustand), { titel: 'Koalitionsvertrag' }) : ''}
     ${landtagswahlenHtml(zustand) ? karte(landtagswahlenHtml(zustand), { titel: 'Landtagswahlen' }) : ''}
     ${karte(umfrageBilanzHtml(zustand), { titel: 'Warum bewegt sich die Umfrage?' })}
     ${zusatz}

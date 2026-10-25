@@ -76,6 +76,12 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Koalitionsvertrag (Paket Groß, Feature 7, Spielwerte): je Partner vorschlaegeJePartner Vorschläge, 1 bis maxJePartner
+  // aufnehmen. Erfüllt (Vorhaben beschlossen): Partner +bonusUmsetzung. Gebrochen (anderer Weg im zugesagten Bereich):
+  // −strafeBruch. Beim Haushalt: Kürzung um kuerzungStufen Stufen (10 %) oder mehr in einem Partner-Ressort −strafeKuerzung;
+  // je Vorhaben im Rückstand (anteilig fällig über die Wahlperiode) −strafeRueckstand.
+  koalitionsvertrag: { vorschlaegeJePartner: 2, maxJePartner: 2, bonusUmsetzung: 0.3, strafeBruch: 0.5, kuerzungStufen: 2, strafeKuerzung: 0.2, strafeRueckstand: 0.15 },
+
   // Kompromiss im Bundesrat (Paket Mittel, Feature 6, Spielwerte): vereinfachter Ersatz für den Vermittlungsausschuss.
   // Möglich, wenn höchstens maxFehlend Stimmen zur Mehrheit fehlen. Reformweg: abgeschwächte Fassung (alle Wirkungen und
   // Einnahmen × wirkungFaktor) gegen zusätzliches Kapital. Haushalt mit Steueränderung: einmalige Ausgleichszahlung an die

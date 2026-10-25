@@ -11,6 +11,7 @@ import { koalitionsParteien } from './kabinett.js';
 import { parteiPosition, abstand, richtungsprofil } from './profil.js';
 import { wirkungSumme, skaliert } from './wirtschaft.js';
 import { umfrageBuchen } from './umfragebilanz.js';
+import { vertragNachBeschluss } from './koalitionsvertrag.js';
 import { vorschau } from './haushalt.js';
 
 // Reformwege (System 1): verbindliche Wegentscheidungen je Bereich mit politischer Ausrichtung.
@@ -157,6 +158,12 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
     ereignisse.push(`Kurswechsel: „${v.revision.name}“ wird zurückgenommen (Glaubwürdigkeit −${rw.revisionUmfrage.toLocaleString('de-DE')})`);
   }
   reformwege[w.id] = { status: 'umsetzung', fertig: zustand.runde + w.dauer, ...(alsKompromiss ? { kompromiss: true } : {}) };
+  // Koalitionsvertrag (Feature 7): erfüllt oder gebrochen
+  const vertrag = vertragNachBeschluss(zustand, w.id);
+  for (const p of vertrag.posten) {
+    dazu(p.partei, p.wert, p.ursache);
+    ereignisse.push(`${p.ursache} (${name(p.partei)} ${p.wert > 0 ? '+' : '−'}${Math.abs(p.wert).toLocaleString('de-DE')})`);
+  }
   for (const p of v.partner) if (p.unmut) dazu(p.id, -p.unmut, `Reform „${w.name}“: Unmut beim Partner`);
   // Gegenstück zum Unmut: Weg nahe an der eigenen Linie bringt der Kanzlerpartei Glaubwürdigkeit
   if (v.bonus > 0) {
@@ -180,6 +187,7 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
     gruppen,
     probleme,
     kapital: zustand.kapital - kapitalPreis,
+    koalition: vertrag.vertrag ? { ...zustand.koalition, vertrag: vertrag.vertrag } : zustand.koalition,
     aktionenImQuartal: zustand.aktionenImQuartal + 1,
     jahresWirkung: wirkungSumme(zustand.jahresWirkung, { ...w.kurz, gruppen: {}, probleme: {} }),
   };

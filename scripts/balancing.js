@@ -200,7 +200,11 @@ const frei = (z, id) => !wegSperre(z, id) || !wegSperre(z, id, { kompromiss: tru
 const wegWahl = (passt) => (z) => alleWege
   .filter((w) => passt(w) && !z.reformwege[w.id] && frei(z, w.id) && wegVorschau(z, w.id).abstimmung.angenommen && !wegVorschau(z, w.id).revision)
   .sort((a, b) => !!b.braucht - !!a.braucht || a.risiko - b.risiko)[0];
-const REFORM = {
+// Feature 7: wer Reformwege beschließt, setzt zuerst die offenen Vorhaben des Koalitionsvertrags um
+const vertragZuerst = (wahl) => (z) => (z.koalition?.vertrag?.vorhaben ?? [])
+  .filter((v) => v.status === 'offen' && !z.reformwege[v.wegId] && frei(z, v.wegId) && wegVorschau(z, v.wegId).abstimmung.angenommen && !wegVorschau(z, v.wegId).revision)
+  .map((v) => alleWege.find((w) => w.id === v.wegId))[0] ?? wahl(z);
+const REFORM_ROH = {
   'keine Reformwege': () => null,
   ...Object.fromEntries(Object.keys(AUSRICHTUNGEN).map((r) => [r, wegWahl((w) => w.richtung === r)])),
   // Wege nahe an der Position der Kanzlerpartei (Abstand bis 1), der nächste zuerst
@@ -209,6 +213,7 @@ const REFORM = {
     .sort((a, b) => abstand(wegVektor(a), parteiPosition(z.kanzlerParteiId)) - abstand(wegVektor(b), parteiPosition(z.kanzlerParteiId)))[0],
   beliebig: wegWahl(() => true),
 };
+const REFORM = Object.fromEntries(Object.entries(REFORM_ROH).map(([n, f]) => [n, n === 'keine Reformwege' ? f : vertragZuerst(f)]));
 const REFORM_PARTEIEN = ['union', 'spd', 'gruene'];
 // Block 2: „reagieren“ = auf ein Ultimatum mit einem Zugeständnis antworten, sobald möglich; fehlt nur Kapital, wird gespart
 const drohend = (z) => z.koalition.partner.filter((p) => z.koalition.ultimatum?.[p] !== undefined && z.koalition.zugestaendnisse?.[p] !== z.haushalt.jahr);
@@ -252,7 +257,7 @@ const bruchZeilen = REFORM_PARTEIEN.flatMap((id) => Object.entries(REFORM).map((
 // Alle Konstanten aus config.js, verschachtelte Werte mit Punkt-Namen
 const flach = (obj, vor = '') =>
   Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? flach(v, `${vor}${k}.`) : [[`${vor}${k}`, v]]));
-const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2', reformwege: 'System 1', koalitionsbruch: 'Block 2', umfrageBilanz: 'Paket Klein', landtagswahlen: 'Paket Mittel', verfassungsrisiko: 'Paket Klein', kompromiss: 'Paket Mittel' };
+const HERKUNFT = { wahlkampf: 'M5', koalition: 'M6', haushalt: 'M8 (Zahlen 2026: Quelle in config.js)', spielende: 'M10', schwierigkeit: 'F06', bundestag: 'F10 (Art. 42 GG)', minderheit: 'F11', regierung: 'F12', probleme: 'System 3', ereignisse: 'F14', ticker: 'F15', kapital: 'Erweiterung', wirtschaft: 'System 2', reformwege: 'System 1', koalitionsbruch: 'Block 2', umfrageBilanz: 'Paket Klein', landtagswahlen: 'Paket Mittel', verfassungsrisiko: 'Paket Klein', kompromiss: 'Paket Mittel', koalitionsvertrag: 'Paket Groß' };
 const konstanten = flach(config).map(([name, wert]) => `| \`${name}\` | ${JSON.stringify(wert)} | ${HERKUNFT[name.split('.')[0]] ?? 'M1/M3 (Quelle in config.js)'} |`);
 
 const bericht = `# Balancing-Bericht

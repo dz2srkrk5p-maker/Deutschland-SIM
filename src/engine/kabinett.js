@@ -1,5 +1,6 @@
 import { ministerien } from '../data/ministerien.js';
 import { parteien } from '../data/parteien.js';
+import { vertragsVorschlaege, vertragPruefen, vertragAnlegen } from './koalitionsvertrag.js';
 import { sainteLague } from './hoechstzahl.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -46,13 +47,18 @@ export function pruefeVerteilung(zustand, verteilung) {
 }
 
 // Aktion: Kabinett bestätigen, danach beginnt die Regierung.
-export function bestaetigen(zustand, { verteilung }) {
+// Koalitionsvertrag (Feature 7): ohne Angabe je Partner der erste Vorschlag
+export const vorhabenVorschlag = (zustand) => Object.entries(vertragsVorschlaege(zustand)).flatMap(([partei, wege]) => wege.slice(0, 1).map((wegId) => ({ wegId, partei })));
+
+export function bestaetigen(zustand, { verteilung, vorhaben = vorhabenVorschlag(zustand) }) {
   if (zustand.phase !== 'kabinett') throw new Error('Keine Kabinettsbildung');
-  const fehler = pruefeVerteilung(zustand, verteilung);
+  const fehler = [...pruefeVerteilung(zustand, verteilung), ...vertragPruefen(zustand, vertragsVorschlaege(zustand), vorhaben)];
   if (fehler.length) throw new Error(`Ungültige Verteilung: ${fehler.join('; ')}`);
   const sauber = Object.fromEntries(ministerien.map((m) => [m.id, verteilung[m.id]]));
+  const mitVertrag = zustand.koalition.partner.length > 0;
   return {
-    state: { ...zustand, phase: 'regierung', kabinett: { ...zustand.kabinett, verteilung: sauber } },
-    ereignisse: ['Kabinett vereidigt'],
+    state: { ...zustand, phase: 'regierung', kabinett: { ...zustand.kabinett, verteilung: sauber },
+      koalition: { ...zustand.koalition, vertrag: mitVertrag ? vertragAnlegen(zustand, vorhaben, sauber) : null } },
+    ereignisse: ['Kabinett vereidigt', ...(mitVertrag ? [`Koalitionsvertrag unterzeichnet: ${vorhaben.length} Vorhaben der Partner, Ressortverteilung festgeschrieben`] : [])],
   };
 }

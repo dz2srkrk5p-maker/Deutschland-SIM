@@ -5,7 +5,7 @@ import { probleme } from '../../data/probleme.js';
 import { gruppen, kennzahlen } from '../../data/kennzahlen.js';
 import { ministerien } from '../../data/ministerien.js';
 import { einnahmearten } from '../../data/einnahmen.js';
-import { bereichStatus, wegVorschau, richtungsprofil } from '../../engine/reformwege.js';
+import { bereichStatus, wegVorschau, richtungsprofil, weg } from '../../engine/reformwege.js';
 import { mrd } from '../../engine/haushalt.js';
 import { profilHtml } from '../components/profil.js';
 import { karte, badge, status, zahl, plusMinus, aufklapp } from '../components/basis.js';
@@ -38,7 +38,7 @@ function wegKarte(zustand, w) {
   const einnahmen = Object.entries(w.einnahmen ?? {}).map(([id, b]) => `${einnahmearten.find((e) => e.id === id).name} ${b > 0 ? '+' : '−'}${euro(b)}`).join(', ');
   return `<article class="karte weg">
     <h3>${w.name} ${stand ? badge(...STATUS[stand.status]) : ''}</h3>
-    <p>${badge(v.ausrichtung)}</p>
+    <p>${badge(v.ausrichtung)}${(zustand.koalition?.vertrag?.vorhaben ?? []).filter((x) => x.wegId === w.id).map((x) => ` ${badge(`Koalitionsvertrag (${partei(x.partei).name})${x.status === 'offen' ? '' : x.status === 'umgesetzt' ? ': erfüllt' : ': gebrochen'}`, x.status === 'gebrochen' ? 'rot' : 'ok')}`).join('')}${(zustand.koalition?.vertrag?.vorhaben ?? []).filter((x) => x.status === 'offen' && x.wegId !== w.id && weg(x.wegId).bereich.id === w.bereich.id && !w.braucht).map((x) => ` ${badge(`bricht den Koalitionsvertrag (${partei(x.partei).name})`, 'rot')}`).join('')}</p>
     <p class="klein">${w.text}</p>
     ${profilHtml(v.vektor)}
     <table><tbody>

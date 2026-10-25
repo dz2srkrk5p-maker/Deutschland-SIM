@@ -201,6 +201,16 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 13: `reformwege` { [wegId]: { status, fertig } }; ältere Stände bekommen `{}`.
 - Nicht enthalten (bewusst): Gesetzentwürfe mit Änderungsanträgen, Vermittlungsausschuss, Volksabstimmungen.
 
+## System: Koalitionsvertrag (Paket Groß, Feature 7, freigegeben 2026-10-25)
+- Dateien: `src/engine/koalitionsvertrag.js`, `src/engine/kabinett.js` (`bestaetigen` mit `vorhaben`, `vorhabenVorschlag`), Anbindung in `reformwege.js` (Beschluss), `haushalt.js` (Haushalt, Koalitionsbruch). Zahlen: `config.koalitionsvertrag` (Spielwerte).
+- Eine zusätzliche Entscheidung zu Beginn: Der Kabinett-Schritt heißt bei Koalitionen „Koalitionsvertrag und Kabinett“. Jeder Partner schlägt 2 Grundwege aus noch freien Bereichen vor, die seinem Profil (CHES) am nächsten liegen (jeder Bereich höchstens einmal im Vertrag); der Spieler nimmt 1–2 je Partner auf, vorausgewählt ist der erste. Die Ressortverteilung wird festgeschrieben. Alleinregierung und Minderheitsregierung: kein Vertrag.
+- Einhaltung: Ein Vertragsvorhaben wird beschlossen → Partner +0,3.
+- Abweichung: anderer Grundweg im zugesagten Bereich → Vorhaben gebrochen, Partner −0,5; Haushalt mit Kürzung um 10 % oder mehr in einem Partner-Ressort → −0,2; je Vorhaben im Rückstand beim Haushalt → −0,15 (fällig anteilig über die Wahlperiode, abgerundet: ein einzelnes Vorhaben erst zum letzten Haushalt). Alle Wirkungen laufen über die Umfrage und damit über Ultimatum und Bruch (Block 2).
+- Koalitionsbruch: Vorhaben und Ressortzusagen des gehenden Partners entfallen.
+- Anzeige: Kabinett-Schritt mit Vorhaben je Partner und Erklärtext; Lage-Karte „Koalitionsvertrag“ (Stand, bis zum Haushalt fällig); Wegekarte mit „Koalitionsvertrag (Partei)“ bzw. „bricht den Koalitionsvertrag“; Folgen in Meldungen und in der Umfrage-Bilanz.
+- Spielstand: `koalition.vertrag` { vorhaben: [{ wegId, partei, status }], ressorts }; alte Stände ohne Vertrag laufen ohne Vertragsfolgen weiter (keine neue Version nötig).
+- Balancing: Die Reformweg-Strategien setzen zuerst offene Vertragsvorhaben um (außer „keine Reformwege“). Iteration 1 (Fälligkeit abgerundet statt aufgerundet; aufgerundet stiegen die Brüche bei Strategien ohne Reformen auf 36–46 %). Messung (qa/f7-vertrag-i1.json): CDU/CSU −1 bis −7 Punkte Siegquote; Partner kürzen Bruch 43 → 49 %; Reformweg-Strategien deutlich weniger Brüche (SPD marktliberal 44 → 14 %, mit Zugeständnis 24 → 3 %) – das frühere Ziel aus Block 2 (feindlicher Kurs ≥ 25 % mit Zugeständnis) gilt damit für diese Strategie nicht mehr.
+
 ## System: Kompromiss im Bundesrat (Paket Mittel, Feature 6, freigegeben 2026-10-25)
 - Dateien: `src/engine/bundesrat.js` (`kompromissMoeglich`), `src/engine/reformwege.js` (`wegSperre`/`wegBeschliessen` mit `kompromiss`, `wegFuer`), `src/engine/haushalt.js` (`vorschau`/`haushaltBeschliessen` mit `kompromiss`). Zahlen: `config.kompromiss` (Spielwerte). Vereinfachter Ersatz für den Vermittlungsausschuss.
 - Möglich, wenn im Bundesrat höchstens 15 Stimmen zur Mehrheit fehlen (z. B. Union + SPD mit 24 von 35); fehlen mehr, scheitert das Vorhaben wie bisher.
