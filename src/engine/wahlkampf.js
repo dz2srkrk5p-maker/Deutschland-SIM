@@ -3,7 +3,7 @@ import { parteien } from '../data/parteien.js';
 import { zufall } from './rng.js';
 import { wahl } from './wahl.js';
 import { umfrageBuchen } from './umfragebilanz.js';
-import { mitVerlauf } from './state.js';
+import { mitVerlauf, periodeSchnappschuss } from './state.js';
 
 const wk = config.wahlkampf;
 const name = (id) => parteien.find((p) => p.id === id).name;
@@ -105,5 +105,5 @@ export function wahlkampfWoche(zustand, params) {
 
   if (woche < wk.wochen) return { state, ereignisse };
   const ergebnis = wahl(state);
-  return { state: ergebnis.state, ereignisse: [...ereignisse, ...ergebnis.ereignisse] };
+  return { state: { ...ergebnis.state, periodeStart: periodeSchnappschuss(state) }, ereignisse: [...ereignisse, ...ergebnis.ereignisse] };
 }

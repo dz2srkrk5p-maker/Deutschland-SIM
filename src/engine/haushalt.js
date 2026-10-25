@@ -8,7 +8,8 @@ import { bundesratAbstimmung, kompromissMoeglich } from './bundesrat.js';
 import { abstimmung, abstimmen } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
-import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
+import { mitVerlauf } from './state.js';
+import { wahlperiodeEnde } from './regierungsbilanz.js';
 import { laufendeKosten as loesungsKosten, jahresFolgen } from './probleme.js';
 import { wegKosten, profilWirkung } from './reformwege.js';
 
@@ -201,11 +202,15 @@ export function haushaltBeschliessen(zustand, params = {}) {
     return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, `${fehlschlaege}. gescheiterter Haushalt in dieser Wahlperiode: Die Minderheitsregierung ist am Ende, Opposition`] };
   }
   const bruch = koalitionPruefen(state);
-  if (bruch.neuwahl) return { state: zurueckInDenWahlkampf(bruch.state), ereignisse: [...ereignisse, ...bruch.ereignisse] };
+  if (bruch.neuwahl) {
+    const ende = wahlperiodeEnde(bruch.state);
+    return { state: ende.state, ereignisse: [...ereignisse, ...bruch.ereignisse, ...ende.ereignisse] };
+  }
   if (jahr < config.legislaturJahre) return { state: bruch.state, ereignisse: [...ereignisse, ...bruch.ereignisse] };
+  const ende = wahlperiodeEnde(bruch.state);
   return {
-    state: zurueckInDenWahlkampf(bruch.state),
-    ereignisse: [...ereignisse, ...bruch.ereignisse, 'Wahlperiode vorbei: Wahlkampf für die nächste Bundestagswahl'],
+    state: ende.state,
+    ereignisse: [...ereignisse, ...bruch.ereignisse, 'Wahlperiode vorbei: Wahlkampf für die nächste Bundestagswahl', ...ende.ereignisse],
   };
 }
 

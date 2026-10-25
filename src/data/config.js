@@ -76,6 +76,12 @@ export const config = {
   // dasselbe Ereignis höchstens einmal je Wahlperiode. Folgen stehen in src/data/ereignisse.js.
   ereignisse: { chanceJeQuartal: 0.3 },
 
+  // Regierungsbilanz im Wahlkampf (Paket Groß, Feature 9, Spielwerte): einmalige Wirkung auf die Kanzlerpartei zu Beginn
+  // des Wahlkampfs, Partner × partnerAnteil, gedeckelt auf ± max Punkte. Vertrag: jeVertrag × (umgesetzt − gebrochen −
+  // offen × offenAnteil) / Vorhaben. Probleme: gelöst bzw. verschleppt = seit der Wahl um mindestens problemSchwelle
+  // gesunken bzw. gestiegen, je jeProblem. ursachen: Anzahl angezeigter Umfrage-Ursachen.
+  regierungsbilanz: { jeVertrag: 0.8, offenAnteil: 0.5, problemSchwelle: 10, jeProblem: 0.15, max: 1.5, partnerAnteil: 0.5, ursachen: 3 },
+
   // Krisenketten (Paket Groß, Feature 8, Spielwerte): Stärke eines Glieds = Gewicht der bestehenden Wechselwirkung × faktor;
   // wirkt nach verzoegerung Quartalen, je Kettenstufe × daempfung, höchstens maxTiefe Stufen und maxAktiv gleichzeitig
   // aktive Glieder; ein Problem löst frühestens nach abklingQuartale erneut eine Kette aus. verlaufLaenge: Anzeige.

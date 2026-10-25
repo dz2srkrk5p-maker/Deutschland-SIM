@@ -18,6 +18,7 @@ export const ZUSTAND_VERSION = 18; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 15: land.zinsaufschlag (Anteil auf die Zinslast, Feature 2)
 // 16: verfahren [{ typ, id, name, art, chance, stufen?, faellig }] (Verfassungsrisiko für Steuern, Feature 3)
 // 17: laender { landId: { regierung, geschaeftsfuehrend, wahl: { jahr, quartal } } } (Landtagswahlen, Feature 5)
+// ohne neue Version (optionale Felder, alte Stände laufen ohne Bilanz): periodeStart, regierungsBilanz (Feature 9)
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
 
 // Neue Felder ab Version 10, auch für die Migration alter Spielstände
@@ -25,6 +26,12 @@ const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.
 // Einnahmen (System 2): Stufen je Einnahmeart, aktive Ausgestaltungen; altFaktor überträgt Steueränderungen alter Spielstände
 const einnahmenStart = (altFaktor = 1) => ({ stufen: {}, ausgestaltung: [], altFaktor });
 const gruppenStart = () => Object.fromEntries(gruppen.map((g) => [g.id, 50]));
+
+// Regierungsbilanz (Feature 9): Problemwerte und Kennzahlen bei der Bundestagswahl, Maßstab am Ende der Regierungszeit
+export const periodeSchnappschuss = (zustand) => ({
+  probleme: Object.fromEntries(Object.entries(zustand.probleme).map(([id, p]) => [id, p.wert])),
+  land: Object.fromEntries(kennzahlen.map((k) => [k.id, zustand.land[k.id]])),
+});
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -65,6 +72,8 @@ export function neuesSpiel(spielerParteiId, seed) {
     verfahren: [], // anhängige Klagen gegen Steueränderungen (Feature 3)
     laender: laenderStart(), // Landesregierungen und nächste Landtagswahl je Land (Feature 5)
     ketten: kettenStart(), // Krisenketten: aktive Glieder, Abklingzeit, letzte Wirkungen (Feature 8)
+    periodeStart: null, // Schnappschuss bei der letzten Bundestagswahl (Feature 9)
+    regierungsBilanz: null, // Bilanz der letzten Regierungszeit, Anzeige im Wahlkampf (Feature 9)
     offenesEreignis: null, // Ereignis, auf das der Spieler noch reagieren muss (F14)
     ereignisseWahlperiode: [], // schon dagewesene Ereignisse dieser Wahlperiode
     land: landStart(), // Landeskennzahlen (data/kennzahlen.js), Schulden und BIP in Mrd. €
@@ -101,6 +110,7 @@ export function zurueckInDenWahlkampf(zustand) {
     quartal: 1,
     aktionenImQuartal: 0,
     ereignisseWahlperiode: [],
+    regierungsBilanz: null,
   };
 }
 
