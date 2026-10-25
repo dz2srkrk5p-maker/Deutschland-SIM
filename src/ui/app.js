@@ -1,5 +1,6 @@
 import './stil.css';
-import { neuesSpiel, seedAusAdresse } from '../engine/state.js';
+import { neuesSpiel, seedAusAdresse, regierungImAmt, spielerRegiert } from '../engine/state.js';
+import { oppositionMonat } from '../engine/opposition.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
 import { verhandeln, minderheitAntreten } from '../engine/koalition.js';
 import { bestaetigen } from '../engine/kabinett.js';
@@ -25,7 +26,6 @@ import { karte } from './components/basis.js';
 import { haushaltScreen } from './screens/haushalt.js';
 import { parlamentScreen } from './screens/parlament.js';
 import { chronikScreen } from './screens/chronik.js';
-import { endeScreen } from './screens/ende.js';
 
 const el = document.querySelector('#app');
 const ansage = document.querySelector('#ansage');
@@ -67,9 +67,11 @@ function zeichne() {
       onLinkNein: () => ((link = null), weiterspielen()),
     });
   }
-  const regiert = zustand.phase === 'regierung';
+  // regiert: eine Bundesregierung ist im Amt (die eigene oder in der Opposition die der anderen); dann gibt es die Navigation
+  const regiert = regierungImAmt(zustand);
   const ernst = regiert ? warnZahl(zustand) : 0;
-  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: haushaltsMonat(zustand) ? badge('fällig', 'gelb') : '' } : {};
+  const eigene = spielerRegiert(zustand);
+  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: eigene && haushaltsMonat(zustand) ? badge('fällig', 'gelb') : '' } : {};
   el.innerHTML = shellHtml(zustand, { aktiv: regiert ? ui.bereich : null, badges });
   el.querySelector('#meldung').innerHTML = meldungHtml(ui.meldung);
   menueBinden();
@@ -82,7 +84,8 @@ function zeichne() {
   if (ui.chronikOffen && !regiert) return chronik(() => ((ui.chronikOffen = false), zeichne(), fokusOben()));
 
   if (zustand.phase === 'wahlkampf') return wahlkampfScreen(a, zustand, { onAktion: ausfuehren(wahlkampfWoche) });
-  if (zustand.phase === 'koalition' && !ui.wahlabendGesehen) {
+  // Wahlabend auch, wenn die Wahl direkt in die Opposition führt
+  if ((zustand.phase === 'koalition' || zustand.phase === 'opposition') && !ui.wahlabendGesehen) {
     return wahlabendScreen(a, zustand, { onWeiter: () => ((ui.wahlabendGesehen = true), (ui.meldung = null), zeichne(), fokusOben()) });
   }
   if (zustand.phase === 'koalition') {
@@ -93,7 +96,6 @@ function zeichne() {
     });
   }
   if (zustand.phase === 'kabinett') return kabinettScreen(a, zustand, { onBestaetigen: ausfuehren(bestaetigen) });
-  if (!regiert) return endeScreen(a, zustand, { onNeu: neuesSpielStarten, onChronik: () => ((ui.chronikOffen = true), zeichne(), fokusOben()) });
 
   if (ui.bereich === 'lage') {
     // „Zum Haushalt“ führt immer auf den Überblick mit dem Knopf zum Einbringen
@@ -101,7 +103,7 @@ function zeichne() {
     // Richtungsprofil auf dem Dashboard (System 1)
     const zusatz = karte(`${profilHtml(richtungsprofil(zustand))}<div class="knoepfe"><button data-gehe="reformen">Zu den Reformen</button></div>`, { titel: 'Richtungsprofil' });
     const onProblem = (p) => (wechseln('probleme'), (ui.problem = p), zeichne(), fokusOben());
-    return lageScreen(a, zustand, { onWeiter: ausfuehren(monatBeenden), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onBereich, onProblem, zusatz });
+    return lageScreen(a, zustand, { onWeiter: ausfuehren(eigene ? monatBeenden : oppositionMonat), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onBereich, onProblem, zusatz });
   }
   if (ui.bereich === 'reformen') {
     return reformenScreen(a, zustand, { auswahl: ui.reformBereich, onBeschliessen: ausfuehren(wegBeschliessen), onAuswahl: (b) => ((ui.reformBereich = b), zeichne(), fokusOben()) });
@@ -203,7 +205,7 @@ const ausfuehren = (aktion) => (params) => {
   spielSichern(zustand, protokoll);
   if (zustand.phase !== vorher) {
     neu();
-    if (zustand.phase === 'koalition') ui.wahlabendGesehen = false;
+    if (zustand.phase === 'koalition' || (zustand.phase === 'opposition' && vorher === 'wahlkampf')) ui.wahlabendGesehen = false;
   }
   if (aktion === haushaltBeschliessen) Object.assign(ui.entwurf, { stufen: {}, einnahmen: {}, ausgestaltung: {}, kompromiss: false, tab: 'ueberblick' });
   ui.meldung = { texte: ergebnis.ereignisse, fehler: false };

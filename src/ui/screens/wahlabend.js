@@ -14,7 +14,7 @@ export function wahlabendScreen(el, zustand, { onWeiter }) {
     ${karte(`<p>Euer Wahlkampf: <strong>${plusMinus(w.wahlkampf)} Punkte</strong> <small>(Umfrage nach Woche ${config.wahlkampf.wochen} minus vor Woche 1, mit Schwankung)</small></p>
       ${wahlergebnisHtml(zustand, zustand.sitze)}`, { titel: 'Ergebnis' })}
     ${karte(bundestagSvg(zustand.sitze, parteien), { titel: 'Sitze im Bundestag' })}
-    <div class="knoepfe"><button id="weiter" class="primaer">Weiter zur Regierungsbildung</button></div>
+    <div class="knoepfe"><button id="weiter" class="primaer">${zustand.phase === 'opposition' ? 'Weiter in die Opposition' : 'Weiter zur Regierungsbildung'}</button></div>
   </div>`;
   el.querySelector('#weiter').addEventListener('click', onWeiter);
 }

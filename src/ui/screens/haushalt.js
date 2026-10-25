@@ -99,7 +99,7 @@ function einnahmenWirkungHtml(w, geaendert) {
 // Außerhalb des Haushaltsmonats nur lesbar. entwurf: { jahr, stufen, einnahmen, ausgestaltung, tab } aus app.js.
 export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
   if (entwurf.jahr !== zustand.haushalt.jahr) Object.assign(entwurf, { jahr: zustand.haushalt.jahr, stufen: {}, einnahmen: {}, ausgestaltung: {} });
-  const bearbeitbar = haushaltsMonat(zustand) && !zustand.offenesEreignis;
+  const bearbeitbar = zustand.phase === 'regierung' && haushaltsMonat(zustand) && !zustand.offenesEreignis;
   const maxMinister = hh.ministerMaxProzent / hh.ministerSchrittProzent;
   const verteilung = zustand.kabinett.verteilung;
   // Wert des Parameters bei einer Änderung um d Stufen gegenüber dem beschlossenen Stand
@@ -190,7 +190,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         <p><strong>Verbände (Steuern):</strong> ${v.verbaende.filter((x) => x.kapital).map((x) => `${x.akteur.name} ${x.kapital < 0 ? 'dagegen' : 'dafür'}`).join(' · ') || 'keine Reaktion'}${v.verbaendeKapital ? `, Kapital ${v.verbaendeKapital > 0 ? '+' : '−'}${Math.abs(v.verbaendeKapital)}` : ''}</p>`, { titel: 'Wirkung des Entwurfs' })}
       ${karte(koalitionslageHtml(zustand, v.anteile), { titel: 'Koalition' })}
       ${bearbeitbar ? karte(`
-        ${durchfallen ? `<p class="rot">✗ Keine Mehrheit. Einbringen heißt: Der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} ${plusMinus(-config.minderheit.umfrageVerlustHaushaltGescheitert, 1)} Punkte (Fehlschlag ${(zustand.koalition.fehlschlaege ?? 0) + 1} von ${config.minderheit.fehlschlaegeBisSpielende} bis zum Spielende).</p>` : ''}
+        ${durchfallen ? `<p class="rot">✗ Keine Mehrheit. Einbringen heißt: Der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} ${plusMinus(-config.minderheit.umfrageVerlustHaushaltGescheitert, 1)} Punkte (Fehlschlag ${(zustand.koalition.fehlschlaege ?? 0) + 1} von ${config.minderheit.fehlschlaegeBisNeuwahl} bis zum Spielende).</p>` : ''}
         ${!b.eingehalten && !durchfallen ? '<p class="rot">✗ Schuldenbremse überschritten: unter „Einnahmen“ gibt es Vorschläge zur Gegenfinanzierung.</p>' : ''}
         ${v.bundesrat?.mehrheit === false && !durchfallen ? `<p class="rot">✗ Für die Steueränderung fehlt die Mehrheit im Bundesrat.</p>${v.bundesrat.kompromissMoeglich ? `<p class="klein">${erklaerungen.kompromiss}</p><div class="knoepfe"><button id="kompromiss" ${zustand.kapital < config.kompromiss.kapital ? 'disabled' : ''}>Kompromiss mit den Ländern</button></div>` : ''}` : ''}
         ${v.bundesrat?.kompromiss ? `<p class="gelb">⚠ Kompromiss im Bundesrat: Ausgleichszahlung an die Länder ${euro(v.ausgleich)} (in den Ausgaben enthalten), ${config.kompromiss.kapital} Kapital. <button id="kompromiss-weg">Kompromiss zurücknehmen</button></p>` : ''}
@@ -279,6 +279,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
       <h1>Haushalt Jahr ${zustand.haushalt.jahr}</h1>
       ${hinweisHtml('regierung')}
       ${bearbeitbar ? '' : zustand.offenesEreignis ? '<div class="meldung">Erst auf das Ereignis in der Lage reagieren.</div>'
+        : zustand.phase === 'opposition' ? '<div class="meldung">Nur lesen: Ihr seid in der Opposition. Den Haushalt beschließt die Regierung im Dezember.</div>'
         : `<div class="meldung">Nur lesen: Der Haushalt wird im ${monatsname(config.regierung.monateJeJahr)} aufgestellt. Gezeigt wird der laufende Haushalt.</div>`}
       ${tabs(TABS, entwurf.tab, 'Haushalt')}
       ${inhalt()}

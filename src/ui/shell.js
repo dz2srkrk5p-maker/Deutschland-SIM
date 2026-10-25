@@ -34,8 +34,7 @@ const SCHRITTE = [
 export function zeitText(z) {
   if (z.phase === 'wahlkampf') return `Woche ${z.wahlkampfWoche} von ${config.wahlkampf.wochen}`;
   if (z.phase === 'koalition' || z.phase === 'kabinett') return 'Regierungsbildung';
-  if (z.phase === 'regierung') return `Jahr ${z.haushalt.jahr} · ${monatsname(z.monat)}`;
-  return 'Spielende';
+  return `${monatsname(z.monat)} ${z.jahr}`; // eigene Regierung oder Opposition
 }
 
 // Umfragetrend der eigenen Partei über die letzten 3 Verlaufsschritte
@@ -51,7 +50,8 @@ function kopfHtml(z) {
         <div><dt>Partei</dt><dd>${punkt(p.farbe)}${p.name}</dd></div>
         <div><dt>Zeit</dt><dd>${zeitText(z)}</dd></div>
         <div><dt>Umfrage</dt><dd title="${umfrageBilanzKurz(z) || 'Noch keine Änderung'}. Einzelheiten: Lage, „Warum bewegt sich die Umfrage?“">${prozent(z.anteile[p.id])} ${trend(umfrageTrend(z))}</dd></div>
-        <div><dt>Kanzlerjahre</dt><dd>${zahl(z.statistik.jahreKanzler)} von ${config.spielende.siegJahreKanzler}</dd></div>
+        <div><dt>Kanzlerjahre</dt><dd>${zahl(z.statistik.jahreKanzler)}</dd></div>
+        ${z.phase === 'opposition' ? `<div><dt>Rolle</dt><dd>${status('gelb', 'Opposition')}</dd></div>` : ''}
         ${z.phase === 'regierung' ? `<div><dt>Kapital</dt><dd title="${erklaerungen.kapital}">${z.kapital}</dd></div>` : ''}
         ${z.phase === 'regierung' && koalitionsWarnung(z) ? `<div><dt>Koalition</dt><dd>${status(koalitionsWarnung(z).stufe, koalitionsWarnung(z).text)}</dd></div>` : ''}
       </dl>

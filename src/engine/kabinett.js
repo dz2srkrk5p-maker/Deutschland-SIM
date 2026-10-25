@@ -5,8 +5,9 @@ import { sainteLague } from './hoechstzahl.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 
-// Koalitionsparteien: Spieler zuerst, dann Partner in der Reihenfolge von parteien.js
-export const koalitionsParteien = (zustand) => [zustand.spielerParteiId, ...zustand.koalition.partner];
+// Regierungsparteien: Kanzlerpartei zuerst (vor der Kanzlerwahl der Spieler), dann Partner in der Reihenfolge von parteien.js.
+// Seit Etappe 0b kann die Kanzlerpartei eine andere als die des Spielers sein (Spieler in der Opposition).
+export const koalitionsParteien = (zustand) => [zustand.kanzlerParteiId ?? zustand.spielerParteiId, ...zustand.koalition.partner];
 
 // Wie viele Ministerien jeder Koalitionspartei zustehen: Sainte-Laguë nach Sitzen.
 export function ansprueche(zustand) {

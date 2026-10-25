@@ -9,7 +9,7 @@ import { bundesratAbstimmung, kompromissMoeglich } from './bundesrat.js';
 import { abstimmung, abstimmen } from './bundestag.js';
 import { koalitionsParteien } from './kabinett.js';
 import { mehrheit } from './koalition.js';
-import { zurueckInDenWahlkampf, mitVerlauf } from './state.js';
+import { zurueckInDenWahlkampf, mitVerlauf, regierungImAmt } from './state.js';
 import { laufendeKosten as loesungsKosten, jahresFolgen } from './probleme.js';
 import { wegKosten, profilWirkung } from './reformwege.js';
 
@@ -141,7 +141,7 @@ export function prognose(zustand, entwurf = {}, jahre = 5) {
 // zuerst, bis es reicht. Ändert nur stufen, die Einnahmen des Entwurfs bleiben. Gibt null zurück, wenn es nicht reicht.
 export function kuerzungsVorschlag(zustand, entwurf = {}) {
   const stufen = { ...(entwurf.stufen ?? {}) };
-  const eigen = (m) => zustand.kabinett.verteilung[m] === zustand.spielerParteiId;
+  const eigen = (m) => zustand.kabinett.verteilung[m] === zustand.kanzlerParteiId;
   const reihenfolge = ministerien.map((m) => m.id).sort((a, b) => eigen(a) - eigen(b) || zustand.haushalt.etats[b] - zustand.haushalt.etats[a]);
   const max = hh.ministerMaxProzent / hh.ministerSchrittProzent;
   const haelt = () => vorschau(zustand, { ...entwurf, stufen }).bilanz.eingehalten;
@@ -159,15 +159,17 @@ const zahl = (x, n = 2) => x.toLocaleString('de-DE', { maximumFractionDigits: n 
 // Aktion: Haushalt des laufenden Jahres beschließen. Danach entwickelt sich die Wirtschaft ein Jahr weiter (System 2).
 // Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
 export function haushaltBeschliessen(zustand, params = {}) {
-  if (zustand.phase !== 'regierung') throw new Error('Keine Regierung im Amt');
+  if (!regierungImAmt(zustand)) throw new Error('Keine Regierung im Amt');
   if (zustand.monat !== config.regierung.monateJeJahr) throw new Error(`Der Haushalt kommt erst im ${monatsname(config.regierung.monateJeJahr)}`);
   if (zustand.offenesEreignis) throw new Error('Erst auf das Ereignis reagieren');
   const v = vorschau(zustand, params);
   // echte Abstimmung: gleich der Vorschau, außer bei einer Brandmauer-Regierung (Abweichler per Zufall, F11)
   const bundestag = abstimmen(zustand, 'haushalt');
-  // Minderheitsregierung (F11): fällt der Haushalt im Bundestag durch, gilt der Vorjahreshaushalt weiter
-  const gescheitert = !bundestag.angenommen;
-  if (gescheitert && !zustand.koalition.minderheit) throw new Error('Keine Mehrheit im Bundestag für den Haushalt');
+  // Minderheitsregierung (F11): fällt der Haushalt im Bundestag durch, gilt der Vorjahreshaushalt weiter.
+  // vorlaeufig: nur für die Regierung der anderen (Etappe 0b), wenn kein gültiger Entwurf möglich ist – gleiche Folge.
+  const vorlaeufig = Boolean(params.vorlaeufig) && zustand.phase === 'opposition';
+  const gescheitert = vorlaeufig || !bundestag.angenommen;
+  if (gescheitert && !vorlaeufig && !zustand.koalition.minderheit) throw new Error('Keine Mehrheit im Bundestag für den Haushalt');
   if (!gescheitert && !v.bilanz.eingehalten) throw new Error('Schuldenbremse überschritten');
   if (!gescheitert && v.bundesrat && !v.bundesrat.mehrheit) throw new Error('Keine Mehrheit im Bundesrat für die Steueränderung');
   const kompromissPreis = !gescheitert && v.bundesrat?.kompromiss ? config.kompromiss.kapital : 0;
@@ -220,25 +222,26 @@ export function haushaltBeschliessen(zustand, params = {}) {
     ...(!gescheitert && v.verbaende.some((x) => x.kapital) ? [`Verbände zu den Steueränderungen: ${v.verbaende.filter((x) => x.kapital).map((x) => `${x.akteur.name} ${x.kapital < 0 ? 'protestieren' : 'stimmen zu'}`).join(', ')} (Kapital ${x0(verbandKapital)})`] : []),
     `Wirtschaft: Wachstum ${zahl(w.land.wachstum, 1)} %, Inflation ${zahl(w.land.inflation, 1)} %, Arbeitslosigkeit ${zahl(w.land.arbeitslosigkeit, 1)} %, Schuldenquote ${zahl(w.land.schuldenquote, 1)} %`,
   ];
-  const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
-  const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
+  // Kanzlerjahre zählen nur, wenn der Spieler die Regierung stellt
+  const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + (zustand.kanzlerParteiId === zustand.spielerParteiId ? 1 : 0) };
+  const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert && !vorlaeufig ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
   const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, wirtschaftVerlauf: [...(zustand.wirtschaftVerlauf ?? []), wirtschaftWerte(w.land)], gruppen, statistik, koalition, jahresWirkung: wirkungSumme(), kapital: kapitalNeu }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
 
-  // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
-  if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {
-    return { state: { ...state, phase: 'sieg' }, ereignisse: [...ereignisse, `Sieg: ${statistik.jahreKanzler} Jahre als Kanzler`] };
-  }
-  if (fehlschlaege >= config.minderheit.fehlschlaegeBisSpielende) {
-    return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, `${fehlschlaege}. gescheiterter Haushalt in dieser Wahlperiode: Die Minderheitsregierung ist am Ende, Opposition`] };
+  // Die Partie endet nicht (Etappe 0b): Eine Minderheitsregierung, deren Haushalt zum wiederholten Mal scheitert, ist am
+  // Ende – vorgezogene Neuwahl (vorher Spielende).
+  if (fehlschlaege >= config.minderheit.fehlschlaegeBisNeuwahl) {
+    return { state: zurueckInDenWahlkampf({ ...state, monat: 1, jahr: state.jahr + 1 }), ereignisse: [...ereignisse, `${fehlschlaege}. gescheiterter Haushalt in dieser Wahlperiode: Die Minderheitsregierung ist am Ende, vorgezogene Neuwahl`] };
   }
   // danach endet der letzte Monat wie jeder andere (Probleme, Umsetzungen, Verfahren, Landtagswahlen, Koalitionsprüfung).
   // Er gehört noch zum alten Jahr: Haushaltsjahr und Kanzlerjahre zählen erst danach weiter (Zeitangaben, Kalenderjahr).
-  const abgeschlossen = monatsabschluss({ ...state, haushalt: { ...state.haushalt, jahr }, statistik: zustand.statistik });
-  const ende = { ...abgeschlossen, state: { ...abgeschlossen.state, haushalt: { ...abgeschlossen.state.haushalt, jahr: jahr + 1 }, statistik } };
+  const abgeschlossen = monatsabschluss({ ...state, haushalt: { ...state.haushalt, jahr } });
+  const ende = { ...abgeschlossen, state: { ...abgeschlossen.state, haushalt: { ...abgeschlossen.state.haushalt, jahr: jahr + 1 }, jahr: state.jahr + 1 } };
   const alle = [...ereignisse, ...ende.ereignisse];
   if (ende.neuwahl) return { state: zurueckInDenWahlkampf(ende.state), ereignisse: alle };
   if (jahr < config.legislaturJahre) {
+    // Ereignisse nur für die eigene Regierung (sie verlangen eine Entscheidung des Spielers)
+    if (ende.state.phase === 'opposition') return { state: { ...ende.state, monat: 1 }, ereignisse: alle };
     const neu = ereignisZiehen({ ...ende.state, monat: 1 });
     return { state: neu.state, ereignisse: [...alle, ...neu.ereignisse] };
   }
@@ -256,14 +259,14 @@ export function bruchAbstand(zustand, anteile = zustand.anteile) {
 }
 
 // Partner, deren Umfrage mehr als koalitionsbruchPunkte unter dem Wert bei Regierungsbildung liegt, verlassen die Koalition.
-// Ihre Ministerien gehen an die Spielerpartei. Ohne verbleibende Mehrheit: als Minderheit weiter, wenn die Spielerpartei
-// die stärkste Fraktion ist (F11), sonst vorgezogene Neuwahl.
+// Ihre Ministerien gehen an die Kanzlerpartei. Ohne verbleibende Mehrheit: als Minderheit weiter, wenn die Kanzlerpartei
+// die stärkste Fraktion ist (F11), sonst vorgezogene Neuwahl. Gilt auch für die Regierung der anderen (Etappe 0b).
 export function koalitionsbruch(zustand, kandidaten = zustand.koalition.partner) {
   const { partner } = zustand.koalition;
   const gehen = bruchAbstand(zustand).filter((a) => a.geht && kandidaten.includes(a.id)).map((a) => a.id);
   if (!gehen.length) return { state: zustand, ereignisse: [], neuwahl: false };
 
-  const spieler = zustand.spielerParteiId;
+  const spieler = zustand.kanzlerParteiId;
   const bleiben = partner.filter((id) => !gehen.includes(id));
   const verteilung = Object.fromEntries(Object.entries(zustand.kabinett.verteilung).map(([m, id]) => [m, gehen.includes(id) ? spieler : id]));
   const anspruch = { ...zustand.kabinett.anspruch };
@@ -288,7 +291,7 @@ export function koalitionsbruch(zustand, kandidaten = zustand.koalition.partner)
 // erst, wenn die Frist abgelaufen ist und er dann über der Grenze liegt. Unter der Warnstufe zieht er das Ultimatum zurück.
 // Läuft am Ende jedes Monats (auch im Haushaltsmonat nach dem Beschluss).
 export function koalitionPruefen(zustand) {
-  if (zustand.phase !== 'regierung' || !zustand.koalition?.partner.length) return { state: zustand, ereignisse: [], neuwahl: false };
+  if (!regierungImAmt(zustand) || !zustand.koalition?.partner.length) return { state: zustand, ereignisse: [], neuwahl: false };
   const kb = config.koalitionsbruch;
   const ultimatum = { ...(zustand.koalition.ultimatum ?? {}) };
   const ereignisse = [];

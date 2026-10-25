@@ -44,3 +44,11 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | E5 | Erweiterung: Verknüpfungen, UI-Integration, Balancing nach Ausrichtung | fertig (2026-10-24) |
 | UI2 | Einnahmen per Schieberegler mit Schätzung des Aufkommens (erstes Jahr, dauerhaft) | fertig (2026-10-25) |
 | UI3 | Lage: Top-Probleme anklickbar, Wirtschaft als Diagramme (Version 19), Zeitstrahl laufender Vorhaben (Version 20); Haushalt: Wirkung je Steuer, Etat-Regler 1 % / ±25 % | fertig (2026-10-25) |
+
+## Epochen-System (Branch `claude/epochen-system`)
+| Etappe | Inhalt | Stand |
+|--------|--------|-------|
+| 0a | Monatstakt statt Quartale (Version 22) | fertig (2026-10-25) |
+| 0b | Partie ohne Ende, Opposition spielbar, Kalenderjahr (Version 23) | fertig (2026-10-25) |
+| 0c | Schwierigkeitsstufen 1–4 beim Spielstart | offen |
+| 1–10 | Epochen, Wege, Merkmale, Ursachen, Generationen, Großprojekte, Bestände, Bevölkerung, UI | offen |

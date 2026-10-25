@@ -5,6 +5,7 @@ import { zufall } from './rng.js';
 import { ansprueche } from './kabinett.js';
 import { zurueckInDenWahlkampf } from './state.js';
 import { abstimmung, abstimmen } from './bundestag.js';
+import { inDieOpposition } from './opposition.js';
 
 const ko = config.koalition;
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -82,11 +83,8 @@ export function minderheitAntreten(zustand) {
   const abweichlerText = wahl.abweichler ? `, davon ${wahl.abweichler} Abweichler` : '';
   const ergebnis = `${wahl.ja} Ja gegen ${wahl.nein} Nein (${wahl.enthaltung} Enthaltungen${abweichlerText})`;
   if (!wahl.angenommen) {
-    // Versuch der Brandmauer-Partei gescheitert: keine Regierung möglich, Spielende (F11)
-    return {
-      state: { ...zustand, rngZustand: wahl.rngZustand, phase: 'opposition' },
-      ereignisse: [`Kanzlerwahl im letzten Wahlgang gescheitert: ${ergebnis}`, 'Keine Regierung möglich: Opposition'],
-    };
+    // Versuch der Brandmauer-Partei gescheitert: die anderen regieren, der Spieler geht in die Opposition (seit Etappe 0b)
+    return inDieOpposition({ ...zustand, rngZustand: wahl.rngZustand }, [`Kanzlerwahl im letzten Wahlgang gescheitert: ${ergebnis}`, 'Keine eigene Regierung möglich: Opposition']);
   }
   const statistik = { ...zustand.statistik, regierungenGebildet: zustand.statistik.regierungenGebildet + 1 };
   const verteilung = Object.fromEntries(ministerien.map((m) => [m.id, spieler]));
@@ -161,7 +159,7 @@ export function verhandeln(zustand, { partner }) {
   if (absagen.length) {
     const state = { ...zustand, rngZustand, abgelehnt: [...zustand.abgelehnt, ...absagen] };
     if (regierungMoeglich(state)) return { state, ereignisse };
-    return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Regierung mehr möglich: Opposition'] };
+    return inDieOpposition(state, [...ereignisse, 'Keine eigene Regierung mehr möglich: Opposition']);
   }
 
   const namen = [zustand.spielerParteiId, ...reihenfolge].map((id) => partei(id).name);

@@ -4,15 +4,15 @@ import { config } from './config.js';
 const mehrheit = Math.floor(config.sitzeBundestag / 2) + 1; // wie mehrheit() in koalition.js bei voller Sitzzahl
 const zahl = (x) => x.toLocaleString('de-DE');
 
-// Schlüssel: Phase des Spielzustands, dazu 'start' und 'ende' (Sieg und Opposition)
+// Schlüssel: Phase des Spielzustands (auch opposition), dazu 'start' und 'monat'
 export const hinweise = {
-  start: `Ziel: Führe deine Partei ins Kanzleramt und stelle ${config.spielende.siegJahreKanzler} Haushaltsjahre lang den Kanzler, auch über mehrere Wahlperioden. Findest du nach einer Wahl keine Mehrheit und kannst als stärkste Fraktion auch keine Minderheitsregierung bilden, ist das Spiel vorbei.`,
+  start: 'Ziel: Führe deine Partei ins Kanzleramt und regiere so lange und so gut wie möglich. Die Partie endet nicht: Findest du nach einer Wahl keine Mehrheit, regieren die anderen, und du gehst in die Opposition bis zur nächsten Wahl.',
   wahlkampf: `Bis zur Wahl hast du ${config.wahlkampf.wochen} Wochen, jede Woche eine Aktion. Unter ${zahl(config.sperrklauselProzent)} % kommt eine Partei nicht in den Bundestag. Danach brauchst du mit Partnern mindestens ${mehrheit} Sitze.`,
   koalition: `Wähle Partner, bis ihr zusammen mindestens ${mehrheit} Sitze habt. Wer absagt, ist bis zur nächsten Wahl gesperrt. Je weiter weg eine Partei in der Sitzordnung ist, desto eher sagt sie ab. Als stärkste Fraktion kannst du auch eine Minderheitsregierung bilden – riskant.`,
   kabinett: 'Verteile die Ministerien. Jede Koalitionspartei bekommt so viele, wie ihr nach Sitzen zustehen. Wer ein Ministerium hält, gewinnt oder verliert später Umfragepunkte durch dessen Etat.',
   monat: `Ein Regierungsjahr hat ${config.regierung.monateJeJahr} Monate; in jedem kannst du bis zu ${config.probleme.aktionenJeMonat} Vorhaben starten (Lösungen oder Reformwege). Im Dezember stellst du den Haushalt auf.`,
   regierung: `Stelle den Haushalt für dieses Jahr auf, ohne die Schuldenbremse zu brechen; Kürzungen schaden der Partei, die das Ministerium hält. Liegt ein Partner mehr als ${zahl(config.spielende.koalitionsbruchPunkte * config.koalitionsbruch.ultimatumAnteil)} Punkte unter seinem Startwert, stellt er ein Ultimatum, und nach ${config.koalitionsbruch.fristMonate} Monaten über ${zahl(config.spielende.koalitionsbruchPunkte)} Punkten verlässt er die Koalition.`,
-  ende: 'Die Partie ist vorbei. Mit „Neues Spiel“ beginnst du von vorn, mit derselben oder einer anderen Partei.',
+  opposition: 'Ihr seid in der Opposition. Die Regierung der anderen beschließt Haushalt und Reformen; schaltet Monat für Monat weiter bis zur nächsten Bundestagswahl. Das ist das Ende der Wahlperiode oder eine Neuwahl, wenn die Koalition zerbricht.',
 };
 
 // Kurztexte an unklaren Stellen der Oberfläche (Paket Klein, Feature 4), höchstens zwei Sätze, als Tooltip

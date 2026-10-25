@@ -11,6 +11,14 @@ const { vorschlag, bestaetigen } = await import(R + 'engine/kabinett.js');
 const H = await import(R + 'engine/haushalt.js');
 const { monatBeenden, haushaltsMonat } = await import(R + 'engine/regierung.js');
 const { ereignisEntscheiden } = await import(R + 'engine/ereignisse.js');
+const { oppositionMonat } = await import(R + 'engine/opposition.js');
+// Seit Etappe 0b endet die Partie nicht: gemessen wird über FENSTER_JAHRE Kalenderjahre (in der Opposition geht es
+// weiter); „Sieg“ heißt jetzt ZIEL_KANZLERJAHRE Kanzlerjahre innerhalb dieses Fensters (wie das frühere Spielziel).
+const ZIEL_KANZLERJAHRE = 12;
+const FENSTER_JAHRE = 20;
+const zielErreicht = (z) => z.statistik.jahreKanzler >= ZIEL_KANZLERJAHRE;
+const partieVorbei = (z) => zielErreicht(z) || z.jahr >= config.kalender.startJahr + FENSTER_JAHRE;
+
 const hh = config.haushalt;
 const MAXS = hh.ministerMaxProzent / hh.ministerSchrittProzent;
 function partnerWaehlen(z) {
@@ -37,6 +45,7 @@ for (const [name, f] of Object.entries(S)) {
   for (let seed = 1; seed <= N; seed++) {
     let z = neuesSpiel('union', seed); let maxq = 0; const pfad = [];
     for (let i = 0; i < 8000; i++) {
+      if (partieVorbei(z)) break;
       let r;
       if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, wk(z));
       else if (z.phase === 'koalition') r = mehrheitMoeglich(z) ? verhandeln(z, { partner: partnerWaehlen(z) }) : minderheitAntreten(z);
@@ -53,7 +62,8 @@ for (const [name, f] of Object.entries(S)) {
           try { r = H.haushaltBeschliessen(z, k ?? {}); } catch { r = H.haushaltBeschliessen(z, H.kuerzungsVorschlag(z, {}) ?? {}); }
         }
         pfad.push(r.state.land?.schuldenquote ?? z.land.schuldenquote);
-      } else break;
+      } else if (z.phase === 'opposition') r = oppositionMonat(z);
+      else break;
       z = r.state;
       if (z.land) maxq = Math.max(maxq, z.land.schuldenquote);
       if (z.land) aufschlagMax = Math.max(aufschlagMax, z.land.zinsaufschlag ?? 0);

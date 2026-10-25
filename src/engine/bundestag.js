@@ -36,7 +36,7 @@ export function abstimmung(zustand, vorlage) {
   const fraktionen = parteien
     .filter((p) => zustand.sitze[p.id] > 0)
     .map((p) => {
-      const veto = vektor && p.id !== zustand.spielerParteiId && abstandPos(parteiPosition(p.id), vektor) > rw.vetoAbstand;
+      const veto = vektor && p.id !== koalition[0] && abstandPos(parteiPosition(p.id), vektor) > rw.vetoAbstand;
       const stimme = koalition.includes(p.id) ? (veto ? 'nein' : 'ja') : gesperrt ? 'nein' : vektor ? nachInhalt(p.id) : (regel[abstand(p.id, koalition)] ?? bt.stimmeWeit);
       return { id: p.id, sitze: zustand.sitze[p.id], stimme };
     });

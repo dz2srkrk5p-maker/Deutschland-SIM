@@ -86,7 +86,7 @@ export function wegSperre(zustand, wegId, { kompromiss = false } = {}) {
   const stand = zustand.reformwege[wegId];
   if (aktiv(stand)) return { grund: stand.status === 'umsetzung' ? 'in Umsetzung' : 'beschlossen' };
   if (w.braucht && zustand.reformwege[w.braucht]?.status !== 'beschlossen') return { grund: `erst „${weg(w.braucht).name}“ umsetzen` };
-  if (zustand.phase !== 'regierung') return { grund: 'keine Regierung' };
+  if (zustand.phase !== 'regierung') return { grund: zustand.phase === 'opposition' ? 'in der Opposition' : 'keine Regierung' };
   if (zustand.offenesEreignis) return { grund: 'erst auf das Ereignis reagieren' };
   if (zustand.monat === config.regierung.monateJeJahr) return { grund: 'im Haushaltsmonat nicht möglich' };
   if (zustand.aktionenImMonat >= config.probleme.aktionenJeMonat) return { grund: `höchstens ${config.probleme.aktionenJeMonat} Vorhaben je Monat` };

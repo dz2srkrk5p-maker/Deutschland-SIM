@@ -2,6 +2,7 @@ import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
 import { sainteLague } from './hoechstzahl.js';
 import { regierungMoeglich } from './koalition.js';
+import { inDieOpposition } from './opposition.js';
 
 // Prozentwerte haben höchstens 3 Nachkommastellen; als ganze Tausendstel gerechnet gibt es keine Rundungsfehler.
 const inTausendstel = (prozent) => Math.round(prozent * 1000);
@@ -12,7 +13,8 @@ export function ueberHuerde(partei, anteil) {
   return !partei.sonstige && inTausendstel(anteil) >= inTausendstel(config.sperrklauselProzent);
 }
 
-// Aktion Bundestagswahl: aktuelle Anteile → Sitze, danach Phase Koalition (oder Opposition, wenn keine Mehrheit möglich ist).
+// Aktion Bundestagswahl: aktuelle Anteile → Sitze, danach Phase Koalition (oder Opposition mit der Regierung der anderen,
+// wenn der Spieler keine Regierung bilden kann).
 export function wahl(zustand) {
   const stimmen = {};
   for (const p of parteien) {
@@ -30,5 +32,5 @@ export function wahl(zustand) {
   const state = { ...zustand, sitze, rngZustand, statistik, wahlergebnis, phase: 'koalition', abgelehnt: [], koalition: null, kabinett: null };
   const ereignisse = [`Bundestagswahl: ${ergebnis.join(', ')}`];
   if (regierungMoeglich(state)) return { state, ereignisse };
-  return { state: { ...state, phase: 'opposition' }, ereignisse: [...ereignisse, 'Keine Regierung möglich: Opposition'] };
+  return inDieOpposition(state, [...ereignisse, 'Keine eigene Regierung möglich: Opposition']);
 }

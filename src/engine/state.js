@@ -10,7 +10,7 @@ import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 22; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 23; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -21,6 +21,7 @@ export const ZUSTAND_VERSION = 22; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 16: verfahren [{ typ, id, name, art, chance, stufen?, faellig }] (Verfassungsrisiko für Steuern, Feature 3)
 // 17: laender { landId: { regierung, geschaeftsfuehrend, wahl: { jahr, quartal } } } (Landtagswahlen, Feature 5)
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
+// 23: jahr (Kalenderjahr); Partie ohne Ende: Phase opposition ist spielbar (Regierung der anderen), kein sieg mehr
 // 22: Monatstakt: monat (1–12) statt quartal, aktionenImMonat statt aktionenImQuartal; runde und alle Fristen in Monaten
 // 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
@@ -32,6 +33,12 @@ const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.
 // Einnahmen (System 2): Stufen je Einnahmeart, aktive Ausgestaltungen; altFaktor überträgt Steueränderungen alter Spielstände
 const einnahmenStart = (altFaktor = 1) => ({ stufen: {}, ausgestaltung: [], altFaktor });
 const gruppenStart = () => Object.fromEntries(gruppen.map((g) => [g.id, 50]));
+
+// Eine Bundesregierung ist im Amt: die des Spielers (Phase regierung) oder die der anderen, während der Spieler in der
+// Opposition ist (Phase opposition, seit Etappe 0b). Probleme, Landtagswahlen und Haushalt laufen in beiden Fällen.
+export const regierungImAmt = (zustand) => zustand.phase === 'regierung' || zustand.phase === 'opposition';
+// Der Spieler stellt die Regierung
+export const spielerRegiert = (zustand) => zustand.phase === 'regierung';
 
 // Anfangszustand eines neuen Spiels. Weitere Felder (Sitze, Regierung, Haushalt …) kommen mit ihren Meilensteinen.
 export function neuesSpiel(spielerParteiId, seed) {
@@ -60,6 +67,7 @@ export function neuesSpiel(spielerParteiId, seed) {
     // Haushalt in tausend Euro; gilt über Wahlperioden hinweg weiter, nur das Jahr beginnt neu
     haushalt: { jahr: 1, etats: { ...etats2026 }, einnahmen: einnahmenStart(), neueSchuldenSeitStart: 0 },
     // für Sieg und Endbildschirm; besteWahl = bester Stimmanteil der Spielerpartei bei einer Wahl
+    jahr: config.kalender.startJahr, // Kalenderjahr (seit Version 23), zählt mit jedem Dezember weiter
     monat: 1, // Monat im laufenden Regierungsjahr (seit Version 22; vorher Quartal, F12); Haushalt im letzten
     // Probleme 0–100 mit Verlauf und gestartete Lösungen (System 3); gelten über Wahlperioden hinweg weiter
     probleme: startProbleme(),
@@ -180,6 +188,14 @@ const MIGRATIONEN = {
       koalition: z.koalition && { ...z.koalition, ...(z.koalition.ultimatum ? { ultimatum: Object.fromEntries(Object.entries(z.koalition.ultimatum).map(([k, v]) => [k, m(v)])) } : {}) },
       laender,
     };
+  },
+  // Partie ohne Ende: Kalenderjahr wie bisher aus den Kanzlerjahren; „Sieg“ regiert weiter; das alte Spielende in der
+  // Opposition (ohne Regierung der anderen) wird zum Wahlkampf für die nächste Wahl
+  22: (z) => {
+    const neu = { ...z, version: 23, jahr: config.kalender.startJahr + (z.statistik?.jahreKanzler ?? 0) };
+    if (z.phase === 'sieg') return { ...neu, phase: 'regierung' };
+    if (z.phase === 'opposition') return zurueckInDenWahlkampf({ ...neu, monat: 1 });
+    return neu;
   },
 };
 

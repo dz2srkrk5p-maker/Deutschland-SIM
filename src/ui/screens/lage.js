@@ -89,7 +89,9 @@ function koalitionHtml(zustand) {
 }
 
 export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onProblem, onZugestaendnis, zusatz = '' }) {
-  const e = offenesEreignis(zustand);
+  // Opposition (Etappe 0b): gleiche Lage, aber die Regierung der anderen; keine Ereignisse, keine eigenen Vorhaben
+  const opposition = zustand.phase === 'opposition';
+  const e = opposition ? null : offenesEreignis(zustand);
   const regierung = koalitionsParteien(zustand);
   const sitze = regierung.reduce((s, id) => s + zustand.sitze[id], 0);
   const noetig = mehrheit(zustand.sitze);
@@ -99,7 +101,11 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onPro
   const koalitionStufe = abstaende.map(bruchStufe).sort((x, y) => ['ok', 'gelb', 'rot'].indexOf(y) - ['ok', 'gelb', 'rot'].indexOf(x))[0];
   const frei = pc.aktionenJeMonat - zustand.aktionenImMonat;
 
-  const hauptaktion = haushaltsMonat(zustand)
+  const monateBisWahl = (config.legislaturJahre - zustand.haushalt.jahr) * config.regierung.monateJeJahr + (config.regierung.monateJeJahr - zustand.monat) + 1;
+  const hauptaktion = opposition
+    ? `<p>Ihr seid in der Opposition. Es regiert ${koalitionsParteien(zustand).map((id) => partei(id).name).join(', ')}${zustand.koalition.minderheit ? ' als Minderheitsregierung' : ''}. Die nächste Bundestagswahl ist spätestens in ${monateBisWahl} ${monateBisWahl === 1 ? 'Monat' : 'Monaten'}.</p>
+       <div class="knoepfe"><button class="primaer" id="weiter">${haushaltsMonat(zustand) ? 'Weiter: Haushalt der Regierung' : 'Nächster Monat'}</button></div>`
+    : haushaltsMonat(zustand)
     ? `<p>Im ${monatsname(zustand.monat)} wird der Haushalt für Jahr ${zustand.haushalt.jahr} eingebracht.</p>
        <div class="knoepfe"><button class="primaer" data-gehe="haushalt">Zum Haushalt</button></div>`
     : `<p>${frei > 0 ? `Noch ${frei} von ${pc.aktionenJeMonat} Vorhaben in diesem Monat möglich (Lösungen und Reformen).` : status('ok', 'Alle Vorhaben für diesen Monat sind gestartet.')}</p>
@@ -107,17 +113,18 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onPro
 
   el.innerHTML = `<div class="ansicht">
     <h1>Lage</h1>
-    ${hinweisHtml('monat')}
+    ${hinweisHtml(opposition ? 'opposition' : 'monat')}
     ${e ? ereignisHtml(zustand, e) : ''}
     <div class="kennzahlen">
       ${kennzahl('Regierung', abstaende.length ? status(koalitionStufe, STUFE_TEXT[koalitionStufe]) : zustand.koalition.minderheit ? status('gelb', 'Minderheit') : status('ok', 'allein'),
         regierung.map((id) => partei(id).name).join(', '))}
-      ${kennzahl('Mehrheit im Bundestag', `${sitze} <small>von ${noetig}</small>`, sitze >= noetig ? status('ok', 'eigene Mehrheit') : status('gelb', 'Stimmen der Opposition nötig'))}
+      ${kennzahl('Mehrheit im Bundestag', `${sitze} <small>von ${noetig}</small>`, sitze >= noetig ? status('ok', opposition ? 'Regierungsmehrheit' : 'eigene Mehrheit') : status('gelb', 'Stimmen der Opposition nötig'))}
       ${kennzahl('Schuldenbremse', `<span title="${erklaerungen.schuldenbremse}">${zahl(mrd(spielraum), 1)} Mrd.</span>`, spielraum >= 0 ? status('ok', 'Spielraum') : status('rot', 'überschritten – im Haushalt ausgleichen'))}
-      ${kennzahl('Politisches Kapital', `<span title="${erklaerungen.kapital}">${zustand.kapital}</span> <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeMonat} je Monat`)}
+      ${opposition ? kennzahl('Nächste Wahl', `${monateBisWahl} <small>Monate</small>`, 'spätestens, früher bei Koalitionsbruch')
+        : kennzahl('Politisches Kapital', `<span title="${erklaerungen.kapital}">${zustand.kapital}</span> <small>von ${config.kapital.max}</small>`, `+${config.kapital.jeMonat} je Monat`)}
     </div>
-    ${koalitionsWarnung(zustand) ? karte(koalitionHtml(zustand), { titel: `Koalition: ${koalitionsWarnung(zustand).text}` }) : ''}
-    ${e ? '' : karte(hauptaktion, { titel: `Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} · ${monatsname(zustand.monat)}` })}
+    ${!opposition && koalitionsWarnung(zustand) ? karte(koalitionHtml(zustand), { titel: `Koalition: ${koalitionsWarnung(zustand).text}` }) : ''}
+    ${e ? '' : karte(hauptaktion, { titel: `${monatsname(zustand.monat)} ${zustand.jahr} · Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} der Wahlperiode${opposition ? ' · Opposition' : ''}` })}
     <div class="kennzahlen">
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
       ${karte(wirtschaftsverlaufHtml(zustand), { titel: 'Wirtschaft (Vorjahr)' })}

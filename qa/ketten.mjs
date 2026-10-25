@@ -17,6 +17,14 @@ const { monatBeenden, haushaltsMonat } = await import(R + 'engine/regierung.js')
 const { ereignisEntscheiden } = await import(R + 'engine/ereignisse.js');
 const { wegSperre, wegVorschau, wegBeschliessen } = await import(R + 'engine/reformwege.js');
 const { problemListe } = await import(R + 'engine/probleme.js');
+const { oppositionMonat } = await import(R + 'engine/opposition.js');
+// Seit Etappe 0b endet die Partie nicht: gemessen wird über FENSTER_JAHRE Kalenderjahre (in der Opposition geht es
+// weiter); „Sieg“ heißt jetzt ZIEL_KANZLERJAHRE Kanzlerjahre innerhalb dieses Fensters (wie das frühere Spielziel).
+const ZIEL_KANZLERJAHRE = 12;
+const FENSTER_JAHRE = 20;
+const zielErreicht = (z) => z.statistik.jahreKanzler >= ZIEL_KANZLERJAHRE;
+const partieVorbei = (z) => zielErreicht(z) || z.jahr >= config.kalender.startJahr + FENSTER_JAHRE;
+
 
 const N = Number(process.argv[3] ?? 50);
 const MAXS = config.haushalt.ministerMaxProzent / config.haushalt.ministerSchrittProzent;
@@ -40,6 +48,7 @@ function partie(seed, s) {
   let z = neuesSpiel('union', seed);
   let maxKrisen = 0, glieder = 0, maxAktiv = 0, maxWert = 0;
   for (let i = 0; i < 8000; i++) {
+    if (partieVorbei(z)) break;
     let r;
     if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, wk(z));
     else if (z.phase === 'koalition') r = mehrheitMoeglich(z) ? verhandeln(z, { partner: partnerWaehlen(z) }) : minderheitAntreten(z);
@@ -51,7 +60,8 @@ function partie(seed, s) {
     } else if (z.phase === 'regierung') {
       const w = s.reform?.(z);
       r = w ? wegBeschliessen(z, { wegId: w.id }) : monatBeenden(z);
-    } else break;
+    } else if (z.phase === 'opposition') r = oppositionMonat(z);
+    else break;
     glieder += r.ereignisse.filter((e) => e.startsWith('Krisenkette wirkt')).length;
     z = r.state;
     if (z.probleme) {
@@ -63,7 +73,7 @@ function partie(seed, s) {
   }
   const liste = problemListe(z);
   const nan = liste.some((e) => !Number.isFinite(e.wert)) || Object.values(z.anteile).some((a) => !Number.isFinite(a));
-  return { sieg: z.phase === 'sieg', krisenEnde: liste.filter((e) => e.stufe.id === 'krise').length, maxKrisen, glieder, maxAktiv, maxWert, nan };
+  return { sieg: zielErreicht(z), krisenEnde: liste.filter((e) => e.stufe.id === 'krise').length, maxKrisen, glieder, maxAktiv, maxWert, nan };
 }
 
 const faktor = config.krisenketten.faktor;

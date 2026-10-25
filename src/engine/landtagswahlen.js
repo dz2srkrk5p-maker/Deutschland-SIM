@@ -6,7 +6,7 @@ import { parteien } from '../data/parteien.js';
 import { laender } from '../data/laender.js';
 import { zufall } from './rng.js';
 import { umverteilen, runden } from './wahlkampf.js';
-import { mitVerlauf } from './state.js';
+import { mitVerlauf, regierungImAmt } from './state.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { koalitionsParteien } from './kabinett.js';
 import { parteiPosition, abstand } from './profil.js';
@@ -22,7 +22,8 @@ const waehlbar = (zustand) => parteien.filter((p) => !p.sonstige && p.ches && !c
 export const laenderStart = () => Object.fromEntries(laender.map((l) => [l.id, { regierung: [...l.regierung], geschaeftsfuehrend: !!l.geschaeftsfuehrend, wahl: { jahr: l.wahl.jahr, monat: l.wahl.monat } }]));
 
 // Kalenderjahr: ein Haushaltsjahr je Kanzlerjahr, Start 2026 (das Spiel hat sonst keine absolute Jahreszahl)
-export const kalenderJahr = (zustand) => lw.startJahr + (zustand.statistik?.jahreKanzler ?? 0);
+// Kalenderjahr des Spielstands (seit Etappe 0b eigenes Feld, zählt mit jedem Dezember weiter)
+export const kalenderJahr = (zustand) => zustand.jahr;
 
 // Stimmung: Gewinn (+) oder Verlust (−) der Bundesregierungsparteien seit der Bundestagswahl, in Punkten
 export function stimmung(zustand) {
@@ -72,7 +73,7 @@ export function naechsteWahlen(zustand, monate = 6) {
 
 // Am Monatsende: geschäftsführende Länder bilden neu (Spielregel), fällige Landtagswahlen finden statt
 export function landtagswahlenMonat(zustand) {
-  if (zustand.phase !== 'regierung' || !zustand.laender) return { state: zustand, ereignisse: [] };
+  if (!regierungImAmt(zustand) || !zustand.laender) return { state: zustand, ereignisse: [] };
   const jahr = kalenderJahr(zustand);
   const bund = koalitionsParteien(zustand);
   let rngZustand = zustand.rngZustand;

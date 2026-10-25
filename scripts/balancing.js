@@ -15,9 +15,20 @@ import { ministerien } from '../src/data/ministerien.js';
 import { bereiche, AUSRICHTUNGEN } from '../src/data/reformwege.js';
 import { wegSperre, wegVorschau, wegBeschliessen, wegVektor } from '../src/engine/reformwege.js';
 import { parteiPosition, abstand } from '../src/engine/profil.js';
+import { einnahmearten } from '../src/data/einnahmen.js';
+import { spielraum } from '../src/engine/einnahmen.js';
+import { oppositionMonat } from '../src/engine/opposition.js';
+// Seit Etappe 0b endet die Partie nicht: gemessen wird über FENSTER_JAHRE Kalenderjahre (in der Opposition geht es
+// weiter); „Sieg“ heißt jetzt ZIEL_KANZLERJAHRE Kanzlerjahre innerhalb dieses Fensters (wie das frühere Spielziel).
+const ZIEL_KANZLERJAHRE = 12;
+const FENSTER_JAHRE = 20;
+const zielErreicht = (z) => z.statistik.jahreKanzler >= ZIEL_KANZLERJAHRE;
+const partieVorbei = (z) => zielErreicht(z) || z.jahr >= config.kalender.startJahr + FENSTER_JAHRE;
+
 
 const PARTIEN = 200;
 const MAX_ZUEGE = 8000; // Schutz gegen Endlosschleifen
+let festgefahren = 0; // Partien ohne gültigen Haushalt (siehe beschliessen)
 
 // Partner nach Chance absteigend wählen, bis die Mehrheit reicht
 function partnerWaehlen(z) {
@@ -68,6 +79,7 @@ function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Pla
   let z = neuesSpiel(parteiId, seed);
   let bruch = false;
   for (let zug = 0; zug < MAX_ZUEGE; zug++) {
+    if (partieVorbei(z)) break;
     let r;
     if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, wahlkampfZug(z));
     else if (z.phase === 'koalition') r = koalitionZug(z);
@@ -75,6 +87,7 @@ function partie(parteiId, seed, haushaltZug, wahlkampfZug = WAHLKAMPF['immer Pla
     else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
         else if (z.phase === 'regierung' && !haushaltsMonat(z)) r = monatBeenden(z);
         else if (z.phase === 'regierung') r = beschliessen(z, haushaltZug(z));
+    else if (z.phase === 'opposition') r = oppositionMonat(z);
     else break;
     if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
     z = r.state;
@@ -94,7 +107,7 @@ for (const [name, zugFn] of Object.entries(STRATEGIEN)) {
       const { z, bruch } = partie(p.id, seed, zugFn);
       if (z.statistik.regierungenGebildet > 0) regiert++;
       if (bruch) brueche++;
-      if (z.phase === 'sieg') siege++;
+      if (zielErreicht(z)) siege++;
       jahre += z.statistik.jahreKanzler;
     }
     zeilen.push(`| ${name} | ${p.name} | ${prozent(regiert)} | ${prozent(brueche)} | ${prozent(siege)} | ${(jahre / PARTIEN).toFixed(1)} |`);
@@ -105,7 +118,7 @@ for (const [name, zugFn] of Object.entries(STRATEGIEN)) {
 const wahlkampfZeilen = spielbar.map((p) => {
   const quoten = Object.values(WAHLKAMPF).map((wz) => {
     let siege = 0;
-    for (let seed = 1; seed <= PARTIEN; seed++) if (partie(p.id, seed, STRATEGIEN['Haushalt unverändert'], wz).z.phase === 'sieg') siege++;
+    for (let seed = 1; seed <= PARTIEN; seed++) if (zielErreicht(partie(p.id, seed, STRATEGIEN['Haushalt unverändert'], wz).z)) siege++;
     return (siege / PARTIEN) * 100;
   });
   const beste = Math.max(...quoten);
@@ -124,6 +137,7 @@ const minderheitZeilen = spielbar.flatMap((p) =>
     for (let seed = 1; seed <= PARTIEN; seed++) {
       let z = neuesSpiel(p.id, seed), war = false;
       for (let zug = 0; zug < MAX_ZUEGE; zug++) {
+        if (partieVorbei(z)) break;
         let r;
         if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
         else if (z.phase === 'koalition') r = kz(z);
@@ -131,12 +145,13 @@ const minderheitZeilen = spielbar.flatMap((p) =>
         else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
         else if (z.phase === 'regierung' && !haushaltsMonat(z)) r = monatBeenden(z);
         else if (z.phase === 'regierung') r = beschliessen(z, {});
+        else if (z.phase === 'opposition') r = oppositionMonat(z);
         else break;
         if (r.state.koalition?.minderheit) war = true;
         if (r.ereignisse.some((e) => e.includes('gescheiterter Haushalt'))) neuwahlen++;
         z = r.state;
       }
-      if (z.phase === 'sieg') siege++;
+      if (zielErreicht(z)) siege++;
       if (war) minderheiten++;
     }
     return `| ${p.name} | ${name} | ${prozent(minderheiten)} | ${neuwahlen} | ${prozent(siege)} |`;
@@ -145,8 +160,19 @@ const minderheitZeilen = spielbar.flatMap((p) =>
 
 // F13: Reformen. „mit Reformen“: je Quartal die erste Reform mit Mehrheit in der Vorschau.
 // Haushalt wie geplant; reißt er die Schuldenbremse (System 2), so wenig wie nötig kürzen (Partner zuerst)
+// Reicht auch die größte Kürzung nicht (lange Partien seit Etappe 0b), erhöht der Mess-Spieler alle Steuern des
+// Bundeshaushalts so weit, wie es in diesem Jahr erlaubt ist, und kürzt dann. Geht auch das nicht, ist er festgefahren.
 function beschliessen(z, p) {
-  return haushaltBeschliessen(z, kuerzungsVorschlag(z, p) ?? p);
+  const k = kuerzungsVorschlag(z, p);
+  if (k) return haushaltBeschliessen(z, k);
+  const einnahmen = Object.fromEntries(einnahmearten.filter((a) => !a.keinBund && !a.sondervermoegen && a.aufkommenJeStufe > 0).map((a) => [a.id, spielraum(z, a.id).max]));
+  const mitSteuern = kuerzungsVorschlag(z, { ...p, einnahmen }) ?? { ...p, einnahmen };
+  try {
+    return haushaltBeschliessen(z, mitSteuern);
+  } catch {
+    festgefahren++;
+    return { state: { ...z, phase: 'festgefahren' }, ereignisse: [] };
+  }
 }
 
 // System 3: Lösungsstrategien. Je Quartal so viele Lösungen wie Aufmerksamkeit und Kapital erlauben.
@@ -169,17 +195,19 @@ const loesungZeilen = spielbar.flatMap((p) =>
     for (let seed = 1; seed <= PARTIEN; seed++) {
       let z = neuesSpiel(p.id, seed), bruch = false;
       for (let zug = 0; zug < MAX_ZUEGE; zug++) {
+        if (partieVorbei(z)) break;
         let r;
         if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
         else if (z.phase === 'koalition') r = KOALITION['Minderheit nur ohne Mehrheit'](z);
         else if (z.phase === 'kabinett') r = bestaetigen(z, { verteilung: kabinettVorschlag(z) });
         else if (z.phase === 'regierung' && z.offenesEreignis) r = ereignisEntscheiden(z, { wahl: 0 });
         else if (z.phase === 'regierung') r = regierenMit(wahl)(z);
+        else if (z.phase === 'opposition') r = oppositionMonat(z);
         else break;
         if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
         z = r.state;
       }
-      if (z.phase === 'sieg') siege++;
+      if (zielErreicht(z)) siege++;
       if (bruch) brueche++;
       erfolge += Object.values(z.loesungen).filter((l) => l.status === 'erfolg').length;
       const liste = problemListe(z);
@@ -222,6 +250,7 @@ function reformZeile(id, name, wahl, reagieren) {
     for (let seed = 1; seed <= PARTIEN; seed++) {
       let z = neuesSpiel(id, seed), bruch = false;
       for (let zug = 0; zug < MAX_ZUEGE; zug++) {
+        if (partieVorbei(z)) break;
         let r;
         if (z.phase === 'wahlkampf') r = wahlkampfWoche(z, WAHLKAMPF.abwechselnd(z));
         else if (z.phase === 'koalition') r = KOALITION['Minderheit nur ohne Mehrheit'](z);
@@ -237,11 +266,12 @@ function reformZeile(id, name, wahl, reagieren) {
           const w = wahl(z);
           r = w ? wegBeschliessen(z, { wegId: w.id, kompromiss: Boolean(wegSperre(z, w.id)) }) : regierenMit(LOESUNG['größtes Problem zuerst'])(z);
           if (w && r.state === z) r = monatBeenden(z);
-        } else break;
+        } else if (z.phase === 'opposition') r = oppositionMonat(z);
+        else break;
         if (r.ereignisse.some((e) => e.startsWith('Koalitionsbruch'))) bruch = true;
         z = r.state;
       }
-      if (z.phase === 'sieg') siege++;
+      if (zielErreicht(z)) siege++;
       if (bruch) brueche++;
       wege += Object.values(z.reformwege).filter((w) => w.status === 'beschlossen').length;
       gescheitert += Object.values(z.reformwege).filter((w) => w.status === 'gescheitert').length;
@@ -270,7 +300,8 @@ Erzeugt mit \`npm run balancing\` am ${new Date().toISOString().slice(0, 10)}. $
 - Kabinett: der vorausgefüllte Vorschlag.
 - Haushalt: siehe Spalte „Strategie“. Keine Steueränderungen.
 - Ereignisse (F14): immer die erste Möglichkeit.
-- Spiel endet bei Sieg, Opposition oder nach ${MAX_ZUEGE} Zügen.
+- Gemessen über ${FENSTER_JAHRE} Kalenderjahre; „Sieg“ = ${ZIEL_KANZLERJAHRE} Kanzlerjahre in diesem Zeitraum (die Partie selbst endet nicht). In der Opposition regieren die anderen weiter.
+- Festgefahren (auch mit allen Kürzungen und Steuererhöhungen kein Haushalt innerhalb der Schuldenbremse): ${festgefahren} Partien über alle Tabellen.
 
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |

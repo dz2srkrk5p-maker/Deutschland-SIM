@@ -15,7 +15,7 @@ export function zeitText(zustand) {
 // posten: [{ ursache, partei, wert }]. Bucht für die Spielerpartei und die Koalitionspartner zusätzlich den Rest.
 // Behält die Einträge der letzten config.umfrageBilanz.runden Zeitangaben.
 export function umfrageBuchen(alt, neu, posten, zeit = zeitText(alt)) {
-  const beteiligt = [...new Set([alt.spielerParteiId, ...(alt.koalition?.partner ?? []), ...posten.map((p) => p.partei)])];
+  const beteiligt = [...new Set([alt.spielerParteiId, ...(alt.kanzlerParteiId ? [alt.kanzlerParteiId] : []), ...(alt.koalition?.partner ?? []), ...posten.map((p) => p.partei)])];
   const liste = posten.filter((p) => Math.abs(p.wert) >= 0.0005).map((p) => ({ ...p, wert: r3(p.wert) }));
   for (const id of beteiligt) {
     const fest = posten.filter((p) => p.partei === id).reduce((s, p) => s + p.wert, 0);

@@ -46,7 +46,7 @@ export function koalitionScreen(el, zustand, { onVerhandeln, onMinderheit, onWah
     <ul>
       <li>${spieler.name} regiert ohne eigene Mehrheit und besetzt alle Ministerien.</li>
       <li>Jeder Haushalt und jede Reform braucht mehr Ja- als Nein-Stimmen. Die Opposition stimmt strenger ab: direkte Nachbarn enthalten sich, alle anderen stimmen mit Nein.</li>
-      <li>Scheitert ein Haushalt, gilt der des Vorjahres weiter und ${spieler.name} verliert ${zahl(mk.umfrageVerlustHaushaltGescheitert, 1)} Punkte. Nach ${mk.fehlschlaegeBisSpielende} gescheiterten Haushalten in einer Wahlperiode ist das Spiel verloren.</li>
+      <li>Scheitert ein Haushalt, gilt der des Vorjahres weiter und ${spieler.name} verliert ${zahl(mk.umfrageVerlustHaushaltGescheitert, 1)} Punkte. Nach ${mk.fehlschlaegeBisNeuwahl} gescheiterten Haushalten in einer Wahlperiode ist das Spiel verloren.</li>
       ${config.koalition.brandmauer.includes(spieler.id) ? `<li class="rot">⚠ Brandmauer: Keine andere Fraktion stimmt für euch, nur sehr selten einzelne Abweichler (${zahl(config.bundestag.brandmauerAbweichler * 100, 1)} % je Abgeordnetem). Scheitert die Kanzlerwahl, ist das Spiel vorbei.</li>` : ''}
     </ul>
     ${abstimmungHtml(kanzlerwahl, 'Kanzlerwahl im letzten Wahlgang', true)}

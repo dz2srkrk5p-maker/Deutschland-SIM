@@ -11,6 +11,15 @@ export const config = {
   // der Haushalt wird im letzten beschlossen.
   regierung: { monateJeJahr: 12 },
 
+  // Kalender (Etappe 0b, 2026-10-25): Die Partie endet nicht; das Kalenderjahr beginnt mit startJahr und zählt mit jedem
+  // Dezember weiter, in Regierung wie Opposition. Wahlkampf und Regierungsbildung kosten keine Monate (Vereinfachung).
+  kalender: { startJahr: 2026 },
+
+  // Regierung der anderen, wenn der Spieler in der Opposition ist (Etappe 0b, Spielwerte): Sie beschließt den Haushalt
+  // unverändert (oder mit dem Kürzungsvorschlag, wenn die Schuldenbremse sonst reißt) und je Monat mit reformChanceJeMonat
+  // den Reformweg, der ihrer Kanzlerpartei inhaltlich am nächsten liegt und eine Mehrheit hat. Lösungen startet sie nicht.
+  ki: { reformChanceJeMonat: 0.1 }, // TODO-BALANCE
+
   // Umrechnung der früher je Quartal geeichten Werte (Treiber und Trends der Probleme, Schockchancen, Problem-Umfrage,
   // Kapital, Ereignisse). Früher gab es 3 solche Schritte je Jahr (Q1–Q3, Q4 war der Haushalt), jetzt 12 Monate: je Monat
   // wirkt ein Viertel, Wahrscheinlichkeiten so umgerechnet, dass sie je Jahr gleich bleiben.
@@ -120,7 +129,7 @@ export const config = {
   // wechselt genau eine Partei. Wechselchance = basis ∓ jePunkt × Stimmung, Stimmung = Gewinn/Verlust der
   // Bundesregierungsparteien seit der Bundestagswahl in Punkten; begrenzt auf min…max. Eine Bundespartei, die eine
   // Landesregierung verliert, verliert Umfragepunkte, eine, die hinzukommt, gewinnt.
-  landtagswahlen: { startJahr: 2026, basis: 0.35, jePunkt: 0.08, min: 0.1, max: 0.85, verlustUmfrage: 0.15, gewinnUmfrage: 0.1 },
+  landtagswahlen: { basis: 0.35, jePunkt: 0.08, min: 0.1, max: 0.85, verlustUmfrage: 0.15, gewinnUmfrage: 0.1 },
 
   // Verfassungsrisiko für Steuern (Paket Klein, Feature 3, Spielwerte): Nach dauerMonate Monaten entscheidet das
   // Gericht; kippt es eine Änderung, wird sie zurückgenommen (Einnahmeausfall ab dann) und die Kanzlerpartei verliert.
@@ -206,10 +215,10 @@ export const config = {
 
   // Minderheitsregierung (F11, freigegeben 2026-10-21): Scheitert ihr Haushalt im Bundestag, gilt der Vorjahreshaushalt
   // weiter (vorläufige Haushaltsführung), die Kanzlerpartei verliert Umfragepunkte; nach so vielen Fehlschlägen je
-  // Wahlperiode ist die Regierung am Ende und das Spiel verloren (Opposition; Balancing 2026-10-22, vorher Neuwahl).
+  // Wahlperiode ist die Regierung am Ende: vorgezogene Neuwahl (seit Etappe 0b; 2026-10-22 bis dahin Spielende).
   minderheit: {
     umfrageVerlustHaushaltGescheitert: 0.5,
-    fehlschlaegeBisSpielende: 2,
+    fehlschlaegeBisNeuwahl: 2,
   },
 
   // Schwierigkeitsanzeige auf dem Startbildschirm (F06, freigegeben 2026-10-21): Stufe ab dieser Siegquote mit der
@@ -221,7 +230,6 @@ export const config = {
     // Partner verlässt die Koalition, wenn seine Umfrage um mehr als diese Prozentpunkte unter dem Wert bei Regierungsbildung liegt
     koalitionsbruchPunkte: 1.5, // Balancing 2026-10-21 (vorher 2,0)
     warnAnteil: 0.5, // Haushalt zeigt einen Partner gelb ab diesem Anteil der Bruchgrenze (F01, freigegeben 2026-10-21)
-    siegJahreKanzler: 12, // Haushaltsjahre als Kanzler, über Wahlperioden hinweg
   },
 
   // Vorhersehbarer Koalitionsbruch (Schwächen-Bearbeitung Block 2, freigegeben automatisch nach Empfehlung 2026-10-24). Spielwerte.

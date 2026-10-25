@@ -121,6 +121,15 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Partie ohne Ende und Opposition (Epochen-Etappe 0b, 2026-10-25, Wunsch des Nutzers)
+- Kein Sieg mehr nach 12 Kanzlerjahren; die Partie endet nicht. Kalenderjahr `zustand.jahr` ab `config.kalender.startJahr` (2026), zählt mit jedem Dezember weiter (Regierung und Opposition); Wahlkampf und Regierungsbildung kosten keine Zeit (Vereinfachung). Landtagswahlen nach diesem Kalenderjahr.
+- Kann der Spieler nach einer Wahl keine Regierung bilden (keine Mehrheit, keine Minderheit möglich, Kanzlerwahl gescheitert, alle Partner abgesagt), regieren die anderen (`src/engine/opposition.js`): Kanzlerpartei = stärkste Fraktion ohne Spieler und ohne Brandmauer-Partei, Partner nach Nähe in der Sitzordnung bis zur Mehrheit, sonst Minderheitsregierung; Kabinett nach Sitzen, kein Koalitionsvertrag. Phase `opposition`.
+- In der Opposition läuft die Welt weiter wie sonst (Probleme, Umsetzungen, Verfahren, Landtagswahlen, Koalitionsprüfung). Im Dezember beschließt die Regierung den Haushalt unverändert, sonst mit dem Kürzungsvorschlag, sonst gilt der Vorjahreshaushalt weiter. Je Monat beschließt sie mit 10 % Chance (`config.ki.reformChanceJeMonat`, TODO-BALANCE) den Reformweg eines freien Bereichs, der ihrer Kanzlerpartei am nächsten liegt und eine Mehrheit hat; Lösungen startet sie nicht; keine Ereignisse.
+- Ende der Wahlperiode oder Koalitionsbruch ohne Mehrheit der Regierung: Wahlkampf. Kanzlerjahre zählen nur in der eigenen Regierung.
+- Minderheitsregierung mit dem zweiten gescheiterten Haushalt je Wahlperiode: vorgezogene Neuwahl (vorher Spielende).
+- Engine rechnet mit der Regierung statt dem Spieler (`koalitionsParteien` = Kanzlerpartei + Partner; Koalitionsbruch, Veto bei Reformabstimmungen, Kürzungsvorschlag).
+- Spielstand-Version 23: `jahr`; alte „Sieg“-Stände regieren weiter, alte Spielende-Stände in der Opposition beginnen mit dem Wahlkampf.
+
 ## System: Monatstakt (Epochen-Etappe 0a, 2026-10-25, Wunsch des Nutzers; ersetzt die Quartale aus F12)
 - Ein Regierungsjahr hat 12 Monate (`config.regierung.monateJeJahr`), Haushalt im Dezember. Nach dem Haushaltsbeschluss endet auch der Dezember wie jeder Monat (`monatsabschluss` in `src/engine/regierung.js`: Probleme, Lösungen, Reformwege, Verfahren, Landtagswahlen, Koalitionsprüfung), dann beginnt der Januar.
 - Je Jahr wirkt alles gleich stark wie vorher (damals 3 Entwicklungsschritte Q1–Q3): Treiber und Trends der Probleme wirken je Monat mit `config.zeit.anteilJeMonat` = 1/4 ihres Quartalswerts; Schockchancen je Monat so umgerechnet, dass sie je Jahr gleich bleiben; Problem-Umfrage 0,005/0,0125 je Monat; Schwankung ±0,5; Kapital +2 je Monat; Ereignischance 8,5 % je Monat.
@@ -278,7 +287,7 @@ Entscheidungen des Nutzers (2026-10-23): Haushalt bleibt Bund mit echten Anteile
 - Spielstand-Version 14: `umfrageBilanz` (alte Stände: leer).
 - Messung: Simulation identisch mit der Baseline (123 von 123 Tabellenzeilen gleich).
 
-## System: Spielende (freigegeben 2026-10-21, M10)
+## System: Spielende (freigegeben 2026-10-21, M10; seit Etappe 0b kein Sieg und kein Ende mehr, siehe „Partie ohne Ende“)
 - Dateien: `src/engine/haushalt.js` (`koalitionsbruch`, Sieg-Prüfung in `haushaltBeschliessen`), `src/engine/state.js` (`zurueckInDenWahlkampf`). Zahlen: `config.spielende`.
 - Niederlage „Opposition“: nach einer Wahl oder nach Absagen ist keine Mehrheit für die Spielerpartei möglich (siehe Koalition) und seit F11 auch keine Minderheitsregierung; oder eine Minderheitsregierung scheitert an 2 Haushalten (siehe Minderheitsregierung).
 - Koalitionsbruch: (bis Block 2: nach jedem beschlossenen Haushalt; seit Block 2 siehe Vorhersehbarer Bruch) verlässt ein Partner die Koalition, wenn seine Umfrage um mehr als 1,5 Punkte (Balancing 2026-10-21, vorher 2,0) unter dem Wert bei Regierungsbildung (`koalition.startAnteile`) liegt (gerechnet in Tausendstel: −1,50 bleibt, −1,51 geht). Seine Ministerien und sein Anspruch gehen an die Spielerpartei. Behält die Rest-Koalition ≥ Mehrheit: weiterregieren. Sonst vorgezogene Neuwahl (Wahlkampf Woche 1, aktuelle Umfragen).

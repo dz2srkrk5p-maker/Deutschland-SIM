@@ -22,7 +22,7 @@ const imAmt = (extra = {}) => {
   };
 };
 
-test('Feature 5: Termine mit Quelle, Kalenderjahr aus Kanzlerjahren', () => {
+test('Feature 5: Termine mit Quelle, Kalenderjahr aus dem Spielstand', () => {
   for (const l of laender) {
     expect(l.wahl.jahr).toBeGreaterThanOrEqual(2027);
     expect(l.wahl.monat).toBeGreaterThanOrEqual(1);
@@ -31,7 +31,7 @@ test('Feature 5: Termine mit Quelle, Kalenderjahr aus Kanzlerjahren', () => {
   }
   expect(laender.find((l) => l.id === 'hb').wahlperiode).toBe(4);
   expect(kalenderJahr(imAmt())).toBe(2026);
-  expect(kalenderJahr(imAmt({ statistik: { jahreKanzler: 3 } }))).toBe(2029);
+  expect(kalenderJahr(imAmt({ jahr: 2029 }))).toBe(2029);
 });
 
 test('Feature 5: Wechselchance nach Stimmung, begrenzt; Wechsel tauscht genau eine Partei, nie die AfD', () => {
@@ -58,8 +58,8 @@ test('Feature 5: Wechselchance nach Stimmung, begrenzt; Wechsel tauscht genau ei
 });
 
 test('Feature 5: Wahl zum Termin, nächste Wahl nach Wahlperiode, Umfragewirkung in der Bilanz', () => {
-  // NRW 25.04.2027: Kalenderjahr 2027 = 1 Kanzlerjahr, Monat April
-  const z = imAmt({ monat: 4, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 } });
+  // NRW 25.04.2027: Kalenderjahr 2027, Monat April
+  const z = imAmt({ monat: 4, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 }, jahr: 2027 });
   const ergebnisse = Array.from({ length: 30 }, (_, i) => landtagswahlenMonat({ ...z, rngZustand: i * 7 + 3 }));
   const nw = ergebnisse.map((r) => r.state.laender.nw);
   expect(nw.every((l) => l.wahl.jahr === 2032)).toBe(true);
@@ -77,7 +77,7 @@ test('Feature 5: Wahl zum Termin, nächste Wahl nach Wahlperiode, Umfragewirkung
 });
 
 test('Feature 5: Ankündigung, Bundesrat aus dem Spielstand, geschäftsführende Länder bilden neu', () => {
-  const z = imAmt({ monat: 1, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 } });
+  const z = imAmt({ monat: 1, statistik: { jahreKanzler: 1, regierungenGebildet: 1, besteWahl: 28 }, jahr: 2027 });
   expect(naechsteWahlen(z).map((w) => w.land.id)).toEqual(expect.arrayContaining(['nw', 'sl', 'sh', 'hb']));
   // Januar 2027: April (in 3 Monaten) und Mai (Bremen, in 4 Monaten) liegen im Fenster von 6 Monaten
   expect(naechsteWahlen(z).map((w) => w.inMonaten)).toEqual([3, 3, 3, 4]);

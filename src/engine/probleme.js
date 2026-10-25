@@ -97,7 +97,7 @@ export function loesungSperre(zustand, id) {
   if (st === 'laufend') return 'läuft schon';
   if (st === 'erfolg') return 'umgesetzt';
   if (l.braucht && zustand.loesungen[l.braucht]?.status !== 'erfolg') return `erst „${loesung(l.braucht).name}“`;
-  if (zustand.phase !== 'regierung') return 'keine Regierung';
+  if (zustand.phase !== 'regierung') return zustand.phase === 'opposition' ? 'in der Opposition' : 'keine Regierung';
   if (zustand.offenesEreignis) return 'erst auf das Ereignis reagieren';
   if (zustand.monat === config.regierung.monateJeJahr) return 'im Haushaltsmonat nicht möglich';
   if (zustand.aktionenImMonat >= pc.aktionenJeMonat) return `höchstens ${pc.aktionenJeMonat} Vorhaben je Monat`;
@@ -209,7 +209,7 @@ export function problemeMonat(zustand) {
   };
   if (Object.keys(umfrage).length) {
     state = umfrageBuchen(zustand, mitVerlauf({ ...state, anteile: runden(umverteilen(zustand.anteile, umfrage)) }), posten);
-    const text = Object.entries(umfrage).map(([id, x]) => `${name(id)} ${x >= 0 ? '+' : '−'}${Math.abs(r2(x)).toLocaleString('de-DE')}`).join(', ');
+    const text = Object.entries(umfrage).map(([id, x]) => `${name(id)} ${x >= 0 ? '+' : '−'}${Math.abs(r3(x)).toLocaleString('de-DE', { maximumFractionDigits: 3 })}`).join(', '); // Monatswerte sind klein
     if (verlust) ereignisse.push(`Ungelöste Probleme belasten die Regierung: ${text}`);
   }
   return { state, ereignisse };

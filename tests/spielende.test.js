@@ -129,18 +129,15 @@ test('Block 2: Zugeständnis hebt den Partner, kostet Kapital, Vorhaben und eige
   expect(zugestaendnisSperre(z, 'linke')).toBe('kein Koalitionspartner');
 });
 
-test('Sieg nach 12 Jahren als Kanzler, nicht nach 11', () => {
-  const z = (jahre) => ({ ...imAmt(), statistik: { jahreKanzler: jahre, regierungenGebildet: 3, besteWahl: 20 } });
-  expect(beschliessen(z(config.spielende.siegJahreKanzler - 2), {}).state.phase).toBe('regierung');
-  expect(beschliessen(z(config.spielende.siegJahreKanzler - 1), {}).state.phase).toBe('sieg');
+test('Partie ohne Ende (Etappe 0b): auch nach vielen Kanzlerjahren kein Sieg, Kalenderjahr zählt weiter', () => {
+  const z = { ...imAmt(), statistik: { jahreKanzler: 11, regierungenGebildet: 3, besteWahl: 20 } };
+  const { state } = beschliessen(z, {});
+  expect(state.phase).toBe('regierung');
+  expect(state.statistik.jahreKanzler).toBe(12);
+  expect(state.jahr).toBe(z.jahr + 1);
 });
 
-test('Sieg geht vor Koalitionsbruch im selben Jahr', () => {
-  const z = { ...mitAnteil(imAmt(), 'union', 20.0), statistik: { jahreKanzler: 11, regierungenGebildet: 3, besteWahl: 20 } };
-  expect(beschliessen(z, {}).state.phase).toBe('sieg');
-});
-
-test('Opposition: knapp ohne mögliche Mehrheit ja, knapp mit Mehrheit nein', () => {
+test('Opposition: knapp ohne mögliche Mehrheit ja (die anderen regieren), knapp mit Mehrheit nein', () => {
   // Spieler SPD; einziger möglicher Partner Union. 315 Sitze zusammen reichen nicht, 316 schon.
   const nachWahlMit = (spd, union) => {
     const z = neuesSpiel('spd', 1);
@@ -149,6 +146,7 @@ test('Opposition: knapp ohne mögliche Mehrheit ja, knapp mit Mehrheit nein', ()
   };
   // Anteile so gewählt, dass SPD+Union genau 315 bzw. 316 von 630 Sitzen bekommen
   expect(nachWahlMit(25, 25).phase).toBe('opposition'); // 315 Sitze
+  expect(nachWahlMit(25, 25).kanzlerParteiId).not.toBe('spd');
   expect(nachWahlMit(25, 25.1).phase).toBe('koalition'); // 316 Sitze
 });
 
@@ -183,7 +181,7 @@ const minderheit = () => {
   };
 };
 
-test('F11: gescheiterter Haushalt: Vorjahr gilt weiter, Jahr zählt, Kanzlerpartei verliert, zweiter Fehlschlag = Spielende', () => {
+test('F11: gescheiterter Haushalt: Vorjahr gilt weiter, Jahr zählt, Kanzlerpartei verliert, zweiter Fehlschlag = Neuwahl', () => {
   const z = minderheit();
   const { state, ereignisse } = beschliessen(z, { stufen: { umwelt: 2 } });
   expect(ereignisse[0]).toContain('gescheitert');
@@ -194,7 +192,7 @@ test('F11: gescheiterter Haushalt: Vorjahr gilt weiter, Jahr zählt, Kanzlerpart
   // feste Wirkung −0,5 für die Kanzlerpartei (dazu die Lage der Wirtschaft, System 2)
   expect(ereignisse[0]).toMatch(/Grüne −/);
   const zweite = beschliessen(state, {});
-  expect(zweite.state.phase).toBe('opposition');
+  expect(zweite.state.phase).toBe('wahlkampf'); // seit Etappe 0b: vorgezogene Neuwahl statt Spielende
   expect(zweite.ereignisse.at(-1)).toContain('Minderheitsregierung ist am Ende');
 });
 
