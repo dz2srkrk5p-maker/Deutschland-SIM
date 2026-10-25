@@ -326,6 +326,7 @@ Noch offen: Koalition, Kabinett, Haushalt, Bundesrat, Game Over. Werden abgefrag
 
 ## Oberfläche: Hinweistexte (Paket Klein, Feature 4, freigegeben 2026-10-24)
 - Datei: `src/data/hinweise.js` (`hinweise` aktualisiert: Quartal mit Vorhaben, Regierung mit Ultimatum; neu `erklaerungen`, höchstens zwei Sätze, Zahlen aus config.js).
+- Lage → Wirtschaft (2026-10-25, Wunsch des Nutzers): je Kennzahl ein kleines Liniendiagramm (ein Punkt je Haushaltsjahr, gestrichelt die Grenze für ✓ aus `config.wirtschaft.anzeigeGrenzen`), Wert beim Überfahren, alle Werte als Tabelle zum Aufklappen. Spielstand-Version 19: `wirtschaftVerlauf`; alte Spielstände beginnen den Verlauf mit dem aktuellen Stand.
 - Lage → Top-Probleme (2026-10-25, Wunsch des Nutzers): Jede Zeile ist ein Knopf und öffnet das Problem direkt im Bereich Probleme (Ursachen, Krisenketten, Lösungen).
 - Tooltips an fünf Stellen: Kapital (Kopfzeile, Lage), Richtungsprofil, Beobachtungsliste (als Kurztext), Schuldenbremse-Spielraum (Lage), Abstimmung nach Inhalt (Wegekarte). Der Koalitions-Hinweis zur Sitzordnung bleibt, er ist korrekt.
 - Messung: Simulation unverändert.

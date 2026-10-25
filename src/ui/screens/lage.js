@@ -17,6 +17,7 @@ import { weg } from '../../engine/reformwege.js';
 import { bundesratAbstimmung } from '../../engine/bundesrat.js';
 import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
+import { wirtschaftsverlaufHtml } from '../components/wirtschaftsverlauf.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const STUFE_TEXT = { ok: 'stabil', gelb: 'angespannt', rot: 'vor dem Bruch' };
@@ -33,18 +34,6 @@ function ereignisHtml(zustand, e) {
     return `<button data-wahl="${i}"><strong>${m.text}</strong><small>${teile.join(' · ') || 'keine Folgen'}</small></button>`;
   }).join('');
   return karte(`<span class="badge gelb">⚠ Entscheidung nötig</span><h2>${e.titel}</h2><p>${e.text}</p><div class="optionen">${optionen}</div>`, { klasse: 'ereignis' });
-}
-
-// Wirtschaftslage: Wert, Bewertung mit Symbol
-function wirtschaftHtml(l) {
-  const zeile = (titel, wert, gut) => `<span>${titel}</span><span>${wert} ${gut === null ? '' : gut ? '<span class="ok">✓</span>' : '<span class="gelb">⚠</span>'}</span>`;
-  return `<div class="bilanz">
-    ${zeile('Wachstum', `${zahl(l.wachstum, 1)} %`, l.wachstum >= config.wirtschaft.potenzialWachstum)}
-    ${zeile('Inflation', `${zahl(l.inflation, 1)} %`, l.inflation <= 3)}
-    ${zeile('Arbeitslosenquote', `${zahl(l.arbeitslosigkeit, 1)} %`, l.arbeitslosigkeit <= 6)}
-    ${zeile('Schuldenquote', `${zahl(l.schuldenquote, 1)} %`, l.schuldenquote <= 65)}
-    ${zeile('Ungleichheit (Gini)', zahl(l.gini, 1), null)}
-  </div>`;
 }
 
 function topProblemeHtml(zustand) {
@@ -129,7 +118,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onPro
     ${e ? '' : karte(hauptaktion, { titel: `Jahr ${zustand.haushalt.jahr} von ${config.legislaturJahre} · Quartal ${zustand.quartal} von ${config.regierung.quartaleJeJahr}` })}
     <div class="kennzahlen">
       ${karte(topProblemeHtml(zustand), { titel: 'Top-Probleme' })}
-      ${karte(wirtschaftHtml(zustand.land), { titel: 'Wirtschaft (Vorjahr)' })}
+      ${karte(wirtschaftsverlaufHtml(zustand), { titel: 'Wirtschaft (Vorjahr)' })}
     </div>
     ${vertragHtml(zustand) ? karte(vertragHtml(zustand), { titel: 'Koalitionsvertrag' }) : ''}
     ${landtagswahlenHtml(zustand) ? karte(landtagswahlenHtml(zustand), { titel: 'Landtagswahlen' }) : ''}

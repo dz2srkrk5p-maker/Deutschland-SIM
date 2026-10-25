@@ -282,3 +282,17 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
 .achse-balken .marke { position: absolute; top: -4px; width: 14px; height: 18px; margin-left: -7px; border-radius: 4px; background: var(--akzent); }
 .achse-balken .vergleich { position: absolute; top: -2px; width: 10px; height: 14px; margin-left: -5px; border-radius: 3px; border: 2px solid var(--text-2); }
 @media (max-width: 560px) { .achse { grid-template-columns: 5em 1fr 5em; font-size: var(--t-klein); } }
+
+/* Wirtschaft als kleine Liniendiagramme (Lage) */
+.mini-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--a2); }
+.mini-kopf { display: flex; flex-direction: column; font-size: var(--t-klein); color: var(--text-2); }
+.mini-kopf .zahl { color: var(--text); font-size: var(--t-text); font-weight: 700; white-space: nowrap; }
+.mini-verlauf { width: 100%; height: auto; display: block; overflow: visible; }
+.mini-verlauf .linie { fill: none; stroke: var(--akzent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.mini-verlauf .punkt-aktuell { fill: var(--akzent); stroke: var(--flaeche); stroke-width: 2; }
+.mini-verlauf .grenze { stroke: var(--text-2); stroke-width: 1; stroke-dasharray: 3 3; }
+.mini-verlauf .spalte rect { fill: transparent; }
+.mini-verlauf .kreuz { opacity: 0; transition: opacity var(--dauer); }
+.mini-verlauf line.kreuz { stroke: var(--text-2); stroke-width: 1; }
+.mini-verlauf text.kreuz { fill: var(--text); font-size: 15px; font-weight: 600; }
+.mini-verlauf .spalte:hover .kreuz { opacity: 1; }

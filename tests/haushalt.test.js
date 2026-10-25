@@ -99,6 +99,9 @@ test('nach Jahr 4 beginnt der Wahlkampf, der Haushalt bleibt', () => {
     z = haushaltBeschliessen({ ...z, quartal: config.regierung.quartaleJeJahr }, { stufen: { verkehr: -1 } }).state;
   }
   expect(z.phase).toBe('wahlkampf');
+  // Wirtschaftsverlauf: Start plus ein Eintrag je Haushaltsjahr, letzter Eintrag = aktuelle Kennzahlen
+  expect(z.wirtschaftVerlauf).toHaveLength(config.legislaturJahre + 1);
+  expect(z.wirtschaftVerlauf.at(-1)).toEqual({ wachstum: z.land.wachstum, inflation: z.land.inflation, arbeitslosigkeit: z.land.arbeitslosigkeit, schuldenquote: z.land.schuldenquote, gini: z.land.gini });
   expect(z.wahlkampfWoche).toBe(1);
   expect(z.kabinett).toBeNull();
   expect(z.haushalt.jahr).toBe(1);

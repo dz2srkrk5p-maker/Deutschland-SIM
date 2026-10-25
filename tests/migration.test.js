@@ -30,3 +30,12 @@ test('Migration: zu alte oder kaputte Spielstände werden weiter abgelehnt', () 
   expect(() => laden(JSON.stringify({ ...version9(), version: 8 }))).toThrow();
   expect(() => laden('{"kein":"spielstand"}')).toThrow();
 });
+
+test('Migration: Version 18 bekommt einen Wirtschaftsverlauf, der mit dem aktuellen Stand beginnt', () => {
+  const { wirtschaftVerlauf, ...rest } = neuesSpiel('union', 2);
+  const alt = { ...rest, version: 18, land: { ...rest.land, wachstum: 1.4, schuldenquote: 70.2 } };
+  const z = laden(JSON.stringify(alt));
+  expect(z.version).toBe(ZUSTAND_VERSION);
+  expect(z.wirtschaftVerlauf).toHaveLength(1);
+  expect(z.wirtschaftVerlauf[0]).toMatchObject({ wachstum: 1.4, schuldenquote: 70.2 });
+});

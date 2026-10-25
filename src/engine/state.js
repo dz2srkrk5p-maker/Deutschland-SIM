@@ -1,14 +1,14 @@
 import { parteien } from '../data/parteien.js';
 import { etats2026, steuern2026 } from '../data/haushalt.js';
 import { startProbleme } from './probleme.js';
-import { wirkungSumme } from './wirtschaft.js';
+import { wirkungSumme, wirtschaftWerte } from './wirtschaft.js';
 import { kennzahlen, gruppen, startSchulden, startBip } from '../data/kennzahlen.js';
 import { config } from '../data/config.js';
 import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 18; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 19; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -19,6 +19,7 @@ export const ZUSTAND_VERSION = 18; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 16: verfahren [{ typ, id, name, art, chance, stufen?, faellig }] (Verfassungsrisiko für Steuern, Feature 3)
 // 17: laender { landId: { regierung, geschaeftsfuehrend, wahl: { jahr, quartal } } } (Landtagswahlen, Feature 5)
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
+// 19: wirtschaftVerlauf [{ wachstum, inflation, arbeitslosigkeit, schuldenquote, gini }] je Haushaltsjahr, erster Eintrag = Start
 
 // Neue Felder ab Version 10, auch für die Migration alter Spielstände
 const landStart = () => ({ ...Object.fromEntries(kennzahlen.map((k) => [k.id, k.start])), schulden: startSchulden, bip: startBip, preise: 1, zinsaufschlag: 0 });
@@ -68,6 +69,7 @@ export function neuesSpiel(spielerParteiId, seed) {
     offenesEreignis: null, // Ereignis, auf das der Spieler noch reagieren muss (F14)
     ereignisseWahlperiode: [], // schon dagewesene Ereignisse dieser Wahlperiode
     land: landStart(), // Landeskennzahlen (data/kennzahlen.js), Schulden und BIP in Mrd. €
+    wirtschaftVerlauf: [wirtschaftWerte(landStart())], // Kennzahlen je Haushaltsjahr (Anzeige), erster Eintrag = Start
     gruppen: gruppenStart(), // Zustimmung je Gruppe 0–100
     kapital: config.kapital.start, // politisches Kapital 0–100
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
@@ -139,6 +141,8 @@ const MIGRATIONEN = {
   15: (z) => ({ ...z, version: 16, verfahren: [] }),
   16: (z) => ({ ...z, version: 17, laender: laenderStart() }),
   17: (z) => ({ ...z, version: 18, ketten: kettenStart() }),
+  // Frühere Jahre sind nicht gespeichert: der Verlauf beginnt mit dem aktuellen Stand
+  18: (z) => ({ ...z, version: 19, wirtschaftVerlauf: [wirtschaftWerte(z.land)] }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

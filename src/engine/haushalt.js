@@ -18,7 +18,7 @@ import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } fro
 import { umfrageBuchen } from './umfragebilanz.js';
 import { verfahrenAnlegen } from './verfahren.js';
 import { vertragHaushalt, vertragOhne } from './koalitionsvertrag.js';
-import { jahresSchritt, gruppenSchritt, lageUmfrage, lageTeile, wirkungSumme } from './wirtschaft.js';
+import { jahresSchritt, gruppenSchritt, lageUmfrage, lageTeile, wirkungSumme, wirtschaftWerte } from './wirtschaft.js';
 
 const hh = config.haushalt;
 const festeOhneZinsen = Object.values(festeAusgaben2026).reduce((s, x) => s + x, 0) - festeAusgaben2026.bundesschuld;
@@ -191,7 +191,7 @@ export function haushaltBeschliessen(zustand, params = {}) {
   const statistik = { ...zustand.statistik, jahreKanzler: zustand.statistik.jahreKanzler + 1 };
   const fehlschlaege = (zustand.koalition.fehlschlaege ?? 0) + (gescheitert ? 1 : 0);
   const koalition = { ...zustand.koalition, fehlschlaege };
-  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme(), kapital: zustand.kapital - kompromissPreis }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
+  const state = verfahrenAnlegen(umfrageBuchen(zustand, mitVerlauf({ ...zustand, anteile: runden(s.anteile), rngZustand: s.rngZustand, haushalt, land: w.land, wirtschaftVerlauf: [...(zustand.wirtschaftVerlauf ?? []), wirtschaftWerte(w.land)], gruppen, statistik, koalition, quartal: 1, runde: zustand.runde + 1, jahresWirkung: wirkungSumme(), kapital: zustand.kapital - kompromissPreis }), posten, `Haushalt Jahr ${jahr}`), gescheitert ? [] : v.rechtsrisiken);
 
   // Reihenfolge bei gleichzeitigem Eintreten: Sieg vor Koalitionsbruch vor Ende der Wahlperiode
   if (statistik.jahreKanzler >= config.spielende.siegJahreKanzler) {

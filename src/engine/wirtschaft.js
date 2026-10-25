@@ -7,6 +7,9 @@ const begrenzt = (x, min, max) => Math.max(min, Math.min(max, x));
 const r2 = (x) => Math.round(x * 100) / 100 + 0;
 
 // Summe mehrerer Wirkungen { wachstum, inflation, arbeitslosigkeit, gini, gruppen: {}, probleme: {} }
+// Kennzahlen eines Jahres für den Wirtschaftsverlauf (Anzeige als Diagramm)
+export const wirtschaftWerte = (land) => ({ wachstum: land.wachstum, inflation: land.inflation, arbeitslosigkeit: land.arbeitslosigkeit, schuldenquote: land.schuldenquote, gini: land.gini });
+
 export function wirkungSumme(...liste) {
   const s = { wachstum: 0, inflation: 0, arbeitslosigkeit: 0, gini: 0, gruppen: {}, probleme: {} };
   for (const x of liste.filter(Boolean)) {

@@ -48,6 +48,8 @@ export const config = {
     gruppenRueckkehr: 0.15, // Gruppenzustimmung kehrt je Jahr um diesen Anteil zu 50 zurück
     // Wirkung der Lage auf die Umfrage der Kanzlerpartei je Haushaltsjahr (Punkte)
     umfrage: { wachstum: 0.15, arbeitslosigkeit: 0.3, inflationUeber: 3, inflation: 0.15, gruppen: 0.06 },
+    // Nur Anzeige (Lage → Wirtschaft): bis zu diesen Werten ✓, darüber ⚠; im Diagramm als gestrichelte Linie
+    anzeigeGrenzen: { inflation: 3, arbeitslosigkeit: 6, schuldenquote: 65 },
   },
 
   // Problem-Engine (System 3, freigegeben automatisch nach Empfehlung 2026-10-23; ersetzt die F13-Probleme). Alle Schwellen
