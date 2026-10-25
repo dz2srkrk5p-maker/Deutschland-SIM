@@ -80,4 +80,4 @@ for (const [name, s] of Object.entries(STRATEGIEN)) {
   }
 }
 config.krisenketten.faktor = faktor;
-writeFileSync(new URL(`./${process.argv[2] ?? 'ketten'}-ketten.json`, import.meta.url), JSON.stringify(ergebnis, null, 1));
+writeFileSync(new URL(`./${process.argv[2] ?? 'ketten'}-todesspirale.json`, import.meta.url), JSON.stringify(ergebnis, null, 1));
