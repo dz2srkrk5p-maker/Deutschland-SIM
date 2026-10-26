@@ -3,6 +3,7 @@ import { titelseiteGelesen } from '../engine/epochen.js';
 import { landScreen } from './screens/land.js';
 import { wegWaehlen, kurswechsel, zweiterWeg } from '../engine/weichen.js';
 import { anpassungsgesetz } from '../engine/ursachen.js';
+import { projektEntscheiden } from '../engine/grossprojekte.js';
 import { neuesSpiel, seedAusAdresse, stufeAusAdresse, regierungImAmt, spielerRegiert } from '../engine/state.js';
 import { oppositionMonat } from '../engine/opposition.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
@@ -75,7 +76,7 @@ function zeichne() {
   const regiert = regierungImAmt(zustand);
   const ernst = regiert ? warnZahl(zustand) : 0;
   const eigene = spielerRegiert(zustand);
-  const badges = regiert ? { land: zustand.epochen.titelseite ? badge('neu', 'gelb') : '', lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: eigene && haushaltsMonat(zustand) ? badge('fällig', 'gelb') : '' } : {};
+  const badges = regiert ? { parlament: eigene && (zustand.grossprojekte ?? []).some((p) => p.uebernahme === 'offen') ? badge('Entscheidung', 'gelb') : '', land: zustand.epochen.titelseite ? badge('neu', 'gelb') : '', lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: eigene && haushaltsMonat(zustand) ? badge('fällig', 'gelb') : '' } : {};
   el.innerHTML = shellHtml(zustand, { aktiv: regiert ? ui.bereich : null, badges });
   el.querySelector('#meldung').innerHTML = meldungHtml(ui.meldung);
   menueBinden();
@@ -131,7 +132,7 @@ function zeichne() {
     });
   }
   if (ui.bereich === 'haushalt') return haushaltScreen(a, zustand, { entwurf: ui.entwurf, onBeschliessen: ausfuehren(haushaltBeschliessen) });
-  if (ui.bereich === 'parlament') return parlamentScreen(a, zustand, { tab: ui.parlament, onTab: (t) => ((ui.parlament = t), zeichne(), fokusAuf(`[data-tab="${t}"]`)) });
+  if (ui.bereich === 'parlament') return parlamentScreen(a, zustand, { tab: ui.parlament, onProjekt: ausfuehren(projektEntscheiden), onTab: (t) => ((ui.parlament = t), zeichne(), fokusAuf(`[data-tab="${t}"]`)) });
   return chronik(null);
 }
 

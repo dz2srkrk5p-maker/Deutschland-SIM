@@ -5,6 +5,9 @@ import { problemListe } from '../src/engine/probleme.js';
 import { epochen } from '../src/data/epochen.js';
 import { config } from '../src/data/config.js';
 import { zug } from './helfer/spieler.js';
+import { laufende } from '../src/engine/grossprojekte.js';
+import { loesungSperre, loesungStarten } from '../src/engine/probleme.js';
+import { grossprojekte } from '../src/data/grossprojekte.js';
 
 const ec = config.epochen;
 
@@ -56,15 +59,18 @@ test('Migration 24 → 25: Epochen beginnen frühestens im nächsten Monat', () 
 
 // Headless-Lauf über 30 Jahre (Auftrag): ohne Fehler, Invarianten nach jedem Zug
 test('30 Jahre ohne Fehler: höchstens zwei Epochen, Epochen beginnen und enden, Speichern und Laden stabil', { timeout: 120000 }, () => {
-  for (const [partei, seed] of [['union', 11], ['linke', 12]]) {
-    let z = neuesSpiel(partei, seed);
+  // Stufe 3: der Spieler startet Großprojekte, sobald es geht (Etappe 7)
+  for (const [partei, seed, stufe] of [['union', 11, 2], ['linke', 12, 2], ['spd', 13, 3]]) {
+    let z = neuesSpiel(partei, seed, stufe);
     const ende = z.jahr + 30;
     let maxAktiv = 0;
     for (let i = 0; i < 20000 && z.jahr < ende; i++) {
-      z = zug(z).state;
+      const projekt = z.phase === 'regierung' && !z.offenesEreignis && grossprojekte.map((g) => g.startDurch).find((id) => !loesungSperre(z, id));
+      z = (projekt ? loesungStarten(z, { loesungId: projekt }) : zug(z)).state;
       maxAktiv = Math.max(maxAktiv, z.epochen.aktiv.length);
       expect(z.epochen.aktiv.length).toBeLessThanOrEqual(ec.maxGleichzeitig);
       expect(z.merkmale.length).toBeLessThanOrEqual(config.merkmale.max);
+      expect(laufende(z).length).toBeLessThanOrEqual(config.grossprojekte.max);
       // Weiche: spätestens nach dem Aufschub ist ein Weg gewählt (Etappe 3)
       const jetzt = z.jahr * 12 + z.monat - 1;
       if (z.phase === 'regierung' || z.phase === 'opposition') for (const e of z.epochen.aktiv) if (jetzt - e.start > ec.aufschubMonate) expect(e.wege.length).toBeGreaterThan(0);
@@ -76,5 +82,6 @@ test('30 Jahre ohne Fehler: höchstens zwei Epochen, Epochen beginnen und enden,
     expect(z.epochen.vorbei.length).toBeGreaterThanOrEqual(1); // die erste ist nach 15 Jahren vorbei
     for (const v of z.epochen.vorbei) expect(typeof v.gelungen).toBe('boolean');
     expect(maxAktiv).toBe(2);
+    if (stufe === 3) expect(z.grossprojekte.length).toBeGreaterThan(0);
   }
 });

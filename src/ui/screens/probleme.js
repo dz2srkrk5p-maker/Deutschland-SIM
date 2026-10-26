@@ -6,6 +6,7 @@ import { achsen, gruppen, kennzahlen } from '../../data/kennzahlen.js';
 import { problemListe, ursachen, loesungSperre, erfolgschance, loesungKapital, problem as problemVon } from '../../engine/probleme.js';
 import { ursacheZeile, geschichteHtml } from '../components/ursachen.js';
 import { kasse } from '../../engine/sozialbeitraege.js';
+import { startetProjekt } from '../components/grossprojekte.js';
 import { mrd } from '../../engine/haushalt.js';
 import { bereiche } from '../../data/reformwege.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -83,6 +84,7 @@ function detail(zustand, id) {
         <tr><th scope="row">Dauer</th><td>${l.dauer} Monate</td></tr>
         <tr><th scope="row">Politisches Kapital</th><td>${loesungKapital(zustand, l)}</td></tr>
         ${ursacheZeile(zustand, l.id, [p.id])}
+        ${startetProjekt(zustand, l.id)}
         ${l.nebenwirkung ? `<tr><th scope="row">Nebenwirkungen</th><td>${[
           ...['wachstum', 'inflation', 'gini'].filter((k) => l.nebenwirkung[k]).map((k) => `${kName(k)} ${plusMinus(l.nebenwirkung[k])}`),
           ...Object.entries(l.nebenwirkung.gruppen ?? {}).map(([g, v]) => `${gName(g)} ${plusMinus(v, 0)}`),

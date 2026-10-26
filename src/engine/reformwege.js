@@ -16,6 +16,7 @@ import { ansatzFaktor, schwerpunktKostenFaktor } from './weichen.js';
 import { ergaenzungFaktor, wertverlustFaktor, ursacheVon } from './ursachen.js';
 import { vorgaenger } from './generationen.js';
 import { kasse } from './sozialbeitraege.js';
+import { projektStarten } from './grossprojekte.js';
 import { systemAn } from './spielstufe.js';
 import { probleme as problemDaten } from '../data/probleme.js';
 import { generationen as generationenDaten } from '../data/generationen.js';
@@ -235,7 +236,9 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false, preisgekop
   }
   const eu = v.akteure.find((r) => r.akteur.id === 'eu');
   if (eu.haltung <= -1) ereignisse.push('Die EU-Kommission äußert Bedenken gegen die Reform.');
-  return { state, ereignisse };
+  // Großprojekt (Etappe 7): manche Gesetze starten eines; das Gesetz selbst wirkt wie immer
+  const projekt = projektStarten(state, w.id);
+  return { state: projekt.state, ereignisse: [...ereignisse, ...projekt.ereignisse] };
 }
 
 // Am Ende eines Monats: fertige Umsetzungen. Scheitern nach Risiko (umstrittene Wege zusätzlich in Karlsruhe).

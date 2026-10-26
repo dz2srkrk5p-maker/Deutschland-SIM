@@ -9,6 +9,7 @@ import { landtagswahlenMonat } from './landtagswahlen.js';
 import { zurueckInDenWahlkampf } from './state.js';
 import { epochenMonat, zeitpunkt } from './epochen.js';
 import { generationenMonat } from './generationen.js';
+import { grossprojekteMonat } from './grossprojekte.js';
 
 const letzter = config.regierung.monateJeJahr;
 
@@ -29,9 +30,10 @@ export function monatsabschluss(zustand) {
   const [jahr, monat] = dez ? [zustand.jahr + 1, 1] : [zustand.jahr, zustand.monat + 1];
   const zeit = epochenMonat(lage.state, jahr, monat);
   const gen = generationenMonat(zeit.state, zeitpunkt(jahr, monat)); // Generationen (Etappe 5)
+  const bau = grossprojekteMonat(gen.state, zeitpunkt(jahr, monat)); // Großprojekte (Etappe 7)
   return {
-    state: gen.state, neuwahl: lage.neuwahl,
-    ereignisse: [...entwicklung.ereignisse, ...umsetzung.ereignisse, ...urteile.ereignisse, ...land.ereignisse, ...lage.ereignisse, ...zeit.ereignisse, ...gen.ereignisse],
+    state: bau.state, neuwahl: lage.neuwahl,
+    ereignisse: [...entwicklung.ereignisse, ...umsetzung.ereignisse, ...urteile.ereignisse, ...land.ereignisse, ...lage.ereignisse, ...zeit.ereignisse, ...gen.ereignisse, ...bau.ereignisse],
   };
 }
 

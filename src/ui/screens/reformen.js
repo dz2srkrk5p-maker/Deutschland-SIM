@@ -14,6 +14,7 @@ import { zeitstrahlHtml } from '../components/zeitstrahl.js';
 import { ursacheZeile, geldleistungenHtml } from '../components/ursachen.js';
 import { ursacheVon } from '../../engine/ursachen.js';
 import { kasse } from '../../engine/sozialbeitraege.js';
+import { startetProjekt } from '../components/grossprojekte.js';
 import { systemAn } from '../../engine/spielstufe.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -56,6 +57,7 @@ function wegKarte(zustand, w) {
       <tr><th scope="row">Verlierer</th><td>${v.verlierer.map(gName).join(', ') || '–'}</td></tr>
       <tr><th scope="row">Dauer</th><td>${w.dauer} Monate</td></tr>
       ${ursacheZeile(zustand, w.id, [...new Set([...Object.keys(w.lang?.trend ?? {}), ...Object.keys(w.lang?.probleme ?? {})])])}
+      ${startetProjekt(zustand, w.id)}
       <tr><th scope="row">Risiko des Scheiterns</th><td>${Math.round(v.risiko * 100)} %${w.verfassung ? ' <span class="gelb">⚠ verfassungsrechtlich umstritten</span>' : ''}</td></tr>
       <tr><th scope="row">Politisches Kapital</th><td>${v.kapital}${v.revision ? ` <span class="gelb">(davon ${config.reformwege.revisionKapital} für den Kurswechsel)</span>` : ''}</td></tr>
       ${v.bonus ? `<tr><th scope="row">${partei(zustand.kanzlerParteiId).name}</th><td>${status('ok', `passt zur eigenen Linie, +${zahl(v.bonus, 2)} beim Beschluss`)}</td></tr>` : ''}

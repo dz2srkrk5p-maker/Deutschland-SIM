@@ -121,6 +121,15 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Großprojekte (Epochen-Etappe 7, 2026-10-26), ab Stufe 3
+- Ein Ansatz aus `src/data/grossprojekte.js` (`startDurch`, Platzhalter: Lösungen „Deutschlandtakt“, „Klimaanpassung finanzieren“) startet beim Beschluss bzw. Start das Großprojekt; der Ansatz wirkt wie immer. Höchstens 2 laufen; ist kein Platz, startet das Projekt nicht (Meldung), der Ansatz schon.
+- Laufende Projekte kosten jedes Jahr `baukostenJeJahr` × Kostenfaktor im Bundeshaushalt (laufende Kosten, Schuldenbremse).
+- Meilensteine nach Plan (`monate` ab Start + Verzögerung) bringen dauerhaft Trend auf Probleme; nach dem letzten ist das Projekt fertig (keine Baukosten mehr, Wirkung bleibt).
+- Nach jedem Meilenstein wird der nächste Abschnitt mit 50 % Chance 15 % teurer (TODO-BALANCE). Ab 30 % über Plan einmal je Projekt Untersuchungsausschuss: Kanzlerpartei −0,5 Umfrage, eigene Regierung −10 Kapital (TODO-BALANCE).
+- Übernahme: Bildet der Spieler eine Regierung, warten laufende Projekte einer anderen Kanzlerpartei auf seine Entscheidung (Kabinett › Missionen, Markierung am Reiter Parlament): weiterführen; umbauen (Kostenfaktor × 0,75, Meilensteine 12 Monate später); stoppen (keine Kosten mehr, erreichte Meilensteine wirken weiter). Bis zur Entscheidung läuft es weiter.
+- Anzeige: Parlament › Koalition › Missionen (dort steht das Kabinett); an Ansätzen die Zeile „Großprojekt“.
+- Spielstand-Version 30: `grossprojekte`.
+
 ## System: Sozialbeiträge (Epochen-Etappe 6, 2026-10-26)
 - Neues Problem „Steigende Sozialbeiträge“ in jeder Partie (zusätzlich zu den 25; Start 45, Grundtrend 0,15, Treiber Demografie, Pflegenotstand, Rentenwelle; Folgen Wachstum, Arbeitnehmer, Unternehmen; zwei Platzhalter-Lösungen). Alle Werte Spielwerte.
 - Ansätze, die eine Sozialversicherung bezahlt (`src/data/sozialbeitraege.js`, Vorschlag zur Prüfung), stehen nicht im Bundeshaushalt: Ihre Kosten fehlen in den laufenden Kosten des Haushalts und in der Prüfung der Schuldenbremse. Im Entwurf steht „über Beiträge (Kasse)“.

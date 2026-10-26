@@ -5,6 +5,7 @@ import { generationen } from '../data/generationen.js';
 import { ergaenzungFaktor } from './ursachen.js';
 import { problemSozialbeitraege } from '../data/sozialbeitraege.js';
 import { beitragsTrends, kasse } from './sozialbeitraege.js';
+import { projektStarten, projektTrends } from './grossprojekte.js';
 import { parteien } from '../data/parteien.js';
 import { ministerien } from '../data/ministerien.js';
 import { etats2026 } from '../data/haushalt.js';
@@ -71,7 +72,7 @@ export function ursachen(zustand, p) {
   }
   liste.push(...wegTrends(zustand, p.id));
   // Stärken und Schwächen der Wege einer Epoche sind schon je Monat angegeben (Etappe 3)
-  return [...liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) })), ...wegEpochenTrends(zustand, p.id), ...aufgabenTrends(zustand, p.id), ...merkmalTrends(zustand, p.id), ...beitragsTrends(zustand, p.id)];
+  return [...liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) })), ...wegEpochenTrends(zustand, p.id), ...aufgabenTrends(zustand, p.id), ...merkmalTrends(zustand, p.id), ...beitragsTrends(zustand, p.id), ...projektTrends(zustand, p.id)];
 }
 export const trend = (zustand, p) => r3(ursachen(zustand, p).reduce((s, u) => s + u.beitrag, 0));
 
@@ -129,7 +130,7 @@ export function loesungStarten(zustand, { loesungId }) {
   const grund = loesungSperre(zustand, loesungId);
   if (grund) throw new Error(`Lösung nicht möglich: ${grund}`);
   const l = loesung(loesungId);
-  return {
+  const r = {
     state: {
       ...zustand,
       kapital: zustand.kapital - loesungKapital(zustand, l),
@@ -138,6 +139,9 @@ export function loesungStarten(zustand, { loesungId }) {
     },
     ereignisse: [`Lösung gestartet: „${l.name}“ gegen ${l.problem.name} (fertig in ${l.dauer} Monaten, Chance ${Math.round(erfolgschance(zustand, l) * 100)} %)`],
   };
+  // Großprojekt (Etappe 7): manche Ansätze starten eines
+  const projekt = projektStarten(r.state, loesungId);
+  return { state: projekt.state, ereignisse: [...r.ereignisse, ...projekt.ereignisse] };
 }
 
 // Folgen der Probleme für das Haushaltsjahr (Wirkung auf Kennzahlen und Gruppen) plus Wirkungen aus dem Jahr

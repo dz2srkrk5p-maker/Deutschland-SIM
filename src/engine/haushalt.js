@@ -12,9 +12,11 @@ import { mehrheit } from './koalition.js';
 import { zurueckInDenWahlkampf, mitVerlauf, regierungImAmt } from './state.js';
 import { laufendeKosten as loesungsKosten, jahresFolgen } from './probleme.js';
 import { wegKosten, profilWirkung } from './reformwege.js';
+import { baukosten } from './grossprojekte.js';
 
 // Laufende Kosten von Lösungen (System 3) und Reformwegen (System 1)
-export const laufendeKosten = (zustand) => loesungsKosten(zustand) + wegKosten(zustand);
+// dazu die Baukosten laufender Großprojekte (Etappe 7)
+export const laufendeKosten = (zustand) => loesungsKosten(zustand) + wegKosten(zustand) + baukosten(zustand);
 import { aufstellung, entwurfPruefen, entwurfWirkung, einnahmenUebernehmen } from './einnahmen.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { verfahrenAnlegen } from './verfahren.js';

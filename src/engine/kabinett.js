@@ -1,4 +1,5 @@
 import { ministerien } from '../data/ministerien.js';
+import { uebernahmenAnlegen } from './grossprojekte.js';
 import { parteien } from '../data/parteien.js';
 import { vertragsVorschlaege, vertragPruefen, vertragAnlegen } from './koalitionsvertrag.js';
 import { sainteLague } from './hoechstzahl.js';
@@ -59,8 +60,9 @@ export function bestaetigen(zustand, { verteilung, vorhaben = vorhabenVorschlag(
   const mitVertrag = zustand.koalition.partner.length > 0;
   return {
     // regierungSeit: Beginn dieser Regierung (Kurswechsel im ersten Jahr kostenlos, Epochen-Etappe 3)
-    state: { ...zustand, phase: 'regierung', regierungSeit: zustand.jahr * 12 + zustand.monat - 1, kabinett: { ...zustand.kabinett, verteilung: sauber },
-      koalition: { ...zustand.koalition, vertrag: mitVertrag ? vertragAnlegen(zustand, vorhaben, sauber) : null } },
+    // Großprojekte einer anderen Regierung warten auf die Übernahme-Entscheidung (Etappe 7)
+    state: uebernahmenAnlegen({ ...zustand, phase: 'regierung', regierungSeit: zustand.jahr * 12 + zustand.monat - 1, kabinett: { ...zustand.kabinett, verteilung: sauber },
+      koalition: { ...zustand.koalition, vertrag: mitVertrag ? vertragAnlegen(zustand, vorhaben, sauber) : null } }),
     ereignisse: ['Kabinett vereidigt', ...(mitVertrag ? [`Koalitionsvertrag unterzeichnet: ${vorhaben.length} Vorhaben der Partner, Ressortverteilung festgeschrieben`] : [])],
   };
 }

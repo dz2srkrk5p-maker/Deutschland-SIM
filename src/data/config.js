@@ -83,7 +83,9 @@ export const config = {
     umbauKostenFaktor: 0.75, // „umbauen (ein Viertel billiger …)“
     umbauVerzoegerungMonate: 12, // „… ein Jahr später“
     kostensteigerungChance: 0.5, // TODO-BALANCE: „kann … teurer werden“ – jeder zweite Abschnitt
-    kostensteigerung: 0.15, // TODO-BALANCE: dann +15 % für den nächsten Abschnitt; zwei Steigerungen nacheinander reichen fast für den Ausschuss
+    kostensteigerung: 0.15, // TODO-BALANCE: dann +15 % für den nächsten Abschnitt; zwei Steigerungen nacheinander reichen für den Ausschuss (1,15² > 1,3)
+    ausschussUmfrage: 0.5, // TODO-BALANCE: Untersuchungsausschuss kostet die Kanzlerpartei so viele Umfragepunkte (einmal je Projekt)
+    ausschussKapital: 10, // TODO-BALANCE: … und so viel politisches Kapital
   },
   bestaende: {
     stufen: [40, 60, 70, 85], // „Stufen bei 40, 60, 70 und 85“
