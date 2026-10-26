@@ -41,6 +41,10 @@ export const config = {
     kurswechselUmfrage: 0.5, // TODO-BALANCE: wie reformwege.revisionUmfrage, Punkte für die Kanzlerpartei
     kurswechselGruppen: 2, // TODO-BALANCE: Gruppen, die der alte Weg begünstigt hat, verlieren so viele Punkte (Zustimmung = alles)
     zweiterWegKostenFaktor: 1.5, // „die Schwerpunkt-Gesetze beider Wege kosten das 1,5-Fache“ (Stufe 4)
+    zweiterWegJeEpoche: 1, // TODO-BALANCE: ein zweiter Weg je Epoche, jederzeit während der Epoche
+    wegGruppenJePunkt: 1, // TODO-BALANCE: Stärke/Schwäche eines Wegs: je Punkt in epochen.js so viele Zustimmungspunkte je Jahr (wie Merkmale)
+    wegProblemTrendJePunkt: 0.05, // TODO-BALANCE: je Punkt so viel Trend je Monat auf das Problem (wie Merkmale)
+    prognoseMonate: 12, // TODO-BALANCE: „bei diesem Tempo“ = Veränderung der letzten 12 Monate, fortgeschrieben bis zum Epochenende
   },
   merkmale: {
     max: 6, // „höchstens sechs“

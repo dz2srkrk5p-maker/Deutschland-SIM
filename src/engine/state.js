@@ -9,9 +9,10 @@ import { laender as laenderDaten } from '../data/laender.js';
 import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 import { epochenStart, zeitpunkt } from './epochen.js';
+import { epochen as epochenDaten } from '../data/epochen.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 25; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 26; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -25,6 +26,7 @@ export const ZUSTAND_VERSION = 25; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 23: jahr (Kalenderjahr); Partie ohne Ende: Phase opposition ist spielbar (Regierung der anderen), kein sieg mehr
 // 24: stufe (Spielstufe 1–4, vor Spielbeginn gewählt)
 // 25: epochen (laufende und vergangene Epochen, nächster Beginn, Titelseite)
+// 26: Wege der Epochen (epochen.folgen, aktiv[].wege/basis/startFaktor/kurswechsel), regierungSeit
 // 22: Monatstakt: monat (1–12) statt quartal, aktionenImMonat statt aktionenImQuartal; runde und alle Fristen in Monaten
 // 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
@@ -93,6 +95,7 @@ export function neuesSpiel(spielerParteiId, seed, stufe = config.spielstufen.sta
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
     stufe, // Spielstufe (Etappe 0c), bleibt die ganze Partie gleich
     epochen: epochenStart(), // Epochen-Etappe 2
+    regierungSeit: null, // Monat der Vereidigung der eigenen Regierung (Etappe 3)
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
   };
@@ -216,6 +219,15 @@ const MIGRATIONEN = {
     const e = epochenStart();
     return { ...z, version: 25, epochen: { ...e, naechste: Math.max(e.naechste, zeitpunkt(z.jahr, z.monat) + 1) } };
   },
+  // Wege: laufende Epochen ohne Weg (die Wahl kommt nach dem Aufschub), Basis der Aufgaben = heutiger Wert
+  25: (z) => ({
+    ...z, version: 26, regierungSeit: null,
+    epochen: {
+      ...z.epochen, folgen: [],
+      aktiv: z.epochen.aktiv.map((a) => ({ ...a, wege: [], startFaktor: 1, kurswechsel: 0,
+        basis: Object.fromEntries(epochenDaten.find((e) => e.id === a.id).wege.map((w) => w.aufgabe.problem).filter((p) => z.probleme[p]).map((p) => [p, z.probleme[p].wert])) })),
+    },
+  }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

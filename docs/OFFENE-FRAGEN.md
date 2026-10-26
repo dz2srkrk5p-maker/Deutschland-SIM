@@ -24,3 +24,6 @@
 - [ ] Epochen-Etappe 2 (2026-10-26): Dauer einer Epoche 15 Jahre (`config.epochen.dauerJahre`, TODO-BALANCE) – die Spec nennt keine. Bleiben Epochenprobleme nach dem Ende ihrer Epoche bestehen (bisher ja)?
 - [ ] Epochen-Etappe 2: Die „rechte Spalte“ der Spec gibt es nicht; die Epochen-Zeile steht in der Kopfzeile. Soll eine rechte Spalte gebaut werden (größerer Umbau der Oberfläche)?
 - [ ] Epochen-Etappe 2: Mit nur zwei Platzhalter-Epochen kommt nach etwa 2037 keine neue Epoche mehr.
+- [ ] Epochen-Etappe 3 (2026-10-26): „Die Schwerpunkt-Gesetze beider Wege kosten das 1,5-Fache“ – umgesetzt beim politischen Kapital, nicht bei den laufenden Kosten in Euro. Richtig so?
+- [ ] Epochen-Etappe 3: Kostenloser Kurswechsel einer neuen Regierung zählt nicht als „der eine Kurswechsel je Epoche“; auf Stufe 4 gibt es ihn nicht (dort kein Kurswechsel). Richtig so?
+- [ ] Epochen-Etappe 3: Mit zwei Wegen gilt die Epoche nur als gelungen, wenn beide Aufgaben gelingen. Oder reicht eine?

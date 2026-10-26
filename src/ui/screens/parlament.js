@@ -7,12 +7,20 @@ import { bundestagSvg } from '../components/bundestag.js';
 import { bundesratHtml } from '../components/bundesrat.js';
 import { koalitionslageHtml } from '../components/koalitionslage.js';
 import { karte, tabs, punkt, badge, status } from '../components/basis.js';
+import { aufgabeHtml } from '../components/wege.js';
+import { epoche } from '../../engine/epochen.js';
 import { akteure } from '../../data/reformwege.js';
 import { richtungsprofil } from '../../engine/reformwege.js';
 import { abstand } from '../../engine/profil.js';
 import { profilHtml } from '../components/profil.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
+// Kabinett › Missionen (Epochen-Etappe 3): Aufgaben der Wege laufender Epochen
+const missionenHtml = (zustand) => {
+  const mit = zustand.epochen.aktiv.filter((a) => (a.wege ?? []).length);
+  if (!mit.length) return `<p class="klein">${zustand.epochen.aktiv.length ? 'Der Weg der Epoche ist noch nicht gewählt (Reiter „Euer Land“).' : 'Noch keine Epoche, keine Mission.'}</p>`;
+  return mit.map((a) => `<p class="klein">${epoche(a.id).name}</p>${a.wege.map((id) => aufgabeHtml(zustand, a, id, { kurz: true })).join('')}`).join('');
+};
 const TABS = [
   { id: 'bundestag', text: 'Bundestag' },
   { id: 'koalition', text: 'Koalition' },
@@ -33,7 +41,8 @@ export function parlamentScreen(el, zustand, { tab, onTab }) {
       + karte(`<table><thead><tr><th scope="col">Ressort</th><th scope="col">Partei</th></tr></thead><tbody>
         <tr><th scope="row">${kanzleramt.kurz}</th><td>${partei(zustand.kanzlerParteiId).name}</td></tr>
         ${ministerien.map((m) => `<tr><th scope="row" title="${m.name}">${m.kurz}</th><td>${punkt(partei(zustand.kabinett.verteilung[m.id]).farbe)}${partei(zustand.kabinett.verteilung[m.id]).name}</td></tr>`).join('')}
-      </tbody></table>`, { titel: 'Kabinett' }),
+      </tbody></table>`, { titel: 'Kabinett' })
+      + karte(missionenHtml(zustand), { titel: 'Missionen' }),
     bundesrat: () => karte(bundesratHtml(bundesratAbstimmung(regierung, zustand.laender)), { titel: 'Länder' }),
     // Haltung der Akteure zum Kurs des Landes (System 1): 2 − 2 × Abstand zum Richtungsprofil
     akteure: () => {

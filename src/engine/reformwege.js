@@ -12,6 +12,7 @@ import { parteiPosition, abstand, richtungsprofil } from './profil.js';
 import { wirkungSumme, skaliert } from './wirtschaft.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { vertragNachBeschluss } from './koalitionsvertrag.js';
+import { schwerpunktFaktor, schwerpunktKostenFaktor } from './weichen.js';
 import { vorschau } from './haushalt.js';
 
 // Reformwege (System 1): verbindliche Wegentscheidungen je Bereich mit politischer Ausrichtung.
@@ -77,7 +78,9 @@ export function wegEinnahmen(zustand) {
 // Dauerhafte Trends beschlossener Wege auf Probleme (für die Problem-Engine)
 export const wegTrends = (zustand, problemId) => Object.entries(zustand.reformwege ?? {})
   .filter(([id, s]) => s.status === 'beschlossen' && weg(id).lang?.trend?.[problemId])
-  .map(([id]) => ({ text: `Reform: ${weg(id).name}`, beitrag: wegFuer(zustand, id).lang.trend[problemId] }));
+  .map(([id]) => ({ text: `Reform: ${weg(id).name}`, beitrag: wegFuer(zustand, id).lang.trend[problemId] * schwerpunktFaktor(zustand, id) }));
+// Kapital eines Wegs: auf Stufe 4 mit zwei Wegen einer Epoche kosten deren Schwerpunkt-Gesetze das 1,5-Fache (Etappe 3)
+const wegKapital = (zustand, w) => Math.round(w.kapital * schwerpunktKostenFaktor(zustand, w.id));
 
 // Warum ein Weg jetzt nicht gewählt werden kann (oder null). revision: true, wenn ein anderer Grundweg den Bereich belegt.
 export function wegSperre(zustand, wegId, { kompromiss = false } = {}) {
@@ -93,7 +96,7 @@ export function wegSperre(zustand, wegId, { kompromiss = false } = {}) {
   const belegt = !w.braucht && bereichStatus(zustand, w.bereich).weg;
   const br = w.bundesrat ? bundesratAbstimmung(koalitionsParteien(zustand), zustand.laender) : null;
   const mitKompromiss = kompromiss && br && !br.mehrheit;
-  const kapital = w.kapital + (belegt ? rw.revisionKapital : 0) + (mitKompromiss ? km.kapital : 0);
+  const kapital = wegKapital(zustand, w) + (belegt ? rw.revisionKapital : 0) + (mitKompromiss ? km.kapital : 0);
   if (zustand.kapital < kapital) return { grund: `zu wenig politisches Kapital (${kapital} nötig)` };
   if (br && !br.mehrheit && !mitKompromiss) return { grund: 'keine Mehrheit im Bundesrat', kompromiss: kompromissMoeglich(br) };
   if (mitKompromiss && !kompromissMoeglich(br)) return { grund: `auch für einen Kompromiss fehlen zu viele Stimmen im Bundesrat (${br.noetig - br.ja})` };
@@ -121,12 +124,12 @@ export function wegVorschau(zustand, wegId) {
     akteure: akteurReaktionen(w),
     ...gewinnerVerlierer(w),
     risiko: wegRisiko(w),
-    kapital: w.kapital + (belegt ? rw.revisionKapital : 0),
+    kapital: wegKapital(zustand, w) + (belegt ? rw.revisionKapital : 0),
     revision: belegt && belegt.id !== w.id ? belegt : null,
     bonus: r2(Math.max(0, 1 - abstand(parteiPosition(zustand.kanzlerParteiId), wegVektor(w))) * rw.beschlussBonus),
     sperre: wegSperre(zustand, wegId),
     kompromissSperre: wegSperre(zustand, wegId, { kompromiss: true }),
-    kompromissKapital: w.kapital + (belegt ? rw.revisionKapital : 0) + km.kapital,
+    kompromissKapital: wegKapital(zustand, w) + (belegt ? rw.revisionKapital : 0) + km.kapital,
   };
 }
 
@@ -235,12 +238,13 @@ export function reformwegeMonat(zustand) {
     }
     reformwege[id] = { ...s, status: 'beschlossen' };
     probleme = { ...probleme };
-    for (const [pid, x] of Object.entries(w.lang?.probleme ?? {})) probleme[pid] = { ...probleme[pid], wert: Math.max(0, Math.min(100, Math.round((probleme[pid].wert + x) * 10) / 10)) };
+    const f = schwerpunktFaktor(zustand, id); // Schwerpunkt eines Epochen-Wegs (Etappe 3)
+    for (const [pid, x] of Object.entries(w.lang?.probleme ?? {})) probleme[pid] = { ...probleme[pid], wert: Math.max(0, Math.min(100, Math.round((probleme[pid].wert + x * f) * 10) / 10)) };
     gruppen = { ...gruppen };
     for (const [g, x] of Object.entries(w.lang?.gruppen ?? {})) gruppen[g] = Math.max(0, Math.min(100, r2(gruppen[g] + x)));
     jahresWirkung = wirkungSumme(jahresWirkung, { ...w.lang, gruppen: {}, probleme: {} });
     // Erfolg wie bei Lösungen: Ressort und Regierung gewinnen je gesenktem Problempunkt
-    const senkung = Object.values(w.lang?.probleme ?? {}).reduce((sum, x) => sum + Math.max(0, -x), 0);
+    const senkung = Object.values(w.lang?.probleme ?? {}).reduce((sum, x) => sum + Math.max(0, -x * f), 0);
     const pc = config.probleme;
     const halter = zustand.kabinett.verteilung[w.bereich.ministerium];
     if (halter) dazu(halter, senkung * pc.gewinnJeWertpunkt, `Reform „${w.name}“ umgesetzt (zuständiges Ressort)`);

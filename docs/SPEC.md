@@ -121,6 +121,15 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Weichen, Wege, Aufgabe (Epochen-Etappe 3, 2026-10-26)
+- Weiche: Zu Beginn einer Epoche wählt die eigene Regierung im Reiter „Euer Land“ einen Weg (Stufe 1: die ersten zwei der Daten, sonst drei). Aufschub möglich; nach `aufschubMonate` (3) nimmt die eigene Partei den Weg, dessen Ausrichtung ihrer Position am nächsten liegt. In der Opposition wählt die Regierung sofort (Weg nahe der Kanzlerpartei).
+- Gewählte Wege wirken: Schwerpunkt-Ansätze (Reformwege: Trends und Langwirkung auf Probleme; Lösungen: Senkung) × 1,1; Stärke und Schwäche je Punkt `wegGruppenJePunkt` Zustimmung je Jahr (monatlich anteilig) und `wegProblemTrendJePunkt` Trend je Monat (beide TODO-BALANCE).
+- Aufgabe: Problem bis zum Epochenende auf höchstens `ziel`. Fortschritt = (Basis − Wert) / (Basis − Ziel), Basis = Wert beim Epochenstart bzw. beim Eintreffen des Problems. Prognose „bei diesem Tempo“: Veränderung der letzten `prognoseMonate` (12, TODO-BALANCE) bis zum Epochenende fortgeschrieben. Anzeige in „Euer Land“ und unter Parlament › Koalition › Missionen (dort steht das Kabinett).
+- Epochenende: gelungen, wenn alle gewählten Aufgaben ≥ 100 % (`aufgabeErfuelltAb`). Die nächste beginnende Epoche startet mit Rückenwind (Startwerte ihrer Probleme × 0,8) bzw. Hypothek (× 1,2); mehrere offene Folgen multiplizieren sich.
+- Kurswechsel (ab Stufe 3): einmal je Epoche; kostet `kurswechselKapital` (25), `kurswechselUmfrage` (0,5) für die Kanzlerpartei und `kurswechselGruppen` (2) bei den Gruppen, die die Stärke des alten Wegs begünstigt; halbiert den Rückenwind (0,9 statt 0,8). Eine neue Regierung (bis 12 Monate nach der Vereidigung) wechselt kostenlos, ohne dass es zählt.
+- Zweiter Weg (Stufe 4, statt Kurswechsel): einmal je Epoche; beide Aufgaben zählen; Schwerpunkt-Ansätze beider Wege kosten das 1,5-Fache an politischem Kapital.
+- Spielstand-Version 26: Wege-Felder der Epochen, `regierungSeit`.
+
 ## System: Epochen-Kern (Epochen-Etappe 2, 2026-10-26)
 - Epochen beginnen in der Reihenfolge von `src/data/epochen.js`: die erste im Januar `config.epochen.ersteEpocheJahr` (2027, TODO-BALANCE), jede weitere `abstandJahre` (10) ± `abstandSchwankungJahre` (1, TODO-BALANCE) nach dem Beginn der vorigen, monatsgenau per Zufall. Sind schon `maxGleichzeitig` (2) aktiv, wartet die nächste, bis eine endet.
 - Eine Epoche dauert `dauerJahre` (15, TODO-BALANCE; die Spec nennt keine Dauer). Danach steht sie unter „Vergangene Epochen“; ihre Probleme bleiben (Obergrenze erst in Etappe 8).

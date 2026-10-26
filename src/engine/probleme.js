@@ -13,6 +13,7 @@ import { wirkungSumme, skaliert } from './wirtschaft.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { kettenSchritt } from './krisenketten.js';
 import { wegTrends } from './reformwege.js';
+import { wegEpochenTrends, schwerpunktFaktor, schwerpunktKostenFaktor } from './weichen.js';
 
 // Problem-Engine (System 3): Probleme entstehen und eskalieren aus dem Zustand des Landes, Lösungen senken sie.
 const pc = config.probleme;
@@ -62,7 +63,8 @@ export function ursachen(zustand, p) {
     }
   }
   liste.push(...wegTrends(zustand, p.id));
-  return liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) }));
+  // Stärken und Schwächen der Wege einer Epoche sind schon je Monat angegeben (Etappe 3)
+  return [...liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) })), ...wegEpochenTrends(zustand, p.id)];
 }
 export const trend = (zustand, p) => r3(ursachen(zustand, p).reduce((s, u) => s + u.beitrag, 0));
 
@@ -94,6 +96,9 @@ export function erfolgschance(zustand, l) {
   return r2(Math.max(0.05, Math.min(0.95, l.erfolg + bonus)));
 }
 
+// Kapital einer Lösung: auf Stufe 4 mit zwei Wegen kosten Schwerpunkt-Ansätze das 1,5-Fache (Etappe 3)
+export const loesungKapital = (zustand, l) => Math.round(l.kapital * schwerpunktKostenFaktor(zustand, l.id));
+
 // Warum eine Lösung jetzt nicht gestartet werden kann, oder null
 export function loesungSperre(zustand, id) {
   const l = loesung(id);
@@ -106,7 +111,7 @@ export function loesungSperre(zustand, id) {
   if (zustand.offenesEreignis) return 'erst auf das Ereignis reagieren';
   if (zustand.monat === config.regierung.monateJeJahr) return 'im Haushaltsmonat nicht möglich';
   if (zustand.aktionenImMonat >= pc.aktionenJeMonat) return `höchstens ${pc.aktionenJeMonat} Vorhaben je Monat`;
-  if (zustand.kapital < l.kapital) return `zu wenig politisches Kapital (${l.kapital} nötig)`;
+  if (zustand.kapital < loesungKapital(zustand, l)) return `zu wenig politisches Kapital (${loesungKapital(zustand, l)} nötig)`;
   return null;
 }
 
@@ -119,7 +124,7 @@ export function loesungStarten(zustand, { loesungId }) {
   return {
     state: {
       ...zustand,
-      kapital: zustand.kapital - l.kapital,
+      kapital: zustand.kapital - loesungKapital(zustand, l),
       aktionenImMonat: zustand.aktionenImMonat + 1,
       loesungen: { ...zustand.loesungen, [loesungId]: { status: 'laufend', fertig: zustand.runde + l.dauer, start: zustand.runde } },
     },
@@ -166,7 +171,9 @@ export function problemeMonat(zustand) {
     if (stand.status !== 'laufend' || stand.fertig > zustand.runde + 1) continue;
     const l = loesung(id);
     const erfolg = zieh() < erfolgschance(zustand, l);
-    const senkung = Math.min(neu[l.problem.id].wert, erfolg ? l.wirkung : l.wirkung * pc.fehlschlagWirkung);
+    // Schwerpunkt-Ansätze des gewählten Wegs einer Epoche wirken stärker (Etappe 3)
+    const wirkung = l.wirkung * schwerpunktFaktor(zustand, id);
+    const senkung = Math.min(neu[l.problem.id].wert, erfolg ? wirkung : wirkung * pc.fehlschlagWirkung);
     neu[l.problem.id] = { ...neu[l.problem.id], wert: r2(neu[l.problem.id].wert - senkung) };
     loesungen[id] = { ...stand, status: erfolg ? 'erfolg' : 'gescheitert' };
     if (erfolg) {

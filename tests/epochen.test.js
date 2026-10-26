@@ -64,12 +64,16 @@ test('30 Jahre ohne Fehler: höchstens zwei Epochen, Epochen beginnen und enden,
       z = zug(z).state;
       maxAktiv = Math.max(maxAktiv, z.epochen.aktiv.length);
       expect(z.epochen.aktiv.length).toBeLessThanOrEqual(ec.maxGleichzeitig);
+      // Weiche: spätestens nach dem Aufschub ist ein Weg gewählt (Etappe 3)
+      const jetzt = z.jahr * 12 + z.monat - 1;
+      if (z.phase === 'regierung' || z.phase === 'opposition') for (const e of z.epochen.aktiv) if (jetzt - e.start > ec.aufschubMonate) expect(e.wege.length).toBeGreaterThan(0);
       expect(Object.keys(z.probleme).length).toBeLessThanOrEqual(config.problemObergrenze.aktivMax + epochen.length);
     }
     expect(z.jahr).toBeGreaterThanOrEqual(ende);
     expect(laden(speichern(z))).toEqual(z);
     expect(z.epochen.index).toBe(epochen.length); // beide Platzhalter-Epochen sind gekommen
     expect(z.epochen.vorbei.length).toBeGreaterThanOrEqual(1); // die erste ist nach 15 Jahren vorbei
+    for (const v of z.epochen.vorbei) expect(typeof v.gelungen).toBe('boolean');
     expect(maxAktiv).toBe(2);
   }
 });

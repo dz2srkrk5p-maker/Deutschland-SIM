@@ -53,4 +53,5 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | 0c | Spielstufen 1–4 beim Spielstart (Version 24) | fertig (2026-10-25) |
 | 1 | Konfiguration und Datenmodell (Platzhalter-Inhalte), Vorgabe in docs/epochen-spec.md | fertig (2026-10-26) |
 | 2 | Epochen-Kern: Beginn, Epochenprobleme, Streitfrage, Titelseite, Kopfzeile, Reiter „Euer Land“ (Version 25) | fertig (2026-10-26) |
-| 3–9 | Weichen und Wege, Merkmale, Generationen/Ursachen/Wertverlust, Sozialbeiträge, Großprojekte, Bestände/Bevölkerung/Obergrenze, UI und Bilanz | offen |
+| 3 | Weichen, Wege, Aufgabe mit Fortschritt und Prognose, Rückenwind/Hypothek, Kurswechsel, zweiter Weg (Version 26) | fertig (2026-10-26) |
+| 4–9 | Merkmale, Generationen/Ursachen/Wertverlust, Sozialbeiträge, Großprojekte, Bestände/Bevölkerung/Obergrenze, UI und Bilanz | offen |

@@ -58,7 +58,8 @@ export function bestaetigen(zustand, { verteilung, vorhaben = vorhabenVorschlag(
   const sauber = Object.fromEntries(ministerien.map((m) => [m.id, verteilung[m.id]]));
   const mitVertrag = zustand.koalition.partner.length > 0;
   return {
-    state: { ...zustand, phase: 'regierung', kabinett: { ...zustand.kabinett, verteilung: sauber },
+    // regierungSeit: Beginn dieser Regierung (Kurswechsel im ersten Jahr kostenlos, Epochen-Etappe 3)
+    state: { ...zustand, phase: 'regierung', regierungSeit: zustand.jahr * 12 + zustand.monat - 1, kabinett: { ...zustand.kabinett, verteilung: sauber },
       koalition: { ...zustand.koalition, vertrag: mitVertrag ? vertragAnlegen(zustand, vorhaben, sauber) : null } },
     ereignisse: ['Kabinett vereidigt', ...(mitVertrag ? [`Koalitionsvertrag unterzeichnet: ${vorhaben.length} Vorhaben der Partner, Ressortverteilung festgeschrieben`] : [])],
   };

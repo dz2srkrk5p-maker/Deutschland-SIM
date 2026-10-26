@@ -1,6 +1,7 @@
 import './stil.css';
 import { titelseiteGelesen } from '../engine/epochen.js';
 import { landScreen } from './screens/land.js';
+import { wegWaehlen, kurswechsel, zweiterWeg } from '../engine/weichen.js';
 import { neuesSpiel, seedAusAdresse, stufeAusAdresse, regierungImAmt, spielerRegiert } from '../engine/state.js';
 import { oppositionMonat } from '../engine/opposition.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
@@ -121,6 +122,9 @@ function zeichne() {
   if (ui.bereich === 'land') {
     return landScreen(a, zustand, {
       onTitelseite: ausfuehren(titelseiteGelesen),
+      onWeg: ausfuehren(wegWaehlen),
+      onKurswechsel: ausfuehren(kurswechsel),
+      onZweiterWeg: ausfuehren(zweiterWeg),
       onBereich: wechseln,
       onProblem: (p) => (wechseln('probleme'), (ui.problem = p), zeichne(), fokusOben()),
     });

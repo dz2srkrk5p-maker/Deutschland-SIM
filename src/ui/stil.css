@@ -355,3 +355,9 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
 .titelseite-text { font-family: Georgia, 'Times New Roman', serif; font-size: 1.1rem; }
 .titelseite .knoepfe { justify-content: center; }
 button.link { background: none; border: 0; padding: 0; min-height: 0; color: var(--akzent); text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* Wege einer Epoche (Epochen-Etappe 3) */
+.wege { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--a1); }
+.weg { border: 1px solid var(--linie); border-radius: 8px; padding: var(--a1) var(--a2); margin-bottom: var(--a1); }
+.weg h4 { margin: 0 0 var(--a-halb); }
+.aufgabe .balken { display: block; margin: var(--a-halb) 0; }
