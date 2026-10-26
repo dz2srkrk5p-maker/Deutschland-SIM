@@ -12,7 +12,7 @@ import { parteiPosition, abstand, richtungsprofil } from './profil.js';
 import { wirkungSumme, skaliert } from './wirtschaft.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { vertragNachBeschluss } from './koalitionsvertrag.js';
-import { schwerpunktFaktor, schwerpunktKostenFaktor } from './weichen.js';
+import { ansatzFaktor, schwerpunktKostenFaktor } from './weichen.js';
 import { vorschau } from './haushalt.js';
 
 // Reformwege (System 1): verbindliche Wegentscheidungen je Bereich mit politischer Ausrichtung.
@@ -78,7 +78,7 @@ export function wegEinnahmen(zustand) {
 // Dauerhafte Trends beschlossener Wege auf Probleme (für die Problem-Engine)
 export const wegTrends = (zustand, problemId) => Object.entries(zustand.reformwege ?? {})
   .filter(([id, s]) => s.status === 'beschlossen' && weg(id).lang?.trend?.[problemId])
-  .map(([id]) => ({ text: `Reform: ${weg(id).name}`, beitrag: wegFuer(zustand, id).lang.trend[problemId] * schwerpunktFaktor(zustand, id) }));
+  .map(([id]) => ({ text: `Reform: ${weg(id).name}`, beitrag: wegFuer(zustand, id).lang.trend[problemId] * ansatzFaktor(zustand, id) }));
 // Kapital eines Wegs: auf Stufe 4 mit zwei Wegen einer Epoche kosten deren Schwerpunkt-Gesetze das 1,5-Fache (Etappe 3)
 const wegKapital = (zustand, w) => Math.round(w.kapital * schwerpunktKostenFaktor(zustand, w.id));
 
@@ -238,7 +238,7 @@ export function reformwegeMonat(zustand) {
     }
     reformwege[id] = { ...s, status: 'beschlossen' };
     probleme = { ...probleme };
-    const f = schwerpunktFaktor(zustand, id); // Schwerpunkt eines Epochen-Wegs (Etappe 3)
+    const f = ansatzFaktor(zustand, id); // Schwerpunkt eines Epochen-Wegs (Etappe 3)
     for (const [pid, x] of Object.entries(w.lang?.probleme ?? {})) probleme[pid] = { ...probleme[pid], wert: Math.max(0, Math.min(100, Math.round((probleme[pid].wert + x * f) * 10) / 10)) };
     gruppen = { ...gruppen };
     for (const [g, x] of Object.entries(w.lang?.gruppen ?? {})) gruppen[g] = Math.max(0, Math.min(100, r2(gruppen[g] + x)));

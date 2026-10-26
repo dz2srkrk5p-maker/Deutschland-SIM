@@ -64,6 +64,7 @@ test('30 Jahre ohne Fehler: höchstens zwei Epochen, Epochen beginnen und enden,
       z = zug(z).state;
       maxAktiv = Math.max(maxAktiv, z.epochen.aktiv.length);
       expect(z.epochen.aktiv.length).toBeLessThanOrEqual(ec.maxGleichzeitig);
+      expect(z.merkmale.length).toBeLessThanOrEqual(config.merkmale.max);
       // Weiche: spätestens nach dem Aufschub ist ein Weg gewählt (Etappe 3)
       const jetzt = z.jahr * 12 + z.monat - 1;
       if (z.phase === 'regierung' || z.phase === 'opposition') for (const e of z.epochen.aktiv) if (jetzt - e.start > ec.aufschubMonate) expect(e.wege.length).toBeGreaterThan(0);

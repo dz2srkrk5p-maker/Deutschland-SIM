@@ -361,3 +361,4 @@ button.link { background: none; border: 0; padding: 0; min-height: 0; color: var
 .weg { border: 1px solid var(--linie); border-radius: 8px; padding: var(--a1) var(--a2); margin-bottom: var(--a1); }
 .weg h4 { margin: 0 0 var(--a-halb); }
 .aufgabe .balken { display: block; margin: var(--a-halb) 0; }
+.merkmale-zeile { display: inline-block; max-width: 26ch; font-weight: 400; color: var(--text-2); line-height: 1.3; }

@@ -5,7 +5,7 @@
 //
 // Felder je Epoche:
 //   streitfrage: { text } – „macht eine Streitfrage laut“ (Titelseite, Reiter „Euer Land“)
-//   probleme: epocheneigene Probleme im Format von src/data/probleme.js (ohne Lösungen); monat = Abstand zum Epochenstart,
+//   probleme: epocheneigene Probleme im Format von src/data/probleme.js (mit Platzhalter-Lösungen); monat = Abstand zum Epochenstart,
 //             höchstens config.epochen.problemeVerteiltMonate
 //   wege: Reihenfolge = Angebot auf Stufe 1 (die ersten config.spielstufen.stufen[1].wegeJeWeiche Wege)
 // Felder je Weg:
@@ -27,7 +27,10 @@ export const epochen = [
         text: 'Jedes Jahr gehen mehr Menschen in Rente, als Junge nachkommen.',
         treiber: [{ problem: 'demografie', ab: 40, gewicht: 0.2 }],
         folgen: { wachstum: -0.2, gruppen: { arbeitnehmer: -3, rentner: -3 } },
-        loesungen: [],
+        loesungen: [
+          { id: 'rw_uebergang', platzhalter: true, quelle: 'Spielwert', name: 'Gleitender Übergang in die Rente', text: 'Teilrente und Hinzuverdienst erleichtern.', ausrichtung: { wirtschaft: 0.5 }, kosten: 400000, dauer: 9, erfolg: 0.7, wirkung: 8, kapital: 8 },
+          { id: 'rw_beitragszahler', platzhalter: true, quelle: 'Spielwert', name: 'Mehr Beitragszahler gewinnen', text: 'Erwerbstätigkeit von Eltern und Älteren fördern.', ausrichtung: { wirtschaft: -0.5 }, kosten: 900000, dauer: 12, erfolg: 0.65, wirkung: 10, kapital: 10 },
+        ],
       },
     ],
     wege: [
@@ -67,7 +70,10 @@ export const epochen = [
         text: 'Die Emissionen sinken langsamer als geplant.',
         treiber: [{ problem: 'energiepreise', ab: 50, gewicht: 0.1 }, { profil: 'oekologie', gewicht: -0.3 }],
         folgen: { gruppen: { familien: -2 } },
-        loesungen: [],
+        loesungen: [
+          { id: 'kz_programm', platzhalter: true, quelle: 'Spielwert', name: 'Sofortprogramm Emissionen', text: 'Gezielte Förderung in den Sektoren mit der größten Lücke.', ausrichtung: { oekologie: 1 }, kosten: 1200000, dauer: 9, erfolg: 0.65, wirkung: 10, kapital: 10 },
+          { id: 'kz_monitoring', platzhalter: true, quelle: 'Spielwert', name: 'Klimaziel-Monitoring mit Nachsteuerung', text: 'Jährliche Prüfung, Nachsteuern wo Ziele verfehlt werden.', ausrichtung: { oekologie: 0.5 }, kosten: 100000, dauer: 6, erfolg: 0.75, wirkung: 6, kapital: 6 },
+        ],
       },
     ],
     wege: [

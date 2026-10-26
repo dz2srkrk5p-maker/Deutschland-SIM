@@ -13,7 +13,8 @@ import { wirkungSumme, skaliert } from './wirtschaft.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { kettenSchritt } from './krisenketten.js';
 import { wegTrends } from './reformwege.js';
-import { wegEpochenTrends, schwerpunktFaktor, schwerpunktKostenFaktor } from './weichen.js';
+import { wegEpochenTrends, aufgabenTrends, ansatzFaktor, schwerpunktKostenFaktor } from './weichen.js';
+import { merkmalTrends } from './merkmale.js';
 
 // Problem-Engine (System 3): Probleme entstehen und eskalieren aus dem Zustand des Landes, Lösungen senken sie.
 const pc = config.probleme;
@@ -64,7 +65,7 @@ export function ursachen(zustand, p) {
   }
   liste.push(...wegTrends(zustand, p.id));
   // Stärken und Schwächen der Wege einer Epoche sind schon je Monat angegeben (Etappe 3)
-  return [...liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) })), ...wegEpochenTrends(zustand, p.id)];
+  return [...liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) })), ...wegEpochenTrends(zustand, p.id), ...aufgabenTrends(zustand, p.id), ...merkmalTrends(zustand, p.id)];
 }
 export const trend = (zustand, p) => r3(ursachen(zustand, p).reduce((s, u) => s + u.beitrag, 0));
 
@@ -172,7 +173,7 @@ export function problemeMonat(zustand) {
     const l = loesung(id);
     const erfolg = zieh() < erfolgschance(zustand, l);
     // Schwerpunkt-Ansätze des gewählten Wegs einer Epoche wirken stärker (Etappe 3)
-    const wirkung = l.wirkung * schwerpunktFaktor(zustand, id);
+    const wirkung = l.wirkung * ansatzFaktor(zustand, id);
     const senkung = Math.min(neu[l.problem.id].wert, erfolg ? wirkung : wirkung * pc.fehlschlagWirkung);
     neu[l.problem.id] = { ...neu[l.problem.id], wert: r2(neu[l.problem.id].wert - senkung) };
     loesungen[id] = { ...stand, status: erfolg ? 'erfolg' : 'gescheitert' };

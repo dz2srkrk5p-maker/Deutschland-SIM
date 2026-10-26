@@ -1,6 +1,8 @@
 // Epochen in der Oberfläche (Epochen-Etappe 2): Titelseite beim Beginn, kurze Zeile in der Kopfzeile.
 import { epoche, alsDatum } from '../../engine/epochen.js';
 import { monatsname } from '../../data/kalender.js';
+import { merkmal, merkmalStaerke } from '../../engine/merkmale.js';
+import { config } from '../../data/config.js';
 
 export const datumText = (t) => {
   const d = alsDatum(t);
@@ -27,3 +29,18 @@ export function titelseiteHtml(zustand, { mitLink = true } = {}) {
 
 // Dauer in Worten: bis 2 Jahre in Monaten, darüber in Jahren (gerundet)
 export const dauerText = (monate) => (monate < 24 ? `${monate} ${monate === 1 ? 'Monat' : 'Monate'}` : `etwa ${Math.round(monate / 12)} Jahre`);
+
+// Merkmale unter dem Datum (Kopfzeile): Namen, verblassende mit Markierung
+export const merkmaleZeile = (zustand) => (zustand.merkmale ?? []).map((m) => `${merkmal(m.id).name}${m.verblasst != null ? ' (verblasst)' : ''}`).join(' · ');
+
+// Landesprofil im Reiter „Euer Land“
+export function landesprofilHtml(zustand) {
+  const liste = zustand.merkmale ?? [];
+  if (!liste.length) return `<p class="klein">Noch keine Merkmale. Ein Merkmal bekommt euer Land, wenn die Aufgabe eines Wegs gelingt oder ${config.merkmale.aufbaugesetzeNoetig} passende Gesetze gelten.</p>`;
+  return `<p class="klein">${liste.length} von höchstens ${config.merkmale.max} Merkmalen.</p><ul class="liste">${liste.map((m) => {
+    const d = merkmal(m.id);
+    const f = merkmalStaerke(zustand, m);
+    return `<li><strong>${d.name}</strong>${m.verblasst != null ? ` <small>– verblasst, noch ${Math.round(f * 100)} % Wirkung</small>` : ''}<br>
+      <small>Stärke: ${d.staerke.text} Schwäche: ${d.schwaeche.text}</small></li>`;
+  }).join('')}</ul>`;
+}

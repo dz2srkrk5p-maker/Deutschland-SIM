@@ -1,6 +1,6 @@
 // App-Shell (UI-Umbau): Kopfzeile mit Dauer-Kennzahlen und Spielmenü, Navigation bzw. Schrittanzeige, Hauptbereich.
 import { monatsname } from '../data/kalender.js';
-import { epochenZeile } from './components/epochen.js';
+import { epochenZeile, merkmaleZeile } from './components/epochen.js';
 import { parteien } from '../data/parteien.js';
 import { config } from '../data/config.js';
 import { hinweiseAn } from '../storage/speicher.js';
@@ -50,7 +50,7 @@ function kopfHtml(z) {
       <span class="marke">Deutschland-Simulator</span>
       <dl class="dauer">
         <div><dt>Partei</dt><dd>${punkt(p.farbe)}${p.name}</dd></div>
-        <div><dt>Zeit</dt><dd>${zeitText(z)}</dd></div>
+        <div><dt>Zeit</dt><dd>${zeitText(z)}${merkmaleZeile(z) ? `<br><small class="merkmale-zeile" title="Merkmale des Landes">${merkmaleZeile(z)}</small>` : ''}</dd></div>
         <div><dt>Umfrage</dt><dd title="${umfrageBilanzKurz(z) || 'Noch keine Änderung'}. Einzelheiten: Lage, „Warum bewegt sich die Umfrage?“">${prozent(z.anteile[p.id])} ${trend(umfrageTrend(z))}</dd></div>
         <div><dt>Kanzlerjahre</dt><dd>${zahl(z.statistik.jahreKanzler)}</dd></div>
         ${epochenZeile(z) ? `<div><dt>Epoche</dt><dd>${epochenZeile(z)}</dd></div>` : ''}

@@ -44,6 +44,8 @@ export const config = {
     zweiterWegJeEpoche: 1, // TODO-BALANCE: ein zweiter Weg je Epoche, jederzeit während der Epoche
     wegGruppenJePunkt: 1, // TODO-BALANCE: Stärke/Schwäche eines Wegs: je Punkt in epochen.js so viele Zustimmungspunkte je Jahr (wie Merkmale)
     wegProblemTrendJePunkt: 0.05, // TODO-BALANCE: je Punkt so viel Trend je Monat auf das Problem (wie Merkmale)
+    schwerpunktAufgabeTrend: 0.1, // TODO-BALANCE (Antwort des Nutzers 2026-10-26): jeder geltende Schwerpunkt-Ansatz eines gewählten Wegs
+    //   senkt dessen Aufgaben-Problem dauerhaft um so viel je Monat; drei davon gleichen den Anstieg der Platzhalter-Probleme mehr als aus
     prognoseMonate: 12, // TODO-BALANCE: „bei diesem Tempo“ = Veränderung der letzten 12 Monate, fortgeschrieben bis zum Epochenende
   },
   merkmale: {

@@ -121,6 +121,14 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Merkmale und Landesprofil (Epochen-Etappe 4, 2026-10-26)
+- Vergabe zu Monatsbeginn: (a) am Ende einer Epoche für jeden Weg mit gelungener Aufgabe sein Merkmal; (b) sobald `aufbaugesetzeNoetig` (3) der tragenden Gesetze eines Merkmals gelten (Reformweg beschlossen; vorerst statt Aufbaugesetzen). Höchstens `max` (6) Merkmale, verblassende zählen mit; sonst Meldung „Kein Platz“.
+- Wirkung (TODO-BALANCE): passende Ansätze (`staerke.ansaetze`) ×(1 + 0,1), mit dem Schwerpunkt-Bonus multipliziert; Gruppen je Punkt 1 Zustimmung je Jahr (monatlich anteilig); Probleme je Punkt 0,05 Trend je Monat; Schwäche ebenso mit umgekehrter Wirkung.
+- Verblassen: Gelten alle tragenden Gesetze, die das Merkmal je getragen haben, nicht mehr, sinkt die Wirkung linear über 24 Monate auf 0, dann verschwindet das Merkmal. Wird ein tragendes Gesetz wieder beschlossen, verblasst es nicht mehr. Ein Merkmal aus einer Aufgabe, das nie von Gesetzen getragen war, verblasst nicht.
+- Anzeige: Merkmale unter dem Datum in der Kopfzeile; Landesprofil im Reiter „Euer Land“ (Stärke, Schwäche, verbleibende Wirkung).
+- Antwort des Nutzers zu Etappe 3 (2026-10-26): Epochenprobleme haben eigene Lösungen (Platzhalter, je zwei); jeder geltende Schwerpunkt-Ansatz eines gewählten Wegs senkt dessen Aufgaben-Problem um `epochen.schwerpunktAufgabeTrend` (0,1, TODO-BALANCE) je Monat. Bestätigt: 1,5-Fache beim Kapital; kostenloser Kurswechsel zählt nicht; mit zwei Wegen müssen beide Aufgaben gelingen.
+- Spielstand-Version 27: `merkmale`.
+
 ## System: Weichen, Wege, Aufgabe (Epochen-Etappe 3, 2026-10-26)
 - Weiche: Zu Beginn einer Epoche wählt die eigene Regierung im Reiter „Euer Land“ einen Weg (Stufe 1: die ersten zwei der Daten, sonst drei). Aufschub möglich; nach `aufschubMonate` (3) nimmt die eigene Partei den Weg, dessen Ausrichtung ihrer Position am nächsten liegt. In der Opposition wählt die Regierung sofort (Weg nahe der Kanzlerpartei).
 - Gewählte Wege wirken: Schwerpunkt-Ansätze (Reformwege: Trends und Langwirkung auf Probleme; Lösungen: Senkung) × 1,1; Stärke und Schwäche je Punkt `wegGruppenJePunkt` Zustimmung je Jahr (monatlich anteilig) und `wegProblemTrendJePunkt` Trend je Monat (beide TODO-BALANCE).

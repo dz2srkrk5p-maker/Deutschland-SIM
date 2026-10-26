@@ -6,7 +6,8 @@
 import { config } from '../data/config.js';
 import { epochen as epochenDaten } from '../data/epochen.js';
 import { zufall } from './rng.js';
-import { epochenErgebnis, wegeAutomatisch, wegGruppenMonat } from './weichen.js';
+import { epochenErgebnis, wegeAutomatisch, wegGruppenMonat, wegDaten } from './weichen.js';
+import { merkmaleMonat, merkmalGruppenMonat } from './merkmale.js';
 
 const ec = config.epochen;
 export const zeitpunkt = (jahr, monat) => jahr * 12 + monat - 1;
@@ -37,9 +38,11 @@ export function epochenMonat(zustand, jahr, monat) {
   let { aktiv, vorbei, naechste, index, titelseite, folgen } = zustand.epochen;
   let rngZustand = zustand.rngZustand;
 
-  // Ende: Ergebnis der Aufgaben, Rückenwind oder Hypothek für die nächste Epoche
+  // Ende: Ergebnis der Aufgaben, Rückenwind oder Hypothek für die nächste Epoche; Merkmale der gelungenen Wege
+  const wegeMerkmale = [];
   for (const a of aktiv.filter((x) => x.ende <= jetzt)) {
     const e = epochenErgebnis(zustand, a);
+    for (const [wegId, ok] of Object.entries(e.ergebnis)) if (ok) wegeMerkmale.push(wegDaten(wegId).merkmal);
     vorbei = [...vorbei, { id: a.id, start: a.start, ende: a.ende, wege: a.wege ?? [], ergebnis: e.ergebnis, fortschritt: e.fortschritt, gelungen: e.gelungen, kurswechsel: a.kurswechsel ?? 0 }];
     folgen = [...folgen, e.faktor];
     ereignisse.push(`Epoche zu Ende: ${epoche(a.id).name} – ${e.gelungen ? 'Aufgabe gelungen, die nächste Epoche beginnt mit Rückenwind' : 'Aufgabe verfehlt, die nächste Epoche beginnt mit einer Hypothek'}`);
@@ -76,7 +79,10 @@ export function epochenMonat(zustand, jahr, monat) {
   const z = { ...zustand, rngZustand, probleme, epochen: { aktiv, vorbei, naechste, index, titelseite, folgen } };
   // Weiche: automatische Wahl (Aufschub vorbei, oder die Regierung der anderen); Stärken und Schwächen auf die Gruppen
   const auto = wegeAutomatisch({ ...z, jahr, monat });
-  return { state: { ...auto.state, jahr: zustand.jahr, monat: zustand.monat, gruppen: wegGruppenMonat(auto.state) }, ereignisse: [...ereignisse, ...auto.ereignisse] };
+  // Merkmale (Etappe 4): Vergabe, Verblassen; Wirkung auf die Gruppen
+  const mm = merkmaleMonat(auto.state, jetzt, wegeMerkmale);
+  const fertig = { ...mm.state, jahr: zustand.jahr, monat: zustand.monat };
+  return { state: { ...fertig, gruppen: merkmalGruppenMonat(fertig, wegGruppenMonat(fertig)) }, ereignisse: [...ereignisse, ...auto.ereignisse, ...mm.ereignisse] };
 }
 
 // Aktion: Titelseite gelesen (sie erscheint einmal, wenn eine Epoche beginnt)

@@ -14,6 +14,7 @@ import { stufenRegeln, systemAn } from './spielstufe.js';
 import { umverteilen, runden } from './wahlkampf.js';
 import { mitVerlauf } from './state.js';
 import { umfrageBuchen } from './umfragebilanz.js';
+import { merkmalAnsatzFaktor } from './merkmale.js';
 
 const ec = config.epochen;
 const r3 = (x) => Math.round(x * 1000) / 1000 + 0;
@@ -57,6 +58,8 @@ export const aufgabeGelungen = (zustand, a, wegId) => fortschritt(zustand, a, we
 // Schwerpunkt-Ansätze der gewählten Wege wirken stärker (Lösungen und Reformwege)
 export const schwerpunktFaktor = (zustand, ansatzId) =>
   gewaehlteWege(zustand).some((id) => wegDaten(id).schwerpunkt.includes(ansatzId)) ? 1 + ec.schwerpunktBonus : 1;
+// Faktor eines Ansatzes: Schwerpunkt eines gewählten Wegs und passende Merkmale des Landes (Etappe 4)
+export const ansatzFaktor = (zustand, ansatzId) => schwerpunktFaktor(zustand, ansatzId) * merkmalAnsatzFaktor(zustand, ansatzId);
 // Stufe 4: Mit zwei Wegen in einer Epoche kosten deren Schwerpunkt-Gesetze das 1,5-Fache (politisches Kapital)
 export const schwerpunktKostenFaktor = (zustand, ansatzId) =>
   (zustand.epochen?.aktiv ?? []).some((a) => (a.wege ?? []).length > 1 && a.wege.some((id) => wegDaten(id).schwerpunkt.includes(ansatzId))) ? ec.zweiterWegKostenFaktor : 1;
@@ -68,6 +71,15 @@ export const wegEpochenTrends = (zustand, problemId) => gewaehlteWege(zustand).f
     .filter(([, x]) => x.probleme?.[problemId])
     .map(([art, x]) => ({ text: `${art} des Wegs „${w.name}“`, beitrag: r3(x.probleme[problemId] * ec.wegProblemTrendJePunkt) }));
 });
+// Geltende Schwerpunkt-Ansätze eines Wegs (Reformweg beschlossen, Lösung erfolgreich) senken sein Aufgaben-Problem
+// (Antwort des Nutzers 2026-10-26, Stärke config.epochen.schwerpunktAufgabeTrend)
+export const ansatzGilt = (zustand, id) => zustand.reformwege?.[id]?.status === 'beschlossen' || zustand.loesungen?.[id]?.status === 'erfolg';
+export const aufgabenTrends = (zustand, problemId) => gewaehlteWege(zustand)
+  .map(wegDaten)
+  .filter((w) => w.aufgabe.problem === problemId)
+  .map((w) => ({ w, n: w.schwerpunkt.filter((id) => ansatzGilt(zustand, id)).length }))
+  .filter((x) => x.n > 0)
+  .map(({ w, n }) => ({ text: `Schwerpunkt „${w.name}“ (${n} ${n === 1 ? 'Gesetz' : 'Gesetze'})`, beitrag: r3(-n * ec.schwerpunktAufgabeTrend) }));
 // … und auf Gruppen: Punkte je Monat (Daten: je Jahr)
 export function wegGruppenMonat(zustand) {
   const gruppen = { ...zustand.gruppen };

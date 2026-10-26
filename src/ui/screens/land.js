@@ -4,7 +4,7 @@ import { karte, badge } from '../components/basis.js';
 import { epoche, epochenLauf } from '../../engine/epochen.js';
 import { problemListe } from '../../engine/probleme.js';
 import { config } from '../../data/config.js';
-import { datumText, titelseiteHtml, dauerText } from '../components/epochen.js';
+import { datumText, titelseiteHtml, dauerText, landesprofilHtml } from '../components/epochen.js';
 import { wegeHtml } from '../components/wege.js';
 import { wegDaten } from '../../engine/weichen.js';
 import { status } from '../components/basis.js';
@@ -33,6 +33,7 @@ export function landScreen(el, zustand, { onProblem, onTitelseite, onBereich, on
     <h1>Euer Land</h1>
     ${hinweisHtml('land')}
     ${titelseiteHtml(zustand, { mitLink: false })}
+    ${karte(landesprofilHtml(zustand), { titel: 'Landesprofil' })}
     ${aktiv.length ? aktiv.map((a) => epocheHtml(zustand, a)).join('') : karte('<p>Noch hat keine neue Zeit begonnen.</p>', { titel: 'Epochen' })}
     ${vorbei.length ? karte(`<ul class="liste">${vorbei.map((v) => `<li>${epoche(v.id).name} <small>(${datumText(v.start)} bis ${datumText(v.ende)})</small> – ${v.gelungen ? status('ok', 'Aufgabe gelungen') : status('rot', 'Aufgabe verfehlt')}${(v.wege ?? []).length ? ` <small>(${v.wege.map((id) => `${wegDaten(id).name}: ${Math.round((v.fortschritt?.[id] ?? 0) * 100)} %`).join(', ')})</small>` : ''}</li>`).join('')}</ul>`, { titel: 'Vergangene Epochen' }) : ''}
   </div>`;
