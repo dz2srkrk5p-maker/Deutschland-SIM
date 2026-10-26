@@ -168,11 +168,11 @@ Gemessen an der besten Wahlkampf-Strategie je Partei (Haushalt unverändert), Gr
 |---|---|---|---|---|
 | CDU/CSU | 100.0 % | leicht | leicht | passt |
 | AfD | 0.0 % | fast unmöglich | fast unmöglich | passt |
-| SPD | 92.5 % | leicht | mittel | **anpassen** |
-| Grüne | 55.0 % | leicht | schwer | **anpassen** |
-| Linke | 2.5 % | schwer | fast unmöglich | **anpassen** |
-| BSW | 10.0 % | mittel | fast unmöglich | **anpassen** |
-| FDP | 15.0 % | mittel | fast unmöglich | **anpassen** |
+| SPD | 92.5 % | leicht | leicht | passt |
+| Grüne | 55.0 % | leicht | leicht | passt |
+| Linke | 2.5 % | schwer | schwer | passt |
+| BSW | 10.0 % | mittel | mittel | passt |
+| FDP | 15.0 % | mittel | mittel | passt |
 
 ## Alle Konstanten (`src/data/config.js`)
 | Name | Wert | Freigegeben in |

@@ -5,7 +5,7 @@ import { config } from '../../data/config.js';
 import { gruppen as gruppenListe } from '../../data/kennzahlen.js';
 import { probleme as problemListe } from '../../data/probleme.js';
 import { festeAusgaben2026 } from '../../data/haushalt.js';
-import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmenWirkung, etatNeu } from '../../engine/haushalt.js';
+import { vorschau, mrd, prognose, kuerzungsVorschlag, einnahmenWirkung, etatNeu, vorlaeufigMoeglich } from '../../engine/haushalt.js';
 import { zinsaufschlagZiel } from '../../engine/wirtschaft.js';
 import { RECHTSARTEN } from '../../data/einnahmen.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -190,11 +190,13 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         <p><strong>Verbände (Steuern):</strong> ${v.verbaende.filter((x) => x.kapital).map((x) => `${x.akteur.name} ${x.kapital < 0 ? 'dagegen' : 'dafür'}`).join(' · ') || 'keine Reaktion'}${v.verbaendeKapital ? `, Kapital ${v.verbaendeKapital > 0 ? '+' : '−'}${Math.abs(v.verbaendeKapital)}` : ''}</p>`, { titel: 'Wirkung des Entwurfs' })}
       ${karte(koalitionslageHtml(zustand, v.anteile), { titel: 'Koalition' })}
       ${bearbeitbar ? karte(`
-        ${durchfallen ? `<p class="rot">✗ Keine Mehrheit. Einbringen heißt: Der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} ${plusMinus(-config.minderheit.umfrageVerlustHaushaltGescheitert, 1)} Punkte (Fehlschlag ${(zustand.koalition.fehlschlaege ?? 0) + 1} von ${config.minderheit.fehlschlaegeBisNeuwahl} bis zum Spielende).</p>` : ''}
+        ${durchfallen ? `<p class="rot">✗ Keine Mehrheit. Einbringen heißt: Der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} ${plusMinus(-config.minderheit.umfrageVerlustHaushaltGescheitert, 1)} Punkte (Fehlschlag ${(zustand.koalition.fehlschlaege ?? 0) + 1} von ${config.minderheit.fehlschlaegeBisNeuwahl} bis zur Neuwahl).</p>` : ''}
         ${!b.eingehalten && !durchfallen ? '<p class="rot">✗ Schuldenbremse überschritten: unter „Einnahmen“ gibt es Vorschläge zur Gegenfinanzierung.</p>' : ''}
         ${v.bundesrat?.mehrheit === false && !durchfallen ? `<p class="rot">✗ Für die Steueränderung fehlt die Mehrheit im Bundesrat.</p>${v.bundesrat.kompromissMoeglich ? `<p class="klein">${erklaerungen.kompromiss}</p><div class="knoepfe"><button id="kompromiss" ${zustand.kapital < config.kompromiss.kapital ? 'disabled' : ''}>Kompromiss mit den Ländern</button></div>` : ''}` : ''}
         ${v.bundesrat?.kompromiss ? `<p class="gelb">⚠ Kompromiss im Bundesrat: Ausgleichszahlung an die Länder ${euro(v.ausgleich)} (in den Ausgaben enthalten), ${config.kompromiss.kapital} Kapital. <button id="kompromiss-weg">Kompromiss zurücknehmen</button></p>` : ''}
-        <div class="knoepfe"><button id="beschliessen" class="${durchfallen ? 'gefahr primaer' : 'primaer'}" ${kannEinbringen ? '' : 'disabled'}>${durchfallen ? 'Trotzdem einbringen' : 'Haushalt einbringen'}</button></div>`) : ''}`;
+        <div class="knoepfe"><button id="beschliessen" class="${durchfallen ? 'gefahr primaer' : 'primaer'}" ${kannEinbringen ? '' : 'disabled'}>${durchfallen ? 'Trotzdem einbringen' : 'Haushalt einbringen'}</button></div>
+        ${vorlaeufigMoeglich(zustand) ? `<p class="gelb">⚠ Festgefahren: Auch mit den größten erlaubten Kürzungen hält der Haushalt die Schuldenbremse nicht ein. Ihr könnt Steuern erhöhen oder ohne neuen Haushalt weitermachen: Der Vorjahreshaushalt gilt weiter, ${partei(zustand.kanzlerParteiId).name} ${plusMinus(-config.minderheit.umfrageVerlustHaushaltGescheitert, 1)} Punkte.</p>
+        <div class="knoepfe"><button id="vorlaeufig" class="gefahr">Vorläufige Haushaltsführung</button></div>` : ''}`) : ''}`;
   }
 
   function einnahmenTab(v) {
@@ -338,6 +340,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
     el.querySelector('#kompromiss')?.addEventListener('click', () => ((entwurf.kompromiss = true), neuZeichnen('#beschliessen')));
     el.querySelector('#kompromiss-weg')?.addEventListener('click', () => ((entwurf.kompromiss = false), neuZeichnen('#beschliessen')));
     el.querySelector('#beschliessen')?.addEventListener('click', () => onBeschliessen(params()));
+    el.querySelector('#vorlaeufig')?.addEventListener('click', () => onBeschliessen({ vorlaeufig: true }));
   }
   zeichne();
 }

@@ -1,5 +1,5 @@
 import './stil.css';
-import { neuesSpiel, seedAusAdresse, regierungImAmt, spielerRegiert } from '../engine/state.js';
+import { neuesSpiel, seedAusAdresse, stufeAusAdresse, regierungImAmt, spielerRegiert } from '../engine/state.js';
 import { oppositionMonat } from '../engine/opposition.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
 import { verhandeln, minderheitAntreten } from '../engine/koalition.js';
@@ -49,7 +49,7 @@ const ui = {
 let link = null;
 if (new URLSearchParams(location.search).has('seed')) {
   const seed = seedAusAdresse(location.search);
-  if (seed !== null) link = { seed, bestaetigt: false };
+  if (seed !== null) link = { seed, stufe: stufeAusAdresse(location.search), bestaetigt: false };
   history.replaceState(null, '', location.pathname);
 }
 
@@ -169,7 +169,7 @@ function neuesSpielStarten() {
 
 function starten(parteiId, stufe) {
   // Zufall außerhalb der Engine ist erlaubt: nur der Seed für ein neues Spiel (außer er kommt aus einem Link)
-  zustand = neuesSpiel(parteiId, link ? link.seed : Math.floor(Math.random() * 2 ** 31), stufe);
+  zustand = neuesSpiel(parteiId, link ? link.seed : Math.floor(Math.random() * 2 ** 31), link?.stufe ?? stufe);
   link = null;
   protokoll = [];
   neu();

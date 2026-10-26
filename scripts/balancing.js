@@ -7,7 +7,7 @@ import { neuesSpiel } from '../src/engine/state.js';
 import { wahlkampfWoche, ertragFaktor } from '../src/engine/wahlkampf.js';
 import { verhandeln, moeglichePartner, chance, mehrheit, mehrheitMoeglich, minderheitMoeglich, minderheitAntreten } from '../src/engine/koalition.js';
 import { vorschlag as kabinettVorschlag, bestaetigen } from '../src/engine/kabinett.js';
-import { haushaltBeschliessen, kuerzungsVorschlag, zugestaendnis, zugestaendnisSperre } from '../src/engine/haushalt.js';
+import { haushaltBeschliessen, kuerzungsVorschlag, vorlaeufigMoeglich, zugestaendnis, zugestaendnisSperre } from '../src/engine/haushalt.js';
 import { monatBeenden, haushaltsMonat } from '../src/engine/regierung.js';
 import { loesungStarten, loesungSperre, erfolgschance, problemListe, loesung } from '../src/engine/probleme.js';
 import { ereignisEntscheiden } from '../src/engine/ereignisse.js';
@@ -161,7 +161,8 @@ const minderheitZeilen = spielbar.flatMap((p) =>
 // F13: Reformen. „mit Reformen“: je Quartal die erste Reform mit Mehrheit in der Vorschau.
 // Haushalt wie geplant; reißt er die Schuldenbremse (System 2), so wenig wie nötig kürzen (Partner zuerst)
 // Reicht auch die größte Kürzung nicht (lange Partien seit Etappe 0b), erhöht der Mess-Spieler alle Steuern des
-// Bundeshaushalts so weit, wie es in diesem Jahr erlaubt ist, und kürzt dann. Geht auch das nicht, ist er festgefahren.
+// Bundeshaushalts so weit, wie es in diesem Jahr erlaubt ist, und kürzt dann. Geht auch das nicht, ist er festgefahren
+// und macht mit der vorläufigen Haushaltsführung weiter.
 function beschliessen(z, p) {
   const k = kuerzungsVorschlag(z, p);
   if (k) return haushaltBeschliessen(z, k);
@@ -171,7 +172,8 @@ function beschliessen(z, p) {
     return haushaltBeschliessen(z, mitSteuern);
   } catch {
     festgefahren++;
-    return { state: { ...z, phase: 'festgefahren' }, ereignisse: [] };
+    // freigegeben 2026-10-26: Vorjahreshaushalt gilt weiter (nur wenn wirklich festgefahren, sonst bleibt die Partie stehen)
+    return vorlaeufigMoeglich(z) ? haushaltBeschliessen(z, { vorlaeufig: true }) : { state: { ...z, phase: 'festgefahren' }, ereignisse: [] };
   }
 }
 
@@ -301,7 +303,7 @@ Erzeugt mit \`npm run balancing\` am ${new Date().toISOString().slice(0, 10)}. $
 - Haushalt: siehe Spalte „Strategie“. Keine Steueränderungen.
 - Ereignisse (F14): immer die erste Möglichkeit.
 - Gemessen über ${FENSTER_JAHRE} Kalenderjahre; „Sieg“ = ${ZIEL_KANZLERJAHRE} Kanzlerjahre in diesem Zeitraum (die Partie selbst endet nicht). In der Opposition regieren die anderen weiter.
-- Festgefahren (auch mit allen Kürzungen und Steuererhöhungen kein Haushalt innerhalb der Schuldenbremse): ${festgefahren} Partien über alle Tabellen.
+- Festgefahren (auch mit allen Kürzungen und Steuererhöhungen kein Haushalt innerhalb der Schuldenbremse, dann vorläufige Haushaltsführung): ${festgefahren} Haushaltsjahre über alle Tabellen.
 
 ## Ergebnisse
 | Strategie | Partei | Regierung gebildet | Koalitionsbruch | Sieg | Ø Jahre Kanzler |

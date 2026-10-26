@@ -1,6 +1,6 @@
 // Partie teilen (F07): Link mit Seed, kopieren mit Rückfall auf Markieren.
 // id: Präfix, damit das Feld im Spielmenü und auf dem Endbildschirm gleichzeitig vorkommen kann.
-export const teilenLink = (zustand) => `${location.origin}${location.pathname}?seed=${zustand.seed}`;
+export const teilenLink = (zustand) => `${location.origin}${location.pathname}?seed=${zustand.seed}&stufe=${zustand.stufe}`;
 
 export function teilenHtml(zustand, id = 'teilen') {
   return `

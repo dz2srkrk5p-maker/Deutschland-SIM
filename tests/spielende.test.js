@@ -200,3 +200,18 @@ test('F11: Mehrheitsregierung kann nicht an der Abstimmung scheitern (sonst Fehl
   const z = { ...minderheit(), koalition: { partner: [], startAnteile: {}, minderheit: false, fehlschlaege: 0 } };
   expect(() => beschliessen(z, {})).toThrow('Keine Mehrheit im Bundestag');
 });
+
+test('Vorläufige Haushaltsführung (2026-10-26): für den Spieler nur, wenn der Haushalt festgefahren ist', async () => {
+  const { vorlaeufigMoeglich } = await import('../src/engine/haushalt.js');
+  let z = imAmt();
+  while (!haushaltsMonat(z) || z.offenesEreignis) z = (z.offenesEreignis ? ereignisEntscheiden(z, { wahl: 0 }) : monatBeenden(z)).state;
+  expect(vorlaeufigMoeglich(z)).toBe(false);
+  expect(() => haushaltBeschliessen(z, { vorlaeufig: true })).toThrow();
+  const fest = { ...z, haushalt: { ...z.haushalt, etats: Object.fromEntries(Object.entries(z.haushalt.etats).map(([k, v]) => [k, v * 3])) } };
+  expect(vorlaeufigMoeglich(fest)).toBe(true);
+  const r = haushaltBeschliessen(fest, { vorlaeufig: true });
+  expect(r.state.phase).toBe('regierung');
+  expect(r.state.koalition.fehlschlaege ?? 0).toBe(0);
+  expect(r.state.haushalt.etats).toEqual(fest.haushalt.etats);
+  expect(r.ereignisse[0]).toMatch(/nicht aufgestellt/);
+});

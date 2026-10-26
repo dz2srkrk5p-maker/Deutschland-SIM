@@ -29,9 +29,9 @@ export function startScreen(el, { gespeichert, link, onStart, onWeiter, onLinkJa
     ${hinweisHtml('start')}
     ${alt && !link ? karte(`<p>${stand}</p><div class="knoepfe"><button id="weiter" class="primaer">Weiterspielen</button></div>`, { titel: 'Gespeichertes Spiel' }) : ''}
     ${karte(`
-      ${link ? `<p>Partie aus einem Link (Seed ${link.seed}).</p>` : alt ? '<p><small>Ein neues Spiel überschreibt den gespeicherten Stand.</small></p>' : ''}
+      ${link ? `<p>Partie aus einem Link (Seed ${link.seed}${link.stufe ? `, Stufe ${stufen[link.stufe].name}` : ''}).</p>` : alt ? '<p><small>Ein neues Spiel überschreibt den gespeicherten Stand.</small></p>' : ''}
       <fieldset class="stufen"><legend>Spielstufe</legend>
-        ${spielstufen.map((n) => `<label class="stufe-wahl"><input type="radio" name="stufe" value="${n}" ${n === config.spielstufen.standard ? 'checked' : ''}>
+        ${spielstufen.map((n) => `<label class="stufe-wahl"><input type="radio" name="stufe" value="${n}" ${n === (link?.stufe ?? config.spielstufen.standard) ? 'checked' : ''} ${link?.stufe ? 'disabled' : ''}>
           <span><strong>${n} · ${stufen[n].name}</strong><br><small>${stufen[n].text}</small></span></label>`).join('')}
       </fieldset>
       <p><small>Die Stufe gilt für die ganze Partie.</small></p>

@@ -121,6 +121,11 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Vorläufige Haushaltsführung für den Spieler (freigegeben 2026-10-26)
+- Ist der Haushalt festgefahren – schon der unveränderte Entwurf und auch der Kürzungsvorschlag (alle Ressorts bis zur größten erlaubten Kürzung, Partner zuerst) halten die Schuldenbremse nicht ein –, darf der Spieler ohne neuen Haushalt weitermachen: Der Vorjahreshaushalt gilt weiter, wie bei der Regierung der anderen.
+- Folge wie bei einem gescheiterten Haushalt einer Minderheitsregierung (Kanzlerpartei −0,5 Punkte, Wirtschaft mit dem alten Haushalt), zählt aber nicht als Fehlschlag bis zur Neuwahl.
+- Steuererhöhungen bleiben als Alternative; sie gehen in die Prüfung „festgefahren“ nicht ein.
+
 ## System: Spielstufen (Epochen-Etappe 0c, freigegeben 2026-10-25)
 - Vor Spielbeginn wählt der Spieler eine von vier Stufen; sie gilt für die ganze Partie (`zustand.stufe`, Regeln in `config.spielstufen`).
 - 1 Einsteiger: 2 Wege je Weiche; ohne Ursachen, Generationen, Wertverlust, Großprojekte, Kurswechsel.
@@ -129,6 +134,7 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - 4 Profi: wie 3, aber zweiter Weg statt Kurswechsel.
 - Die Systeme kommen in späteren Etappen; bis dahin ändert die Stufe am Spiel noch nichts.
 - Spielstand-Version 24: bisherige Partien laufen als Stufe 2 weiter.
+- Ein geteilter Link enthält die Stufe (`?seed=…&stufe=…`); die Partie aus dem Link startet mit dieser Stufe (freigegeben 2026-10-26).
 
 ## System: Partie ohne Ende und Opposition (Epochen-Etappe 0b, 2026-10-25, Wunsch des Nutzers)
 - Kein Sieg mehr nach 12 Kanzlerjahren; die Partie endet nicht. Kalenderjahr `zustand.jahr` ab `config.kalender.startJahr` (2026), zählt mit jedem Dezember weiter (Regierung und Opposition); Wahlkampf und Regierungsbildung kosten keine Zeit (Vereinfachung). Landtagswahlen nach diesem Kalenderjahr.

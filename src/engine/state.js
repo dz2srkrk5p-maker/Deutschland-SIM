@@ -131,6 +131,12 @@ export function seedAusAdresse(suche) {
   return seed <= 0xffffffff ? seed : null;
 }
 
+// Spielstufe aus der Adresse (&stufe=3, freigegeben 2026-10-26): eine der Stufen aus config.spielstufen, sonst null
+export function stufeAusAdresse(suche) {
+  const text = new URLSearchParams(suche).get('stufe');
+  return text && /^\d$/.test(text) && text in config.spielstufen.stufen ? Number(text) : null;
+}
+
 export function speichern(zustand) {
   return JSON.stringify(zustand);
 }

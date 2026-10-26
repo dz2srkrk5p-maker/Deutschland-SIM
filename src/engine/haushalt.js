@@ -156,6 +156,14 @@ export function kuerzungsVorschlag(zustand, entwurf = {}) {
 
 const zahl = (x, n = 2) => x.toLocaleString('de-DE', { maximumFractionDigits: n });
 
+// Vorläufige Haushaltsführung (freigegeben 2026-10-26): Die Regierung der anderen darf sie immer wählen (sie versucht vorher
+// den unveränderten Entwurf und den Kürzungsvorschlag). Der Spieler nur, wenn der Haushalt festgefahren ist: Auch mit den
+// größten erlaubten Kürzungen in allen Ressorts hält er die Schuldenbremse nicht ein (Steuern bleiben dabei unverändert).
+export function vorlaeufigMoeglich(zustand) {
+  if (zustand.phase === 'opposition') return true;
+  return zustand.phase === 'regierung' && !vorschau(zustand, {}).bilanz.eingehalten && kuerzungsVorschlag(zustand) === null;
+}
+
 // Aktion: Haushalt des laufenden Jahres beschließen. Danach entwickelt sich die Wirtschaft ein Jahr weiter (System 2).
 // Nach dem letzten Jahr der Wahlperiode folgt der Wahlkampf.
 export function haushaltBeschliessen(zustand, params = {}) {
@@ -166,8 +174,9 @@ export function haushaltBeschliessen(zustand, params = {}) {
   // echte Abstimmung: gleich der Vorschau, außer bei einer Brandmauer-Regierung (Abweichler per Zufall, F11)
   const bundestag = abstimmen(zustand, 'haushalt');
   // Minderheitsregierung (F11): fällt der Haushalt im Bundestag durch, gilt der Vorjahreshaushalt weiter.
-  // vorlaeufig: nur für die Regierung der anderen (Etappe 0b), wenn kein gültiger Entwurf möglich ist – gleiche Folge.
-  const vorlaeufig = Boolean(params.vorlaeufig) && zustand.phase === 'opposition';
+  // vorlaeufig: Vorjahreshaushalt gilt weiter, ohne Abstimmung – gleiche Folge, zählt aber nicht als Fehlschlag (vorlaeufigMoeglich)
+  if (params.vorlaeufig && !vorlaeufigMoeglich(zustand)) throw new Error('Vorläufige Haushaltsführung nur, wenn kein Haushalt innerhalb der Schuldenbremse möglich ist');
+  const vorlaeufig = Boolean(params.vorlaeufig);
   const gescheitert = vorlaeufig || !bundestag.angenommen;
   if (gescheitert && !vorlaeufig && !zustand.koalition.minderheit) throw new Error('Keine Mehrheit im Bundestag für den Haushalt');
   if (!gescheitert && !v.bilanz.eingehalten) throw new Error('Schuldenbremse überschritten');
@@ -215,7 +224,7 @@ export function haushaltBeschliessen(zustand, params = {}) {
   const wirkungText = Object.entries(wirkung).map(([id, x]) => `${name(id)} ${x >= 0 ? '+' : '−'}${zahl(Math.abs(x))}`).join(', ');
   const ereignisse = [
     (gescheitert
-      ? `Haushalt Jahr ${jahr} im Bundestag gescheitert (${bundestag.ja} Ja, ${bundestag.nein} Nein): vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter, neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`
+      ? `Haushalt Jahr ${jahr} ${vorlaeufig ? 'nicht aufgestellt' : `im Bundestag gescheitert (${bundestag.ja} Ja, ${bundestag.nein} Nein)`}: vorläufige Haushaltsführung, der Vorjahreshaushalt gilt weiter, neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`
       : `Haushalt Jahr ${jahr} beschlossen: neue Schulden ${zahl(mrd(gilt.neueSchulden))} Mrd.`) + (wirkungText ? ` Wirkung: ${wirkungText}` : ''),
     ...vertragPosten.map((p) => `${p.ursache}: ${name(p.partei)} −${zahl(Math.abs(p.wert))}`),
     ...(kompromissPreis ? [`Kompromiss im Bundesrat: Ausgleichszahlung an die Länder ${zahl(mrd(v.ausgleich))} Mrd., ${kompromissPreis} Kapital`] : []),
