@@ -1,5 +1,6 @@
 // App-Shell (UI-Umbau): Kopfzeile mit Dauer-Kennzahlen und Spielmenü, Navigation bzw. Schrittanzeige, Hauptbereich.
 import { monatsname } from '../data/kalender.js';
+import { epochenZeile } from './components/epochen.js';
 import { parteien } from '../data/parteien.js';
 import { config } from '../data/config.js';
 import { hinweiseAn } from '../storage/speicher.js';
@@ -18,6 +19,7 @@ export const BEREICHE = [
   { id: 'lage', text: 'Lage' },
   { id: 'probleme', text: 'Probleme' },
   { id: 'reformen', text: 'Reformen' },
+  { id: 'land', text: 'Euer Land' },
   { id: 'haushalt', text: 'Haushalt' },
   { id: 'parlament', text: 'Parlament' },
   { id: 'chronik', text: 'Chronik' },
@@ -51,6 +53,7 @@ function kopfHtml(z) {
         <div><dt>Zeit</dt><dd>${zeitText(z)}</dd></div>
         <div><dt>Umfrage</dt><dd title="${umfrageBilanzKurz(z) || 'Noch keine Änderung'}. Einzelheiten: Lage, „Warum bewegt sich die Umfrage?“">${prozent(z.anteile[p.id])} ${trend(umfrageTrend(z))}</dd></div>
         <div><dt>Kanzlerjahre</dt><dd>${zahl(z.statistik.jahreKanzler)}</dd></div>
+        ${epochenZeile(z) ? `<div><dt>Epoche</dt><dd>${epochenZeile(z)}</dd></div>` : ''}
         ${z.phase === 'opposition' ? `<div><dt>Rolle</dt><dd>${status('gelb', 'Opposition')}</dd></div>` : ''}
         ${z.phase === 'regierung' ? `<div><dt>Kapital</dt><dd title="${erklaerungen.kapital}">${z.kapital}</dd></div>` : ''}
         ${z.phase === 'regierung' && koalitionsWarnung(z) ? `<div><dt>Koalition</dt><dd>${status(koalitionsWarnung(z).stufe, koalitionsWarnung(z).text)}</dd></div>` : ''}

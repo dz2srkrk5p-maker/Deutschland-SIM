@@ -102,7 +102,7 @@ test('nach Jahr 4 beginnt der Wahlkampf, der Haushalt bleibt', () => {
     expect(z.phase).toBe('regierung');
     // direkt ins Haushaltsmonat, ohne Quartale und Ereignisse (F12/F14), damit nur der Haushalt wirkt
     // Kürzung bei der Kanzlerpartei (Verkehr, SPD): kein Koalitionsbruch, Schuldenbremse hält
-    z = haushaltBeschliessen({ ...z, monat: config.regierung.monateJeJahr }, { stufen: { verkehr: -P(5) } }).state;
+    z = haushaltBeschliessen({ ...z, monat: config.regierung.monateJeJahr, offenesEreignis: null }, { stufen: { verkehr: -P(5) } }).state;
   }
   expect(z.phase).toBe('wahlkampf');
   // Wirtschaftsverlauf: Start plus ein Eintrag je Haushaltsjahr, letzter Eintrag = aktuelle Kennzahlen

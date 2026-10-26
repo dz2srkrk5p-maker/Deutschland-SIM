@@ -21,3 +21,6 @@
 - [ ] Epochen-Etappe 1 (2026-10-26): Alle `TODO-BALANCE`-Werte in `config.js` (epochen, merkmale, grossprojekte, bevoelkerung) und alle Platzhalter-Inhalte (`src/data/epochen.js`, `merkmale.js`, `grossprojekte.js`) warten auf Entscheidung des Nutzers.
 - [ ] Epochen-Etappe 1: Die Platzhalter decken sechs der sieben Ausrichtungen ab; „links-sozialistisch“ hat noch keinen Weg. Welche zwei Wege bietet Stufe 1 an (bisher: die ersten zwei der Liste)?
 - [ ] Epochen-Etappe 1: Aufbaugesetze gibt es im Spiel noch nicht. Merkmale („drei passende Aufbaugesetze“) und Großprojekte („manche Aufbaugesetze starten“) verweisen vorerst auf vorhandene Reformwege und Lösungen. Welche Gesetze sollen Aufbaugesetze sein?
+- [ ] Epochen-Etappe 2 (2026-10-26): Dauer einer Epoche 15 Jahre (`config.epochen.dauerJahre`, TODO-BALANCE) – die Spec nennt keine. Bleiben Epochenprobleme nach dem Ende ihrer Epoche bestehen (bisher ja)?
+- [ ] Epochen-Etappe 2: Die „rechte Spalte“ der Spec gibt es nicht; die Epochen-Zeile steht in der Kopfzeile. Soll eine rechte Spalte gebaut werden (größerer Umbau der Oberfläche)?
+- [ ] Epochen-Etappe 2: Mit nur zwei Platzhalter-Epochen kommt nach etwa 2037 keine neue Epoche mehr.

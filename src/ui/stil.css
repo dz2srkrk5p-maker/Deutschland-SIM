@@ -347,3 +347,11 @@ h4 { font-size: var(--t-klein); margin: var(--a2) 0 var(--a-halb); text-transfor
 }
 .gruppen-wirkung.verbaende { grid-template-columns: auto minmax(40px, 1fr) auto; }
 .gruppen-wirkung.verbaende > span:nth-child(3n) { white-space: nowrap; }
+
+/* Titelseite einer neuen Epoche (Epochen-Etappe 2) */
+.titelseite { border-top: 4px double var(--text); border-bottom: 4px double var(--text); text-align: center; }
+.titelseite h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 2rem; line-height: 1.15; margin: var(--a1) 0; }
+.titelseite-marke { text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; margin: 0; }
+.titelseite-text { font-family: Georgia, 'Times New Roman', serif; font-size: 1.1rem; }
+.titelseite .knoepfe { justify-content: center; }
+button.link { background: none; border: 0; padding: 0; min-height: 0; color: var(--akzent); text-decoration: underline; cursor: pointer; font: inherit; }

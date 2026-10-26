@@ -26,6 +26,8 @@ export const config = {
     abstandSchwankungJahre: 1, // TODO-BALANCE: „etwa“ – ±1 Jahr per Zufall, damit Epochen nicht im Kalender vorhersagbar sind
     ersteEpocheJahr: 2027, // TODO-BALANCE: ein Jahr nach Spielbeginn, damit Wahlkampf und erste Regierung nicht überladen sind
     maxGleichzeitig: 2, // „höchstens zwei Epochen laufen gleichzeitig“
+    dauerJahre: 15, // TODO-BALANCE: Die Spec nennt keine Dauer. Länger als der Abstand, damit sich Epochen überschneiden können
+    //   („höchstens zwei gleichzeitig“), kürzer als zwei Abstände, damit nie eine dritte warten muss.
     problemeVerteiltMonate: 36, // TODO-BALANCE: „verteilt über die ersten Jahre“ – Epochenprobleme kommen in den ersten 3 Jahren
     schwerpunktBonus: 0.1, // „Schwerpunkt-Ansätze wirken 10 % stärker“
     aufschubMonate: 3, // „nach drei Monaten nimmt eure Partei den Weg, der zum Programm passt“

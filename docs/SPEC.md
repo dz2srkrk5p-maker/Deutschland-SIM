@@ -121,6 +121,16 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Epochen-Kern (Epochen-Etappe 2, 2026-10-26)
+- Epochen beginnen in der Reihenfolge von `src/data/epochen.js`: die erste im Januar `config.epochen.ersteEpocheJahr` (2027, TODO-BALANCE), jede weitere `abstandJahre` (10) ± `abstandSchwankungJahre` (1, TODO-BALANCE) nach dem Beginn der vorigen, monatsgenau per Zufall. Sind schon `maxGleichzeitig` (2) aktiv, wartet die nächste, bis eine endet.
+- Eine Epoche dauert `dauerJahre` (15, TODO-BALANCE; die Spec nennt keine Dauer). Danach steht sie unter „Vergangene Epochen“; ihre Probleme bleiben (Obergrenze erst in Etappe 8).
+- Epochenprobleme kommen `monat` Monate nach dem Epochenstart (Daten, höchstens `problemeVerteiltMonate`), mit ihrem Startwert; danach laufen sie wie die 25 festen Probleme (Trend, Treiber, Stufen, Folgen, Umfrage).
+- Beginn: Meldung mit Streitfrage, Titelseite auf „Lage“ und „Euer Land“ (bis „Gelesen“), Markierung „neu“ am Reiter.
+- Kopfzeile: Feld „Epoche“ mit den Namen der laufenden Epochen (Spec: „Zeile in der rechten Spalte“; eine rechte Spalte gibt es nicht, daher in der Kopfzeile).
+- Reiter „Euer Land“: laufende Epochen (Text, Streitfrage, Beginn, Ende, Probleme mit Wert oder Monat des Eintreffens), vergangene Epochen.
+- Epochen laufen nur, wenn ein Monat endet (Regierung, Opposition, nach dem Haushalt); Wahlkampf und Regierungsbildung kosten keine Zeit.
+- Spielstand-Version 25: `epochen`; bestehende Partien bekommen die erste Epoche frühestens im nächsten Monat.
+
 ## System: Epochen – Konfiguration und Daten (Epochen-Etappe 1, 2026-10-26)
 - Vorgabe: `docs/epochen-spec.md` (Spieler-Hilfetext des Nutzers, Zahlen und Regeln verbindlich).
 - Alle Zahlen der Vorgabe stehen in `config.js` (`epochen`, `merkmale`, `generationen`, `ursachen`, `wertverlust`, `grossprojekte`, `bestaende`, `bevoelkerung`, `problemObergrenze`); Lücken als `TODO-BALANCE` mit Startwert, noch nicht freigegeben.

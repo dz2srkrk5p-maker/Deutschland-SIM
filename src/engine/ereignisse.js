@@ -1,7 +1,7 @@
 import { config } from '../data/config.js';
 import { parteien } from '../data/parteien.js';
 import { ereignisse } from '../data/ereignisse.js';
-import { probleme } from '../data/probleme.js';
+import { problem } from './probleme.js';
 import { zufall } from './rng.js';
 import { umverteilen, runden } from './wahlkampf.js';
 import { mitVerlauf } from './state.js';
@@ -52,7 +52,7 @@ export function ereignisEntscheiden(zustand, { wahl }) {
     : basis;
   const teile = [
     ...Object.entries(f.parteien).map(([id, w]) => `${name(id)} ${zahl(w)}`),
-    ...Object.entries(f.probleme).map(([id, d]) => `${probleme.find((p) => p.id === id).name} ${zahl(d)}`),
+    ...Object.entries(f.probleme).map(([id, d]) => `${problem(id).name} ${zahl(d)}`),
   ];
   return { state, ereignisse: [`${e.titel}: „${e.moeglichkeiten[wahl].text}“${teile.length ? ` (${teile.join(', ')})` : ''}`] };
 }

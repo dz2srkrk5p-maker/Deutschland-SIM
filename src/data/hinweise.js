@@ -12,6 +12,7 @@ export const hinweise = {
   kabinett: 'Verteile die Ministerien. Jede Koalitionspartei bekommt so viele, wie ihr nach Sitzen zustehen. Wer ein Ministerium hält, gewinnt oder verliert später Umfragepunkte durch dessen Etat.',
   monat: `Ein Regierungsjahr hat ${config.regierung.monateJeJahr} Monate; in jedem kannst du bis zu ${config.probleme.aktionenJeMonat} Vorhaben starten (Lösungen oder Reformwege). Im Dezember stellst du den Haushalt auf.`,
   regierung: `Stelle den Haushalt für dieses Jahr auf, ohne die Schuldenbremse zu brechen; Kürzungen schaden der Partei, die das Ministerium hält. Liegt ein Partner mehr als ${zahl(config.spielende.koalitionsbruchPunkte * config.koalitionsbruch.ultimatumAnteil)} Punkte unter seinem Startwert, stellt er ein Ultimatum, und nach ${config.koalitionsbruch.fristMonate} Monaten über ${zahl(config.spielende.koalitionsbruchPunkte)} Punkten verlässt er die Koalition.`,
+  land: 'Etwa alle zehn Jahre beginnt eine neue Zeit. Eine Epoche bringt eigene Probleme mit, verteilt über die ersten Jahre, und macht eine Streitfrage laut. Höchstens zwei Epochen laufen gleichzeitig.',
   opposition: 'Ihr seid in der Opposition. Die Regierung der anderen beschließt Haushalt und Reformen; schaltet Monat für Monat weiter bis zur nächsten Bundestagswahl. Das ist das Ende der Wahlperiode oder eine Neuwahl, wenn die Koalition zerbricht.',
 };
 

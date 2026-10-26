@@ -1,4 +1,6 @@
 import './stil.css';
+import { titelseiteGelesen } from '../engine/epochen.js';
+import { landScreen } from './screens/land.js';
 import { neuesSpiel, seedAusAdresse, stufeAusAdresse, regierungImAmt, spielerRegiert } from '../engine/state.js';
 import { oppositionMonat } from '../engine/opposition.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
@@ -71,7 +73,7 @@ function zeichne() {
   const regiert = regierungImAmt(zustand);
   const ernst = regiert ? warnZahl(zustand) : 0;
   const eigene = spielerRegiert(zustand);
-  const badges = regiert ? { lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: eigene && haushaltsMonat(zustand) ? badge('fällig', 'gelb') : '' } : {};
+  const badges = regiert ? { land: zustand.epochen.titelseite ? badge('neu', 'gelb') : '', lage: zustand.offenesEreignis ? badge('Ereignis', 'gelb') : '', probleme: ernst ? badge(String(ernst), 'rot') : '', haushalt: eigene && haushaltsMonat(zustand) ? badge('fällig', 'gelb') : '' } : {};
   el.innerHTML = shellHtml(zustand, { aktiv: regiert ? ui.bereich : null, badges });
   el.querySelector('#meldung').innerHTML = meldungHtml(ui.meldung);
   menueBinden();
@@ -103,7 +105,7 @@ function zeichne() {
     // Richtungsprofil auf dem Dashboard (System 1)
     const zusatz = karte(`${profilHtml(richtungsprofil(zustand))}<div class="knoepfe"><button data-gehe="reformen">Zu den Reformen</button></div>`, { titel: 'Richtungsprofil' });
     const onProblem = (p) => (wechseln('probleme'), (ui.problem = p), zeichne(), fokusOben());
-    return lageScreen(a, zustand, { onWeiter: ausfuehren(eigene ? monatBeenden : oppositionMonat), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onBereich, onProblem, zusatz });
+    return lageScreen(a, zustand, { onWeiter: ausfuehren(eigene ? monatBeenden : oppositionMonat), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onTitelseite: ausfuehren(titelseiteGelesen), onBereich, onProblem, zusatz });
   }
   if (ui.bereich === 'reformen') {
     return reformenScreen(a, zustand, { auswahl: ui.reformBereich, onBeschliessen: ausfuehren(wegBeschliessen), onAuswahl: (b) => ((ui.reformBereich = b), zeichne(), fokusOben()) });
@@ -114,6 +116,13 @@ function zeichne() {
       onReformbereich: (b) => (wechseln('reformen'), (ui.reformBereich = b), zeichne(), fokusOben()),
       onAuswahl: (p) => ((ui.problem = p), zeichne(), fokusOben()),
       onFilter: (k) => ((ui.kategorie = k), zeichne(), fokusAuf(`[data-filter="${k ?? ''}"]`)),
+    });
+  }
+  if (ui.bereich === 'land') {
+    return landScreen(a, zustand, {
+      onTitelseite: ausfuehren(titelseiteGelesen),
+      onBereich: wechseln,
+      onProblem: (p) => (wechseln('probleme'), (ui.problem = p), zeichne(), fokusOben()),
     });
   }
   if (ui.bereich === 'haushalt') return haushaltScreen(a, zustand, { entwurf: ui.entwurf, onBeschliessen: ausfuehren(haushaltBeschliessen) });
@@ -208,7 +217,8 @@ const ausfuehren = (aktion) => (params) => {
     if (zustand.phase === 'koalition' || (zustand.phase === 'opposition' && vorher === 'wahlkampf')) ui.wahlabendGesehen = false;
   }
   if (aktion === haushaltBeschliessen) Object.assign(ui.entwurf, { stufen: {}, einnahmen: {}, ausgestaltung: {}, kompromiss: false, tab: 'ueberblick' });
-  ui.meldung = { texte: ergebnis.ereignisse, fehler: false };
+  // Aktionen ohne Ereignisse (Titelseite gelesen) lassen die letzte Meldung stehen
+  if (ergebnis.ereignisse.length || zustand.phase !== vorher) ui.meldung = { texte: ergebnis.ereignisse, fehler: false };
   zeichne();
   fokusOben();
   // Screenreader: nur den neuesten Eintrag ansagen. Erst leeren, damit auch ein gleicher Text erneut angesagt wird.

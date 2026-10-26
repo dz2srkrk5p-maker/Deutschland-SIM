@@ -1,5 +1,6 @@
 import { config } from '../data/config.js';
 import { probleme } from '../data/probleme.js';
+import { epochen } from '../data/epochen.js';
 import { parteien } from '../data/parteien.js';
 import { ministerien } from '../data/ministerien.js';
 import { etats2026 } from '../data/haushalt.js';
@@ -26,9 +27,13 @@ export const trendJeMonat = (x) => r3(x * anteil);
 const begrenzt = (x) => Math.max(0, Math.min(100, x));
 const name = (id) => parteien.find((p) => p.id === id).name;
 
-export const problem = (id) => probleme.find((p) => p.id === id);
+// Alle Problem-Daten: die 25 festen und die Epochenprobleme (Etappe 2). Im Spiel sind die festen immer da, Epochenprobleme
+// erst, wenn ihre Epoche sie bringt (Eintrag in zustand.probleme).
+export const alleProblemDaten = [...probleme, ...epochen.flatMap((e) => e.probleme)];
+export const problemDaten = (zustand) => alleProblemDaten.filter((p) => zustand.probleme[p.id]);
+export const problem = (id) => alleProblemDaten.find((p) => p.id === id);
 export function loesung(id) {
-  for (const p of probleme) {
+  for (const p of alleProblemDaten) {
     const l = p.loesungen.find((x) => x.id === id);
     if (l) return { ...l, problem: p };
   }
@@ -63,7 +68,7 @@ export const trend = (zustand, p) => r3(ursachen(zustand, p).reduce((s, u) => s 
 
 // Liste aller Probleme nach Wert: prominent (höchstens maxAktiv ab „angespannt“), sonst Beobachtung mit Frühwarnung
 export function problemListe(zustand) {
-  const liste = probleme
+  const liste = problemDaten(zustand)
     .map((p) => {
       const { wert, verlauf } = zustand.probleme[p.id];
       return { problem: p, wert, verlauf, stufe: stufeVon(wert), trend: trend(zustand, p) };
@@ -124,7 +129,7 @@ export function loesungStarten(zustand, { loesungId }) {
 
 // Folgen der Probleme für das Haushaltsjahr (Wirkung auf Kennzahlen und Gruppen) plus Wirkungen aus dem Jahr
 export function jahresFolgen(zustand) {
-  return wirkungSumme(zustand.jahresWirkung, ...probleme.map((p) => skaliert(p.folgen, stufeVon(zustand.probleme[p.id].wert).folgen)));
+  return wirkungSumme(zustand.jahresWirkung, ...problemDaten(zustand).map((p) => skaliert(p.folgen, stufeVon(zustand.probleme[p.id].wert).folgen)));
 }
 
 // Am Ende eines Monats: Werte entwickeln sich, Schocks, Eskalationen, fertige Lösungen, Wirkung auf die Kanzlerpartei.
@@ -138,7 +143,7 @@ export function problemeMonat(zustand) {
   };
   const ereignisse = [];
   const neu = {};
-  for (const p of probleme) {
+  for (const p of problemDaten(zustand)) {
     const alt = zustand.probleme[p.id];
     let w = alt.wert + trend(zustand, p) + (zieh() * 2 - 1) * pc.schwankung;
     if (p.schock && zieh() < chanceJeMonat(p.schock.chance)) {

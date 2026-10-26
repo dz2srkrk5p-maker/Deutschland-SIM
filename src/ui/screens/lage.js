@@ -20,6 +20,7 @@ import { bruchStufe, koalitionsWarnung, koalitionslageHtml } from '../components
 import { karte, kennzahl, status, zahl, plusMinus, balken, badge } from '../components/basis.js';
 import { wirtschaftsverlaufHtml } from '../components/wirtschaftsverlauf.js';
 import { zeitstrahlHtml } from '../components/zeitstrahl.js';
+import { titelseiteHtml } from '../components/epochen.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const STUFE_TEXT = { ok: 'stabil', gelb: 'angespannt', rot: 'vor dem Bruch' };
@@ -88,7 +89,7 @@ function koalitionHtml(zustand) {
     <div class="knoepfe">${knoepfe}</div>`;
 }
 
-export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onProblem, onZugestaendnis, zusatz = '' }) {
+export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onProblem, onZugestaendnis, onTitelseite, zusatz = '' }) {
   // Opposition (Etappe 0b): gleiche Lage, aber die Regierung der anderen; keine Ereignisse, keine eigenen Vorhaben
   const opposition = zustand.phase === 'opposition';
   const e = opposition ? null : offenesEreignis(zustand);
@@ -114,6 +115,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onPro
   el.innerHTML = `<div class="ansicht">
     <h1>Lage</h1>
     ${hinweisHtml(opposition ? 'opposition' : 'monat')}
+    ${titelseiteHtml(zustand)}
     ${e ? ereignisHtml(zustand, e) : ''}
     <div class="kennzahlen">
       ${kennzahl('Regierung', abstaende.length ? status(koalitionStufe, STUFE_TEXT[koalitionStufe]) : zustand.koalition.minderheit ? status('gelb', 'Minderheit') : status('ok', 'allein'),
@@ -138,6 +140,7 @@ export function lageScreen(el, zustand, { onWeiter, onEreignis, onBereich, onPro
   </div>`;
 
   el.querySelector('#weiter')?.addEventListener('click', () => onWeiter());
+  el.querySelector('#titelseite-gelesen')?.addEventListener('click', () => onTitelseite());
   el.querySelectorAll('[data-zugestaendnis]').forEach((k) => k.addEventListener('click', () => onZugestaendnis({ partnerId: k.dataset.zugestaendnis })));
   el.querySelectorAll('[data-wahl]').forEach((k) => k.addEventListener('click', () => onEreignis({ wahl: Number(k.dataset.wahl) })));
   el.querySelectorAll('[data-gehe]').forEach((k) => k.addEventListener('click', () => onBereich(k.dataset.gehe)));

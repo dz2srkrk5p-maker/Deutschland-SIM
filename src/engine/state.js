@@ -8,9 +8,10 @@ import { einnahmearten } from '../data/einnahmen.js';
 import { laender as laenderDaten } from '../data/laender.js';
 import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
+import { epochenStart, zeitpunkt } from './epochen.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 24; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 25; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -23,6 +24,7 @@ export const ZUSTAND_VERSION = 24; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 18: ketten { aktiv: [{ von, nach, staerke, faellig, tiefe }], zuletzt: { problemId: runde }, verlauf } (Krisenketten, Feature 8)
 // 23: jahr (Kalenderjahr); Partie ohne Ende: Phase opposition ist spielbar (Regierung der anderen), kein sieg mehr
 // 24: stufe (Spielstufe 1–4, vor Spielbeginn gewählt)
+// 25: epochen (laufende und vergangene Epochen, nächster Beginn, Titelseite)
 // 22: Monatstakt: monat (1–12) statt quartal, aktionenImMonat statt aktionenImQuartal; runde und alle Fristen in Monaten
 // 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
@@ -90,6 +92,7 @@ export function neuesSpiel(spielerParteiId, seed, stufe = config.spielstufen.sta
     kapital: config.kapital.start, // politisches Kapital 0–100
     statistik: { jahreKanzler: 0, regierungenGebildet: 0, besteWahl: null },
     stufe, // Spielstufe (Etappe 0c), bleibt die ganze Partie gleich
+    epochen: epochenStart(), // Epochen-Etappe 2
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
   };
@@ -208,6 +211,11 @@ const MIGRATIONEN = {
   },
   // Spielstufen: bisherige Partien laufen als Standardstufe (Fortgeschritten) weiter
   23: (z) => ({ ...z, version: 24, stufe: config.spielstufen.standard }),
+  // Epochen: die erste beginnt wie in neuen Partien, bei späteren Spielständen im nächsten Monat
+  24: (z) => {
+    const e = epochenStart();
+    return { ...z, version: 25, epochen: { ...e, naechste: Math.max(e.naechste, zeitpunkt(z.jahr, z.monat) + 1) } };
+  },
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

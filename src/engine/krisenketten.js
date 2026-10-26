@@ -4,11 +4,12 @@
 // Tiefe, Obergrenze gleichzeitig aktiver Glieder, Abklingzeit je auslösendem Problem. Spielwerte: config.krisenketten.
 import { config } from '../data/config.js';
 import { probleme } from '../data/probleme.js';
+import { problem } from './probleme.js';
 
 const kk = config.krisenketten;
 const krise = config.probleme.stufen.find((s) => s.id === 'krise').ab;
 const r1 = (x) => Math.round(x * 10) / 10 + 0;
-const name = (id) => probleme.find((p) => p.id === id).name;
+const name = (id) => problem(id).name;
 
 export const kettenStart = () => ({ aktiv: [], zuletzt: {}, verlauf: [] });
 
