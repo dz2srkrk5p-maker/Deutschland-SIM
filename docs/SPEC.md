@@ -121,6 +121,12 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Epochen – Konfiguration und Daten (Epochen-Etappe 1, 2026-10-26)
+- Vorgabe: `docs/epochen-spec.md` (Spieler-Hilfetext des Nutzers, Zahlen und Regeln verbindlich).
+- Alle Zahlen der Vorgabe stehen in `config.js` (`epochen`, `merkmale`, `generationen`, `ursachen`, `wertverlust`, `grossprojekte`, `bestaende`, `bevoelkerung`, `problemObergrenze`); Lücken als `TODO-BALANCE` mit Startwert, noch nicht freigegeben.
+- Inhalte als gekennzeichnete Platzhalter (`platzhalter: true`): `src/data/epochen.js` (2 Epochen mit je 1 Epochenproblem, Streitfrage und 3 Wegen), `src/data/merkmale.js` (6 Merkmale, eines je Weg), `src/data/grossprojekte.js` (Deutschlandtakt, Fernwasserverbund). Wege heißen nach den Ausrichtungen.
+- Noch ohne Wirkung im Spiel: Die Engine dazu kommt ab Etappe 2.
+
 ## System: Vorläufige Haushaltsführung für den Spieler (freigegeben 2026-10-26)
 - Ist der Haushalt festgefahren – schon der unveränderte Entwurf und auch der Kürzungsvorschlag (alle Ressorts bis zur größten erlaubten Kürzung, Partner zuerst) halten die Schuldenbremse nicht ein –, darf der Spieler ohne neuen Haushalt weitermachen: Der Vorjahreshaushalt gilt weiter, wie bei der Regierung der anderen.
 - Folge wie bei einem gescheiterten Haushalt einer Minderheitsregierung (Kanzlerpartei −0,5 Punkte, Wirtschaft mit dem alten Haushalt), zählt aber nicht als Fehlschlag bis zur Neuwahl.

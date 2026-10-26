@@ -51,4 +51,5 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | 0a | Monatstakt statt Quartale (Version 22) | fertig (2026-10-25) |
 | 0b | Partie ohne Ende, Opposition spielbar, Kalenderjahr (Version 23) | fertig (2026-10-25) |
 | 0c | Spielstufen 1–4 beim Spielstart (Version 24) | fertig (2026-10-25) |
-| 1–10 | Epochen, Wege, Merkmale, Ursachen, Generationen, Großprojekte, Bestände, Bevölkerung, UI | offen |
+| 1 | Konfiguration und Datenmodell (Platzhalter-Inhalte), Vorgabe in docs/epochen-spec.md | fertig (2026-10-26) |
+| 2–9 | Epochen-Kern, Weichen und Wege, Merkmale, Generationen/Ursachen/Wertverlust, Sozialbeiträge, Großprojekte, Bestände/Bevölkerung/Obergrenze, UI und Bilanz | offen |

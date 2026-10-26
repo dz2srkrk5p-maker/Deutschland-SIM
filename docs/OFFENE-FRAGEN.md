@@ -18,3 +18,6 @@
 - [x] Epochen-Etappe 0c: Der geteilte Link nimmt die Spielstufe mit (freigegeben und umgesetzt 2026-10-26).
 - [x] Festgefahrener Haushalt (2026-10-26): Der Spieler darf mit der vorläufigen Haushaltsführung weitermachen, wenn auch die größten Kürzungen die Schuldenbremse nicht einhalten (siehe SPEC).
 - [x] Schwierigkeitsanzeige der Parteien an BALANCING.md vom 2026-10-25 angepasst (2026-10-26). Gemessen mit nur 40 Partien je Fall; Linke, BSW und FDP sind unsicher.
+- [ ] Epochen-Etappe 1 (2026-10-26): Alle `TODO-BALANCE`-Werte in `config.js` (epochen, merkmale, grossprojekte, bevoelkerung) und alle Platzhalter-Inhalte (`src/data/epochen.js`, `merkmale.js`, `grossprojekte.js`) warten auf Entscheidung des Nutzers.
+- [ ] Epochen-Etappe 1: Die Platzhalter decken sechs der sieben Ausrichtungen ab; „links-sozialistisch“ hat noch keinen Weg. Welche zwei Wege bietet Stufe 1 an (bisher: die ersten zwei der Liste)?
+- [ ] Epochen-Etappe 1: Aufbaugesetze gibt es im Spiel noch nicht. Merkmale („drei passende Aufbaugesetze“) und Großprojekte („manche Aufbaugesetze starten“) verweisen vorerst auf vorhandene Reformwege und Lösungen. Welche Gesetze sollen Aufbaugesetze sein?

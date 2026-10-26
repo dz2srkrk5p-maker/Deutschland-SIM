@@ -18,6 +18,72 @@ export const config = {
   // Epochen-Systems mitspielen. Die Teile selbst kommen in späteren Etappen; bis dahin wirken nur die Schalter.
   // wegeJeWeiche: wie viele Wege eine Epochen-Weiche anbietet; ursachen/generationen/wertverlust/kurswechsel/
   // grossprojekte/bestaende/altersgruppen: System an oder aus; zweiterWeg: zweiter Weg statt Kurswechsel.
+  // Epochen-System (Etappe 1, 2026-10-26). Zahlen ohne Markierung stehen in docs/epochen-spec.md (verbindlich).
+  // TODO-BALANCE: Lücken der Spec mit Startwert und Begründung; erst nach Freigabe des Nutzers endgültig.
+  // Welche Teile auf welcher Spielstufe mitspielen: config.spielstufen. Inhalte: src/data/epochen.js, merkmale.js, grossprojekte.js.
+  epochen: {
+    abstandJahre: 10, // „etwa alle zehn Jahre beginnt eine neue Zeit“
+    abstandSchwankungJahre: 1, // TODO-BALANCE: „etwa“ – ±1 Jahr per Zufall, damit Epochen nicht im Kalender vorhersagbar sind
+    ersteEpocheJahr: 2027, // TODO-BALANCE: ein Jahr nach Spielbeginn, damit Wahlkampf und erste Regierung nicht überladen sind
+    maxGleichzeitig: 2, // „höchstens zwei Epochen laufen gleichzeitig“
+    problemeVerteiltMonate: 36, // TODO-BALANCE: „verteilt über die ersten Jahre“ – Epochenprobleme kommen in den ersten 3 Jahren
+    schwerpunktBonus: 0.1, // „Schwerpunkt-Ansätze wirken 10 % stärker“
+    aufschubMonate: 3, // „nach drei Monaten nimmt eure Partei den Weg, der zum Programm passt“
+    aufgabeErfuelltAb: 1, // TODO-BALANCE: Aufgabe gelingt bei 100 % Fortschritt am Ende der Epoche
+    rueckenwindStartFaktor: 0.8, // TODO-BALANCE: „Probleme starten leichter“ – Startwert der Epochenprobleme ×0,8
+    hypothekStartFaktor: 1.2, // TODO-BALANCE: spiegelbildlich zum Rückenwind, Startwert ×1,2
+    kurswechselJeEpoche: 1, // „einmal je Epoche“ (ab Stufe 3, siehe spielstufen)
+    kurswechselRueckenwindFaktor: 0.5, // „halbiert den Rückenwind“
+    kurswechselKostenlosMonate: 12, // „eine neue Regierung darf im ersten Jahr kostenlos wechseln“
+    kurswechselKapital: 25, // TODO-BALANCE: „kostet Zustimmung“ – wie die Revision eines Reformwegs (reformwege.revisionKapital)
+    kurswechselUmfrage: 0.5, // TODO-BALANCE: wie reformwege.revisionUmfrage, Punkte für die Kanzlerpartei
+    kurswechselGruppen: 2, // TODO-BALANCE: Gruppen, die der alte Weg begünstigt hat, verlieren so viele Punkte (Zustimmung = alles)
+    zweiterWegKostenFaktor: 1.5, // „die Schwerpunkt-Gesetze beider Wege kosten das 1,5-Fache“ (Stufe 4)
+  },
+  merkmale: {
+    max: 6, // „höchstens sechs“
+    aufbaugesetzeNoetig: 3, // „gelten drei passende Aufbaugesetze“
+    verblassenMonate: 24, // „verblasst über zwei Jahre“
+    verblassenKurve: 'linear', // TODO-BALANCE: Wirkung sinkt je Monat gleichmäßig von 100 % auf 0
+    ansatzBonus: 0.1, // TODO-BALANCE: „stärken passende Ansätze“ – gleiche Größe wie der Schwerpunkt-Bonus
+    gruppenJePunkt: 1, // TODO-BALANCE: „binden Gruppen“ – je Punkt in merkmale.js so viele Zustimmungspunkte je Jahr
+    problemTrendJePunkt: 0.05, // TODO-BALANCE: „bremsen Probleme“ – je Punkt so viel Trend je Monat (ein Fünftel eines mittleren Grundtrends)
+  },
+  generationen: {
+    altGesetzWirkung: 0.5, // „Gesetze gegen das alte Problem helfen zur Hälfte weiter“
+  },
+  ursachen: {
+    arten: ['geld', 'regeln', 'angebot'], // „Geld, Regeln oder Angebot“
+    gleicheUrsacheFaktor: 0.5, // „ein zweites mit derselben Ursache wirkt nur halb“
+  },
+  wertverlust: {
+    abJahr: 5, // „ab dem fünften Jahr“
+    jeJahr: 0.03, // „jedes Jahr 3 % Wirkung“
+    anpassungJeLegislatur: 1, // „einmal je Legislatur … mit einem Anpassungsgesetz“
+  },
+  grossprojekte: {
+    max: 2, // „höchstens zwei laufen gleichzeitig“
+    untersuchungAbUeberPlan: 0.3, // „liegt ein Projekt 30 % über Plan … Untersuchungsausschuss“
+    umbauKostenFaktor: 0.75, // „umbauen (ein Viertel billiger …)“
+    umbauVerzoegerungMonate: 12, // „… ein Jahr später“
+    kostensteigerungChance: 0.5, // TODO-BALANCE: „kann … teurer werden“ – jeder zweite Abschnitt
+    kostensteigerung: 0.15, // TODO-BALANCE: dann +15 % für den nächsten Abschnitt; zwei Steigerungen nacheinander reichen fast für den Ausschuss
+  },
+  bestaende: {
+    stufen: [40, 60, 70, 85], // „Stufen bei 40, 60, 70 und 85“
+  },
+  bevoelkerung: {
+    schrumpfendUnter: 80000000, // „sinkt die Bevölkerung drei Jahre in Folge unter 80 Millionen“
+    schrumpfendJahre: 3,
+    wachsendUeber: 84000000, // „wächst sie bis 2060 über 84 Millionen“
+    wachsendBisJahr: 2060,
+    spaltungAb: 70, // „eine Spaltung über 70“ treibt Auswanderung
+    altersgruppenVergleichJahr: 2029, // „Altersgruppen von heute gegen 2029“
+    auswanderungJeTreiber: 0.001, // TODO-BALANCE: je aktivem Treiber (hohe Abgaben, Spaltung, Heißzeit) 0,1 % der Bevölkerung je Jahr; Größenordnung vor Etappe 8 an Destatis prüfen
+  },
+  problemObergrenze: {
+    aktivMax: 26, // „neue Probleme kommen nach, solange weniger als 26 aktiv sind“; darüber jeden Monat das leichteste in den Hintergrund
+  },
   spielstufen: {
     standard: 2, // auch für Spielstände von vor Etappe 0c
     stufen: {
