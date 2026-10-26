@@ -1,21 +1,23 @@
 import { parteien } from '../../data/parteien.js';
 import { config } from '../../data/config.js';
 import { bereiche } from '../../data/reformwege.js';
-import { probleme } from '../../data/probleme.js';
 import { gruppen, kennzahlen } from '../../data/kennzahlen.js';
 import { ministerien } from '../../data/ministerien.js';
 import { einnahmearten } from '../../data/einnahmen.js';
 import { bereichStatus, wegVorschau, richtungsprofil, weg } from '../../engine/reformwege.js';
 import { mrd } from '../../engine/haushalt.js';
-import { trendJeMonat } from '../../engine/probleme.js';
+import { trendJeMonat, problem } from '../../engine/probleme.js';
 import { profilHtml } from '../components/profil.js';
 import { karte, badge, status, zahl, plusMinus, aufklapp } from '../components/basis.js';
 import { erklaerungen } from '../../data/hinweise.js';
 import { zeitstrahlHtml } from '../components/zeitstrahl.js';
+import { ursacheZeile, geldleistungenHtml } from '../components/ursachen.js';
+import { ursacheVon } from '../../engine/ursachen.js';
+import { systemAn } from '../../engine/spielstufe.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
 const gName = (id) => gruppen.find((g) => g.id === id)?.name ?? id;
-const pName = (id) => probleme.find((p) => p.id === id)?.name ?? id;
+const pName = (id) => problem(id)?.name ?? id;
 const kName = (id) => (id === 'gini' ? 'Gini' : kennzahlen.find((k) => k.id === id)?.name ?? id);
 const STATUS = { offen: ['offen', ''], umsetzung: ['in Umsetzung', 'gelb'], beschlossen: ['beschlossen', 'ok'], gescheitert: ['gescheitert', 'rot'] };
 const euro = (t) => `${zahl(mrd(Math.abs(t)), 1)} Mrd.`;
@@ -40,7 +42,7 @@ function wegKarte(zustand, w) {
   const einnahmen = Object.entries(w.einnahmen ?? {}).map(([id, b]) => `${einnahmearten.find((e) => e.id === id).name} ${b > 0 ? '+' : '−'}${euro(b)}`).join(', ');
   return `<article class="karte weg">
     <h3>${w.name} ${stand ? badge(...STATUS[stand.status]) : ''}</h3>
-    <p>${badge(v.ausrichtung)}${(zustand.koalition?.vertrag?.vorhaben ?? []).filter((x) => x.wegId === w.id).map((x) => ` ${badge(`Koalitionsvertrag (${partei(x.partei).name})${x.status === 'offen' ? '' : x.status === 'umgesetzt' ? ': erfüllt' : ': gebrochen'}`, x.status === 'gebrochen' ? 'rot' : 'ok')}`).join('')}${(zustand.koalition?.vertrag?.vorhaben ?? []).filter((x) => x.status === 'offen' && x.wegId !== w.id && weg(x.wegId).bereich.id === w.bereich.id && !w.braucht).map((x) => ` ${badge(`bricht den Koalitionsvertrag (${partei(x.partei).name})`, 'rot')}`).join('')}</p>
+    <p>${badge(v.ausrichtung)}${(zustand.koalition?.vertrag?.vorhaben ?? []).filter((x) => x.wegId === w.id).map((x) => ` ${badge(`Koalitionsvertrag (${partei(x.partei).name})${x.status === 'offen' ? '' : x.status === 'umgesetzt' ? ': erfüllt' : ': gebrochen'}`, x.status === 'gebrochen' ? 'rot' : 'ok')}`).join('')}${(zustand.koalition?.vertrag?.vorhaben ?? []).filter((x) => x.status === 'offen' && x.wegId !== w.id && weg(x.wegId).bereich.id === weg(w.id).bereich.id && !w.braucht).map((x) => ` ${badge(`bricht den Koalitionsvertrag (${partei(x.partei).name})`, 'rot')}`).join('')}</p>
     <p class="klein">${w.text}</p>
     ${profilHtml(v.vektor)}
     <table><tbody>
@@ -51,6 +53,7 @@ function wegKarte(zustand, w) {
       <tr><th scope="row">Gewinner</th><td>${v.gewinner.map(gName).join(', ') || '–'}</td></tr>
       <tr><th scope="row">Verlierer</th><td>${v.verlierer.map(gName).join(', ') || '–'}</td></tr>
       <tr><th scope="row">Dauer</th><td>${w.dauer} Monate</td></tr>
+      ${ursacheZeile(zustand, w.id, [...new Set([...Object.keys(w.lang?.trend ?? {}), ...Object.keys(w.lang?.probleme ?? {})])])}
       <tr><th scope="row">Risiko des Scheiterns</th><td>${Math.round(v.risiko * 100)} %${w.verfassung ? ' <span class="gelb">⚠ verfassungsrechtlich umstritten</span>' : ''}</td></tr>
       <tr><th scope="row">Politisches Kapital</th><td>${v.kapital}${v.revision ? ` <span class="gelb">(davon ${config.reformwege.revisionKapital} für den Kurswechsel)</span>` : ''}</td></tr>
       ${v.bonus ? `<tr><th scope="row">${partei(zustand.kanzlerParteiId).name}</th><td>${status('ok', `passt zur eigenen Linie, +${zahl(v.bonus, 2)} beim Beschluss`)}</td></tr>` : ''}
@@ -83,6 +86,7 @@ function dialogHtml(zustand, wegId, kompromiss = false) {
       <li>Risiko des Scheiterns: ${Math.round(v.risiko * 100)} %; politisches Kapital: ${v.kapital}</li>
       ${v.partner.filter((p) => p.unmut || p.veto).map((p) => `<li>${partei(p.id).name}: ${p.veto ? 'stimmt dagegen' : `Unmut −${zahl(p.unmut, 2)}`}</li>`).join('')}
     </ul>
+    ${ursacheVon(w.id) === 'geld' && systemAn(zustand, 'wertverlust') ? `<p><label><input type="checkbox" id="preisgekoppelt"> An die Preise koppeln: verliert keine Wirkung, kostet aber dauerhaft ${Math.round(config.wertverlust.preiskopplungAufschlag * 100)} % mehr</label></p>` : ''}
     <div class="knoepfe"><button class="primaer" data-beschliessen="${w.id}">Verbindlich beschließen</button><button data-abbrechen>Abbrechen</button></div>
   </dialog>`;
 }
@@ -90,6 +94,7 @@ function dialogHtml(zustand, wegId, kompromiss = false) {
 function uebersicht(zustand) {
   return `${karte(`${profilHtml(richtungsprofil(zustand))}<p class="klein">Aus allen Reformwegen in Umsetzung oder beschlossen. Es wirkt auf Wirtschaft, Koalition, Wählerstimmung, EU und Ereignisse.</p>`, { titel: 'Richtungsprofil des Landes' })}
     ${zeitstrahlHtml(zustand) ? karte(zeitstrahlHtml(zustand), { titel: 'Laufende Vorhaben' }) : ''}
+    ${geldleistungenHtml(zustand) ? karte(geldleistungenHtml(zustand), { titel: 'Geldleistungen' }) : ''}
     <div class="kennzahlen">${bereiche.map((b) => {
       const st = bereichStatus(zustand, b);
       const folge = b.wege.filter((w) => w.braucht && zustand.reformwege[w.braucht]?.status === 'beschlossen' && !zustand.reformwege[w.id]);
@@ -112,7 +117,7 @@ function detail(zustand, b) {
 }
 
 // Reformen (System 1): Übersicht der Bereiche, Vergleich der Wege, Bestätigung vor dem Beschluss
-export function reformenScreen(el, zustand, { auswahl, onAuswahl, onBeschliessen }) {
+export function reformenScreen(el, zustand, { auswahl, onAuswahl, onBeschliessen, onAnpassung }) {
   const b = bereiche.find((x) => x.id === auswahl);
   el.innerHTML = `<div class="ansicht">
     <h1>Reformen</h1>
@@ -122,12 +127,13 @@ export function reformenScreen(el, zustand, { auswahl, onAuswahl, onBeschliessen
   </div>`;
   el.querySelectorAll('[data-bereich-auswahl]').forEach((k) => k.addEventListener('click', () => onAuswahl(k.dataset.bereichAuswahl)));
   el.querySelector('#zurueck')?.addEventListener('click', () => onAuswahl(null));
+  el.querySelector('#anpassungsgesetz')?.addEventListener('click', () => onAnpassung());
   el.querySelectorAll('[data-waehlen]').forEach((k) => k.addEventListener('click', () => {
     const kompromiss = k.dataset.kompromiss === '1';
     el.querySelector('#dialog-platz').innerHTML = dialogHtml(zustand, k.dataset.waehlen, kompromiss);
     const d = el.querySelector('#weg-bestaetigen');
     d.querySelector('[data-abbrechen]').addEventListener('click', () => (d.close(), k.focus()));
-    d.querySelector('[data-beschliessen]').addEventListener('click', () => (d.close(), onBeschliessen({ wegId: k.dataset.waehlen, kompromiss })));
+    d.querySelector('[data-beschliessen]').addEventListener('click', () => (d.close(), onBeschliessen({ wegId: k.dataset.waehlen, kompromiss, preisgekoppelt: Boolean(d.querySelector('#preisgekoppelt')?.checked) })));
     d.showModal();
   }));
 }

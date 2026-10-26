@@ -1,6 +1,8 @@
 import { config } from '../data/config.js';
 import { probleme } from '../data/probleme.js';
 import { epochen } from '../data/epochen.js';
+import { generationen } from '../data/generationen.js';
+import { ergaenzungFaktor } from './ursachen.js';
 import { parteien } from '../data/parteien.js';
 import { ministerien } from '../data/ministerien.js';
 import { etats2026 } from '../data/haushalt.js';
@@ -31,8 +33,9 @@ const name = (id) => parteien.find((p) => p.id === id).name;
 
 // Alle Problem-Daten: die 25 festen und die Epochenprobleme (Etappe 2). Im Spiel sind die festen immer da, Epochenprobleme
 // erst, wenn ihre Epoche sie bringt (Eintrag in zustand.probleme).
-export const alleProblemDaten = [...probleme, ...epochen.flatMap((e) => e.probleme)];
-export const problemDaten = (zustand) => alleProblemDaten.filter((p) => zustand.probleme[p.id]);
+// Generationen (Etappe 5): abgelöste Probleme ruhen (Eintrag bleibt mit abgeloest), ihre Nachfolger kommen dazu.
+export const alleProblemDaten = [...probleme, ...epochen.flatMap((e) => e.probleme), ...generationen.map((g) => g.nach)];
+export const problemDaten = (zustand) => alleProblemDaten.filter((p) => zustand.probleme[p.id] && !zustand.probleme[p.id].abgeloest);
 export const problem = (id) => alleProblemDaten.find((p) => p.id === id);
 export function loesung(id) {
   for (const p of alleProblemDaten) {
@@ -148,7 +151,7 @@ export function problemeMonat(zustand) {
     return z.wert;
   };
   const ereignisse = [];
-  const neu = {};
+  const neu = { ...zustand.probleme }; // ruhende (abgelöste) Probleme bleiben unverändert
   for (const p of problemDaten(zustand)) {
     const alt = zustand.probleme[p.id];
     let w = alt.wert + trend(zustand, p) + (zieh() * 2 - 1) * pc.schwankung;
@@ -173,7 +176,8 @@ export function problemeMonat(zustand) {
     const l = loesung(id);
     const erfolg = zieh() < erfolgschance(zustand, l);
     // Schwerpunkt-Ansätze des gewählten Wegs einer Epoche wirken stärker (Etappe 3)
-    const wirkung = l.wirkung * ansatzFaktor(zustand, id);
+    // Ursachen (Etappe 5): ein zweiter Ansatz mit derselben Ursache gegen das Problem wirkt nur halb
+    const wirkung = l.wirkung * ansatzFaktor(zustand, id) * ergaenzungFaktor(zustand, l.problem.id, id);
     const senkung = Math.min(neu[l.problem.id].wert, erfolg ? wirkung : wirkung * pc.fehlschlagWirkung);
     neu[l.problem.id] = { ...neu[l.problem.id], wert: r2(neu[l.problem.id].wert - senkung) };
     loesungen[id] = { ...stand, status: erfolg ? 'erfolg' : 'gescheitert' };

@@ -2,6 +2,7 @@ import './stil.css';
 import { titelseiteGelesen } from '../engine/epochen.js';
 import { landScreen } from './screens/land.js';
 import { wegWaehlen, kurswechsel, zweiterWeg } from '../engine/weichen.js';
+import { anpassungsgesetz } from '../engine/ursachen.js';
 import { neuesSpiel, seedAusAdresse, stufeAusAdresse, regierungImAmt, spielerRegiert } from '../engine/state.js';
 import { oppositionMonat } from '../engine/opposition.js';
 import { wahlkampfWoche } from '../engine/wahlkampf.js';
@@ -109,7 +110,7 @@ function zeichne() {
     return lageScreen(a, zustand, { onWeiter: ausfuehren(eigene ? monatBeenden : oppositionMonat), onEreignis: ausfuehren(ereignisEntscheiden), onZugestaendnis: ausfuehren(zugestaendnis), onTitelseite: ausfuehren(titelseiteGelesen), onBereich, onProblem, zusatz });
   }
   if (ui.bereich === 'reformen') {
-    return reformenScreen(a, zustand, { auswahl: ui.reformBereich, onBeschliessen: ausfuehren(wegBeschliessen), onAuswahl: (b) => ((ui.reformBereich = b), zeichne(), fokusOben()) });
+    return reformenScreen(a, zustand, { auswahl: ui.reformBereich, onBeschliessen: ausfuehren(wegBeschliessen), onAnpassung: ausfuehren(anpassungsgesetz), onAuswahl: (b) => ((ui.reformBereich = b), zeichne(), fokusOben()) });
   }
   if (ui.bereich === 'probleme') {
     return problemeScreen(a, zustand, {

@@ -121,6 +121,13 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Generationen, Ursachen, Wertverlust (Epochen-Etappe 5, 2026-10-26)
+Alle drei erst ab Stufe 2 (`config.spielstufen`).
+- Generationen (`src/data/generationen.js`, Platzhalter: „Einsatzfähigkeit der Bundeswehr“ → „Verteidigung in Europa“): Liegt das alte Problem `ruhigMonate` (24) lang unter `ruhigUnter` (30) (beides TODO-BALANCE; die Spec sagt nicht, wann), löst die neue Generation es ab. Das alte Problem ruht (Wert eingefroren, nicht mehr in der Liste), die neue startet mit ihrem Startwert. Reformwege mit Trend gegen das alte Problem wirken mit 50 % auf das neue. Problemkarte: Abschnitt „Geschichte“ mit Stammbaum.
+- Ursachen (`src/data/ursachen.js`, Vorschlag zur Prüfung): jeder Reformweg und jede Lösung packt Geld, Regeln oder Angebot an (Zeile „Packt an“). Wirkt vorher schon ein Ansatz mit derselben Ursache gegen dasselbe Problem (Reformweg beschlossen, Lösung erfolgreich; Reihenfolge nach Fertigstellung), wirkt ein weiterer nur halb: Trends, Langwirkung und Lösungswirkung × 0,5. Der erste bleibt voll.
+- Wertverlust: Reformwege mit Ursache Geld (Geldleistungen; nur sie wirken dauerhaft) verlieren ab dem 5. Jahr seit Umsetzung bzw. letzter Anpassung je angefangenem Jahr 3 Prozentpunkte ihres Trends (linear, nicht unter 0). Preiskopplung beim Beschluss (Häkchen im Dialog): kein Wertverlust, aber laufende Kosten +10 % (TODO-BALANCE). Anpassungsgesetz (Reformen › Geldleistungen): einmal je Legislatur, 10 Kapital (TODO-BALANCE), ein Vorhaben des Monats; alle ungekoppelten Geldleistungen wirken wieder voll.
+- Spielstand-Version 28: `generationen`, `anpassungen`; Reformwege mit `preisgekoppelt`/`angepasst`.
+
 ## System: Merkmale und Landesprofil (Epochen-Etappe 4, 2026-10-26)
 - Vergabe zu Monatsbeginn: (a) am Ende einer Epoche für jeden Weg mit gelungener Aufgabe sein Merkmal; (b) sobald `aufbaugesetzeNoetig` (3) der tragenden Gesetze eines Merkmals gelten (Reformweg beschlossen; vorerst statt Aufbaugesetzen). Höchstens `max` (6) Merkmale, verblassende zählen mit; sonst Meldung „Kein Platz“.
 - Wirkung (TODO-BALANCE): passende Ansätze (`staerke.ansaetze`) ×(1 + 0,1), mit dem Schwerpunkt-Bonus multipliziert; Gruppen je Punkt 1 Zustimmung je Jahr (monatlich anteilig); Probleme je Punkt 0,05 Trend je Monat; Schwäche ebenso mit umgekehrter Wirkung.

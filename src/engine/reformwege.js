@@ -13,6 +13,13 @@ import { wirkungSumme, skaliert } from './wirtschaft.js';
 import { umfrageBuchen } from './umfragebilanz.js';
 import { vertragNachBeschluss } from './koalitionsvertrag.js';
 import { ansatzFaktor, schwerpunktKostenFaktor } from './weichen.js';
+import { ergaenzungFaktor, wertverlustFaktor, ursacheVon } from './ursachen.js';
+import { vorgaenger } from './generationen.js';
+import { systemAn } from './spielstufe.js';
+import { probleme as problemDaten } from '../data/probleme.js';
+import { generationen as generationenDaten } from '../data/generationen.js';
+
+const problemName = (id) => [...problemDaten, ...generationenDaten.map((g) => g.nach)].find((p) => p.id === id)?.name ?? id;
 import { vorschau } from './haushalt.js';
 
 // Reformwege (System 1): verbindliche Wegentscheidungen je Bereich mit politischer Ausrichtung.
@@ -65,7 +72,9 @@ export const partnerReaktionen = (zustand, w) => zustand.koalition.partner.map((
 });
 
 // Laufende Kosten (tausend €/Jahr) und Einnahmeeffekte der Wege in Umsetzung oder beschlossen
-export const wegKosten = (zustand) => Object.entries(zustand.reformwege ?? {}).filter(([, s]) => aktiv(s)).reduce((s, [id]) => s + weg(id).kosten, 0);
+// Preiskopplung (Etappe 5): an die Preise gekoppelte Geldleistungen kosten dauerhaft mehr
+export const wegKosten = (zustand) => Object.entries(zustand.reformwege ?? {}).filter(([, s]) => aktiv(s))
+  .reduce((summe, [id, s]) => summe + weg(id).kosten * (s.preisgekoppelt && weg(id).kosten > 0 ? 1 + config.wertverlust.preiskopplungAufschlag : 1), 0);
 export function wegEinnahmen(zustand) {
   const posten = {};
   for (const [id, s] of Object.entries(zustand.reformwege ?? {})) {
@@ -76,9 +85,23 @@ export function wegEinnahmen(zustand) {
 }
 
 // Dauerhafte Trends beschlossener Wege auf Probleme (für die Problem-Engine)
-export const wegTrends = (zustand, problemId) => Object.entries(zustand.reformwege ?? {})
-  .filter(([id, s]) => s.status === 'beschlossen' && weg(id).lang?.trend?.[problemId])
-  .map(([id]) => ({ text: `Reform: ${weg(id).name}`, beitrag: wegFuer(zustand, id).lang.trend[problemId] * ansatzFaktor(zustand, id) }));
+// Faktoren: Schwerpunkt und Merkmale (Etappe 3/4), Ergänzung nach Ursachen und Wertverlust von Geldleistungen (Etappe 5);
+// Gesetze gegen ein abgelöstes Vorgänger-Problem wirken zur Hälfte weiter (Generationen, Etappe 5)
+const trendText = (zustand, id, problemId, alt) => {
+  const zusatz = [
+    alt && `gegen „${problemName(alt)}“, ${Math.round(config.generationen.altGesetzWirkung * 100)} %`,
+    ergaenzungFaktor(zustand, problemId, id) < 1 && 'gleiche Ursache, halbe Wirkung',
+    wertverlustFaktor(zustand, id) < 1 && `Wertverlust, noch ${Math.round(wertverlustFaktor(zustand, id) * 100)} %`,
+  ].filter(Boolean);
+  return `Reform: ${weg(id).name}${zusatz.length ? ` (${zusatz.join('; ')})` : ''}`;
+};
+export const wegTrends = (zustand, problemId) => [problemId, ...vorgaenger(zustand, problemId)].flatMap((ziel) => Object.entries(zustand.reformwege ?? {})
+  .filter(([id, s]) => s.status === 'beschlossen' && weg(id).lang?.trend?.[ziel])
+  .map(([id]) => ({
+    text: trendText(zustand, id, ziel, ziel !== problemId ? ziel : null),
+    beitrag: wegFuer(zustand, id).lang.trend[ziel] * ansatzFaktor(zustand, id) * ergaenzungFaktor(zustand, ziel, id) * wertverlustFaktor(zustand, id)
+      * (ziel !== problemId ? config.generationen.altGesetzWirkung : 1),
+  })));
 // Kapital eines Wegs: auf Stufe 4 mit zwei Wegen einer Epoche kosten deren Schwerpunkt-Gesetze das 1,5-Fache (Etappe 3)
 const wegKapital = (zustand, w) => Math.round(w.kapital * schwerpunktKostenFaktor(zustand, w.id));
 
@@ -135,7 +158,7 @@ export function wegVorschau(zustand, wegId) {
 
 // Aktion: Weg verbindlich beschließen. Bundestag stimmt nach Inhalt ab. Angenommen: Kurzwirkung, Kosten laufen,
 // Umsetzung beginnt; ein vorher gewählter Weg im Bereich wird gegen Revisionskosten ersetzt.
-export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
+export function wegBeschliessen(zustand, { wegId, kompromiss = false, preisgekoppelt = false }) {
   const sperre = wegSperre(zustand, wegId, { kompromiss });
   if (sperre) throw new Error(`Reform nicht möglich: ${sperre.grund}`);
   const v = wegVorschau(zustand, wegId);
@@ -167,6 +190,8 @@ export function wegBeschliessen(zustand, { wegId, kompromiss = false }) {
   reformwege[w.id] = {
     status: 'umsetzung', fertig: zustand.runde + w.dauer, start: zustand.runde, bundestag: { ja: wahl.ja, nein: wahl.nein },
     bundesrat: v.bundesrat ? { ja: v.bundesrat.ja, noetig: v.bundesrat.noetig } : null, ...(alsKompromiss ? { kompromiss: true } : {}),
+    // Preiskopplung im Entwurf (Etappe 5): nur Geldleistungen, ab Stufe 2
+    ...(preisgekoppelt && ursacheVon(w.id) === 'geld' && systemAn(zustand, 'wertverlust') ? { preisgekoppelt: true } : {}),
   };
   // Koalitionsvertrag (Feature 7): erfüllt oder gebrochen
   const vertrag = vertragNachBeschluss(zustand, w.id);
@@ -239,12 +264,13 @@ export function reformwegeMonat(zustand) {
     reformwege[id] = { ...s, status: 'beschlossen' };
     probleme = { ...probleme };
     const f = ansatzFaktor(zustand, id); // Schwerpunkt eines Epochen-Wegs (Etappe 3)
-    for (const [pid, x] of Object.entries(w.lang?.probleme ?? {})) probleme[pid] = { ...probleme[pid], wert: Math.max(0, Math.min(100, Math.round((probleme[pid].wert + x * f) * 10) / 10)) };
+    const e = (pid) => ergaenzungFaktor(zustand, pid, id); // gleiche Ursache gegen dasselbe Problem: halbe Wirkung (Etappe 5)
+    for (const [pid, x] of Object.entries(w.lang?.probleme ?? {})) probleme[pid] = { ...probleme[pid], wert: Math.max(0, Math.min(100, Math.round((probleme[pid].wert + x * f * e(pid)) * 10) / 10)) };
     gruppen = { ...gruppen };
     for (const [g, x] of Object.entries(w.lang?.gruppen ?? {})) gruppen[g] = Math.max(0, Math.min(100, r2(gruppen[g] + x)));
     jahresWirkung = wirkungSumme(jahresWirkung, { ...w.lang, gruppen: {}, probleme: {} });
     // Erfolg wie bei Lösungen: Ressort und Regierung gewinnen je gesenktem Problempunkt
-    const senkung = Object.values(w.lang?.probleme ?? {}).reduce((sum, x) => sum + Math.max(0, -x * f), 0);
+    const senkung = Object.entries(w.lang?.probleme ?? {}).reduce((sum, [pid, x]) => sum + Math.max(0, -x * f * e(pid)), 0);
     const pc = config.probleme;
     const halter = zustand.kabinett.verteilung[w.bereich.ministerium];
     if (halter) dazu(halter, senkung * pc.gewinnJeWertpunkt, `Reform „${w.name}“ umgesetzt (zuständiges Ressort)`);

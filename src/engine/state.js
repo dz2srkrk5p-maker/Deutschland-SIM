@@ -12,7 +12,7 @@ import { epochenStart, zeitpunkt } from './epochen.js';
 import { epochen as epochenDaten } from '../data/epochen.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 27; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 28; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -28,6 +28,7 @@ export const ZUSTAND_VERSION = 27; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 25: epochen (laufende und vergangene Epochen, nächster Beginn, Titelseite)
 // 26: Wege der Epochen (epochen.folgen, aktiv[].wege/basis/startFaktor/kurswechsel), regierungSeit
 // 27: merkmale (Merkmale des Landes: id, seit, verblasst, getragen)
+// 28: generationen (Ablösungen von Problemen), anpassungen (Anpassungsgesetze der Legislatur); reformwege[].preisgekoppelt/angepasst
 // 22: Monatstakt: monat (1–12) statt quartal, aktionenImMonat statt aktionenImQuartal; runde und alle Fristen in Monaten
 // 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
@@ -98,6 +99,8 @@ export function neuesSpiel(spielerParteiId, seed, stufe = config.spielstufen.sta
     epochen: epochenStart(), // Epochen-Etappe 2
     regierungSeit: null, // Monat der Vereidigung der eigenen Regierung (Etappe 3)
     merkmale: [], // Merkmale des Landes (Etappe 4)
+    generationen: [], // Ablösungen: { von, nach, zeit } (Etappe 5)
+    anpassungen: 0, // Anpassungsgesetze in dieser Legislatur (Etappe 5)
     seed, // Start-Seed, bleibt unverändert: zum Teilen der Partie (F07)
     rngZustand: seed >>> 0,
   };
@@ -128,6 +131,7 @@ export function zurueckInDenWahlkampf(zustand) {
     monat: 1,
     aktionenImMonat: 0,
     ereignisseWahlperiode: [],
+    anpassungen: 0, // neue Legislatur: Anpassungsgesetz wieder möglich (Etappe 5)
   };
 }
 
@@ -232,6 +236,7 @@ const MIGRATIONEN = {
   }),
   // Merkmale: bisher keine (vergangene Epochen vergeben nachträglich nichts)
   26: (z) => ({ ...z, version: 27, merkmale: [] }),
+  27: (z) => ({ ...z, version: 28, generationen: [], anpassungen: 0 }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

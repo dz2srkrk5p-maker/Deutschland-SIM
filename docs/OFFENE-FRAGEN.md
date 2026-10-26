@@ -28,3 +28,5 @@
 - [x] (bestätigt 2026-10-26) Epochen-Etappe 3: Kostenloser Kurswechsel einer neuen Regierung zählt nicht als „der eine Kurswechsel je Epoche“; auf Stufe 4 gibt es ihn nicht (dort kein Kurswechsel). Richtig so?
 - [x] (bestätigt 2026-10-26) Epochen-Etappe 3: Mit zwei Wegen gilt die Epoche nur als gelungen, wenn beide Aufgaben gelingen. Oder reicht eine?
 - [ ] Epochen-Etappe 4 (2026-10-26): Merkmale entstehen auch durch drei geltende „tragende“ Reformwege, weil es Aufbaugesetze noch nicht gibt. Bei Merkmalen mit weniger als drei tragenden Gesetzen geht nur der Weg über die Aufgabe.
+- [ ] Epochen-Etappe 5 (2026-10-26): Zuordnung aller 111 Ansätze zu Geld/Regeln/Angebot in `src/data/ursachen.js` ist ein Vorschlag – bitte prüfen. Wann kehrt ein Problem als neue Generation zurück (bisher: 24 Monate unter 30)? Welche Generationenketten soll es geben (bisher nur das Beispiel der Spec)?
+- [ ] Epochen-Etappe 5: Wertverlust trifft nur Reformwege mit Ursache Geld (sie wirken dauerhaft); Lösungen wirken einmalig und verlieren daher nichts. Preiskopplung kostet +10 % laufende Kosten (Spec nennt keinen Preis).

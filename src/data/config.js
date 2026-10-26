@@ -59,6 +59,8 @@ export const config = {
   },
   generationen: {
     altGesetzWirkung: 0.5, // „Gesetze gegen das alte Problem helfen zur Hälfte weiter“
+    ruhigUnter: 30, // TODO-BALANCE: Wann kehrt ein Problem in neuer Gestalt zurück? Wenn das alte ruhigMonate lang unter diesem Wert lag
+    ruhigMonate: 24, // TODO-BALANCE: (also „gelöst“ war) – dann löst die neue Generation die alte ab
   },
   ursachen: {
     arten: ['geld', 'regeln', 'angebot'], // „Geld, Regeln oder Angebot“
@@ -68,6 +70,8 @@ export const config = {
     abJahr: 5, // „ab dem fünften Jahr“
     jeJahr: 0.03, // „jedes Jahr 3 % Wirkung“
     anpassungJeLegislatur: 1, // „einmal je Legislatur … mit einem Anpassungsgesetz“
+    anpassungKapital: 10, // TODO-BALANCE: Anpassungsgesetz kostet politisches Kapital und eines der Vorhaben des Monats
+    preiskopplungAufschlag: 0.1, // TODO-BALANCE: An die Preise gekoppelte Geldleistungen kosten dauerhaft 10 % mehr (sie steigen mit)
   },
   grossprojekte: {
     max: 2, // „höchstens zwei laufen gleichzeitig“

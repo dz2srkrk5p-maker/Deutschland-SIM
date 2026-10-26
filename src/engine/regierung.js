@@ -7,7 +7,8 @@ import { koalitionPruefen } from './haushalt.js';
 import { verfahrenMonat } from './verfahren.js';
 import { landtagswahlenMonat } from './landtagswahlen.js';
 import { zurueckInDenWahlkampf } from './state.js';
-import { epochenMonat } from './epochen.js';
+import { epochenMonat, zeitpunkt } from './epochen.js';
+import { generationenMonat } from './generationen.js';
 
 const letzter = config.regierung.monateJeJahr;
 
@@ -25,10 +26,12 @@ export function monatsabschluss(zustand) {
   const lage = koalitionPruefen(land.state);
   // Epochen (Etappe 2): für den Monat, der jetzt beginnt (nach dem Dezember Januar des nächsten Jahres)
   const dez = zustand.monat === letzter;
-  const zeit = epochenMonat(lage.state, dez ? zustand.jahr + 1 : zustand.jahr, dez ? 1 : zustand.monat + 1);
+  const [jahr, monat] = dez ? [zustand.jahr + 1, 1] : [zustand.jahr, zustand.monat + 1];
+  const zeit = epochenMonat(lage.state, jahr, monat);
+  const gen = generationenMonat(zeit.state, zeitpunkt(jahr, monat)); // Generationen (Etappe 5)
   return {
-    state: zeit.state, neuwahl: lage.neuwahl,
-    ereignisse: [...entwicklung.ereignisse, ...umsetzung.ereignisse, ...urteile.ereignisse, ...land.ereignisse, ...lage.ereignisse, ...zeit.ereignisse],
+    state: gen.state, neuwahl: lage.neuwahl,
+    ereignisse: [...entwicklung.ereignisse, ...umsetzung.ereignisse, ...urteile.ereignisse, ...land.ereignisse, ...lage.ereignisse, ...zeit.ereignisse, ...gen.ereignisse],
   };
 }
 

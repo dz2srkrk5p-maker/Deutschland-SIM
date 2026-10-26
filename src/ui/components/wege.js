@@ -44,7 +44,7 @@ export function wegeHtml(zustand, a) {
     const rest = Math.max(0, a.start + ec.aufschubMonate - (zustand.jahr * 12 + zustand.monat - 1));
     return `<h3>Weiche: Welchen Weg geht euer Land?</h3>
       <p class="klein">${eigene ? `Ihr könnt die Wahl aufschieben. ${rest > 0 ? `In ${rest} ${rest === 1 ? 'Monat' : 'Monaten'}` : 'Mit dem nächsten Monat'} nimmt ${parteien.find((p) => p.id === zustand.spielerParteiId).name} den Weg, der zum Programm passt: „${passend.name}“.` : 'In der Opposition wählt die Regierung den Weg.'}</p>
-      <div class="wege">${angebot(zustand, a.id).map((w) => `<div class="weg">
+      <div class="epoche-wege">${angebot(zustand, a.id).map((w) => `<div class="epoche-weg">
         <h4>${w.name}</h4>${wegBeschreibungHtml(w)}
         ${eigene ? `<div class="knoepfe"><button class="primaer" data-weg="${w.id}" data-epoche="${a.id}">Diesen Weg gehen</button></div>` : ''}
       </div>`).join('')}</div>`;
@@ -55,7 +55,7 @@ export function wegeHtml(zustand, a) {
   const kwSperre = kw ? kurswechselSperre(zustand, a.id) : null;
   const zwSperre = zw ? zweiterWegSperre(zustand, a.id) : null;
   return `<h3>${wege.length > 1 ? 'Eure Wege' : 'Euer Weg'}</h3>
-    ${wege.map((id) => `<div class="weg">${aufgabeHtml(zustand, a, id)}<details><summary>Stärke, Schwäche, Schwerpunkt</summary>${wegBeschreibungHtml(wegDaten(id))}</details></div>`).join('')}
+    ${wege.map((id) => `<div class="epoche-weg">${aufgabeHtml(zustand, a, id)}<details><summary>Stärke, Schwäche, Schwerpunkt</summary>${wegBeschreibungHtml(wegDaten(id))}</details></div>`).join('')}
     ${kw ? `<h4>Kurswechsel</h4><p class="klein">${kurswechselFrei(zustand) ? 'Neue Regierung: Im ersten Jahr ist ein Wechsel kostenlos.' : `Einmal je Epoche. Kostet ${ec.kurswechselKapital} Kapital, ${String(ec.kurswechselUmfrage).replace('.', ',')} Umfragepunkte und Zustimmung der Gruppen, die vom bisherigen Weg profitieren; der Rückenwind halbiert sich.`}${kwSperre ? ` ${status('gelb', kwSperre)}` : ''}</p>
       <div class="knoepfe">${andere.map((w) => `<button data-kurswechsel="${w.id}" data-epoche="${a.id}" ${kwSperre ? 'disabled' : ''}>Wechseln zu „${w.name}“</button>`).join('')}</div>` : ''}
     ${zw ? `<h4>Zweiter Weg</h4><p class="klein">Beide Aufgaben zählen, beide Merkmale sind möglich; die Schwerpunkt-Gesetze beider Wege kosten das ${String(ec.zweiterWegKostenFaktor).replace('.', ',')}-Fache.${zwSperre ? ` ${status('gelb', zwSperre)}` : ''}</p>

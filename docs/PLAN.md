@@ -55,4 +55,5 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | 2 | Epochen-Kern: Beginn, Epochenprobleme, Streitfrage, Titelseite, Kopfzeile, Reiter „Euer Land“ (Version 25) | fertig (2026-10-26) |
 | 3 | Weichen, Wege, Aufgabe mit Fortschritt und Prognose, Rückenwind/Hypothek, Kurswechsel, zweiter Weg (Version 26) | fertig (2026-10-26) |
 | 4 | Merkmale und Landesprofil; Lösungen und Schwerpunkt-Wirkung für Epochenprobleme (Version 27) | fertig (2026-10-26) |
-| 5–9 | Generationen/Ursachen/Wertverlust, Sozialbeiträge, Großprojekte, Bestände/Bevölkerung/Obergrenze, UI und Bilanz | offen |
+| 5 | Generationen, Ursachen und Ergänzung, Wertverlust mit Preiskopplung und Anpassungsgesetz (Version 28) | fertig (2026-10-26) |
+| 6–9 | Sozialbeiträge, Großprojekte, Bestände/Bevölkerung/Obergrenze, UI und Bilanz | offen |

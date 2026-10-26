@@ -3,7 +3,8 @@ import { config } from '../../data/config.js';
 import { kategorien, probleme } from '../../data/probleme.js';
 import { ministerien } from '../../data/ministerien.js';
 import { achsen, gruppen, kennzahlen } from '../../data/kennzahlen.js';
-import { problemListe, ursachen, loesungSperre, erfolgschance, problem as problemVon } from '../../engine/probleme.js';
+import { problemListe, ursachen, loesungSperre, erfolgschance, loesungKapital, problem as problemVon } from '../../engine/probleme.js';
+import { ursacheZeile, geschichteHtml } from '../components/ursachen.js';
 import { mrd } from '../../engine/haushalt.js';
 import { bereiche } from '../../data/reformwege.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -79,7 +80,8 @@ function detail(zustand, id) {
         <tr><th scope="row">Erfolgschance</th><td>${Math.round(erfolgschance(zustand, l) * 100)} %</td></tr>
         <tr><th scope="row">Kosten</th><td>${l.kosten >= 0 ? `${zahl(mrd(l.kosten), 1)} Mrd. je Jahr` : `spart ${zahl(mrd(-l.kosten), 1)} Mrd. je Jahr`}</td></tr>
         <tr><th scope="row">Dauer</th><td>${l.dauer} Monate</td></tr>
-        <tr><th scope="row">Politisches Kapital</th><td>${l.kapital}</td></tr>
+        <tr><th scope="row">Politisches Kapital</th><td>${loesungKapital(zustand, l)}</td></tr>
+        ${ursacheZeile(zustand, l.id, [p.id])}
         ${l.nebenwirkung ? `<tr><th scope="row">Nebenwirkungen</th><td>${[
           ...['wachstum', 'inflation', 'gini'].filter((k) => l.nebenwirkung[k]).map((k) => `${kName(k)} ${plusMinus(l.nebenwirkung[k])}`),
           ...Object.entries(l.nebenwirkung.gruppen ?? {}).map(([g, v]) => `${gName(g)} ${plusMinus(v, 0)}`),
@@ -103,6 +105,7 @@ function detail(zustand, id) {
         ...['wachstum', 'inflation', 'arbeitslosigkeit', 'gini'].filter((k) => p.folgen[k]).map((k) => `${kName(k)} ${plusMinus(p.folgen[k])}`),
         ...Object.entries(p.folgen.gruppen ?? {}).map(([g, v]) => `${gName(g)} ${plusMinus(v, 0)}`),
       ].join(' · ') || 'keine'}.</p>`, { titel: 'Ursachen und Wechselwirkungen' })}
+    ${geschichteHtml(zustand, p.id) ? karte(geschichteHtml(zustand, p.id), { titel: 'Geschichte' }) : ''}
     ${karte(kettenHtml(zustand, p), { titel: 'Krisenketten' })}
     ${karte(loesungen, { titel: 'Lösungsoptionen' })}
     ${bereiche.some((b) => b.probleme.includes(p.id)) ? karte(`<p>Dauerhaft wirken Reformwege: ${bereiche.filter((b) => b.probleme.includes(p.id)).map((b) => `<button data-reformbereich="${b.id}">${b.name}</button>`).join(' ')}</p>
