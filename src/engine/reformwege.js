@@ -15,6 +15,7 @@ import { vertragNachBeschluss } from './koalitionsvertrag.js';
 import { ansatzFaktor, schwerpunktKostenFaktor } from './weichen.js';
 import { ergaenzungFaktor, wertverlustFaktor, ursacheVon } from './ursachen.js';
 import { vorgaenger } from './generationen.js';
+import { kasse } from './sozialbeitraege.js';
 import { systemAn } from './spielstufe.js';
 import { probleme as problemDaten } from '../data/probleme.js';
 import { generationen as generationenDaten } from '../data/generationen.js';
@@ -73,7 +74,8 @@ export const partnerReaktionen = (zustand, w) => zustand.koalition.partner.map((
 
 // Laufende Kosten (tausend €/Jahr) und Einnahmeeffekte der Wege in Umsetzung oder beschlossen
 // Preiskopplung (Etappe 5): an die Preise gekoppelte Geldleistungen kosten dauerhaft mehr
-export const wegKosten = (zustand) => Object.entries(zustand.reformwege ?? {}).filter(([, s]) => aktiv(s))
+// Wege, die eine Sozialversicherung bezahlt, laufen über Beiträge und nicht über den Bundeshaushalt (Etappe 6)
+export const wegKosten = (zustand) => Object.entries(zustand.reformwege ?? {}).filter(([id, s]) => aktiv(s) && !kasse(id))
   .reduce((summe, [id, s]) => summe + weg(id).kosten * (s.preisgekoppelt && weg(id).kosten > 0 ? 1 + config.wertverlust.preiskopplungAufschlag : 1), 0);
 export function wegEinnahmen(zustand) {
   const posten = {};
@@ -123,7 +125,7 @@ export function wegSperre(zustand, wegId, { kompromiss = false } = {}) {
   if (zustand.kapital < kapital) return { grund: `zu wenig politisches Kapital (${kapital} nötig)` };
   if (br && !br.mehrheit && !mitKompromiss) return { grund: 'keine Mehrheit im Bundesrat', kompromiss: kompromissMoeglich(br) };
   if (mitKompromiss && !kompromissMoeglich(br)) return { grund: `auch für einen Kompromiss fehlen zu viele Stimmen im Bundesrat (${br.noetig - br.ja})` };
-  if (w.haushalt) {
+  if (w.haushalt && !kasse(w.id)) {
     const b = vorschau(zustand, {}).bilanz;
     if (b.grenze - b.schuldenbremse < w.kosten) return { grund: 'kein Spielraum in der Schuldenbremse für die Kosten' };
   }

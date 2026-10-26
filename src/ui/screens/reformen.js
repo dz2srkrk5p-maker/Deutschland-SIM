@@ -13,6 +13,7 @@ import { erklaerungen } from '../../data/hinweise.js';
 import { zeitstrahlHtml } from '../components/zeitstrahl.js';
 import { ursacheZeile, geldleistungenHtml } from '../components/ursachen.js';
 import { ursacheVon } from '../../engine/ursachen.js';
+import { kasse } from '../../engine/sozialbeitraege.js';
 import { systemAn } from '../../engine/spielstufe.js';
 
 const partei = (id) => parteien.find((p) => p.id === id);
@@ -38,7 +39,8 @@ function wegKarte(zustand, w) {
   const v = wegVorschau(zustand, w.id);
   const stand = zustand.reformwege[w.id];
   const a = v.abstimmung;
-  const kosten = w.kosten ? `${w.kosten > 0 ? '' : 'spart '}${euro(w.kosten)} je Jahr` : 'keine';
+  // über Beiträge (Etappe 6): bezahlt eine Sozialversicherung, nicht der Bundeshaushalt
+  const kosten = (w.kosten ? `${w.kosten > 0 ? '' : 'spart '}${euro(w.kosten)} je Jahr` : 'keine') + (kasse(w.id) ? ` <span class="gelb">über Beiträge (${kasse(w.id)}), nicht im Bundeshaushalt</span>` : '');
   const einnahmen = Object.entries(w.einnahmen ?? {}).map(([id, b]) => `${einnahmearten.find((e) => e.id === id).name} ${b > 0 ? '+' : '−'}${euro(b)}`).join(', ');
   return `<article class="karte weg">
     <h3>${w.name} ${stand ? badge(...STATUS[stand.status]) : ''}</h3>
@@ -79,7 +81,7 @@ function dialogHtml(zustand, wegId, kompromiss = false) {
     <p>${badge(v.ausrichtung)} im Bereich ${w.bereich.name}. ${v.revision ? `<strong class="gelb">⚠ Kurswechsel: „${v.revision.name}“ wird zurückgenommen (Glaubwürdigkeit −${zahl(config.reformwege.revisionUmfrage, 1)}).</strong>` : 'Andere Wege in diesem Bereich sind danach nur mit hohem politischem Preis möglich.'}</p>
     <ul>
       <li>Bundestag: ${v.abstimmung.ja} Ja, ${v.abstimmung.nein} Nein – ${v.abstimmung.angenommen ? 'angenommen' : '<strong class="rot">abgelehnt (Kapital trotzdem teilweise verbraucht)</strong>'}</li>
-      <li>Kosten: ${w.kosten ? `${w.kosten > 0 ? '' : 'spart '}${euro(w.kosten)} je Jahr ab dem nächsten Haushalt` : 'keine laufenden Kosten'}</li>
+      <li>Kosten: ${kasse(w.id) ? `über Beiträge (${kasse(w.id)}): ${w.kosten > 0 ? '' : 'spart '}${euro(w.kosten)} je Jahr, nicht im Bundeshaushalt; ${w.kosten > 0 ? 'erhöht' : 'senkt'} den Druck bei „Steigende Sozialbeiträge“` : w.kosten ? `${w.kosten > 0 ? '' : 'spart '}${euro(w.kosten)} je Jahr ab dem nächsten Haushalt` : 'keine laufenden Kosten'}</li>
       <li>Sofort: ${wirkungText(w.kurz)}</li>
       <li>Nach ${w.dauer} Monaten: ${wirkungText(w.lang)}</li>
       ${v.bonus ? `<li>${partei(zustand.kanzlerParteiId).name}: +${zahl(v.bonus, 2)} (passt zur eigenen Linie)</li>` : ''}

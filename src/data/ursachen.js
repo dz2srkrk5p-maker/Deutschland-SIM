@@ -43,6 +43,7 @@ export const ursachen = {
   // Platzhalter (Epochen, Generationen)
   rw_uebergang: 'regeln', rw_beitragszahler: 'angebot', kz_programm: 'geld', kz_monitoring: 'regeln',
   ve_gemeinsam: 'regeln',
+  sb_bundeszuschuss: 'geld', sb_verwaltung: 'regeln',
 };
 
 export const ursachenNamen = { geld: 'Geld', regeln: 'Regeln', angebot: 'Angebot' };

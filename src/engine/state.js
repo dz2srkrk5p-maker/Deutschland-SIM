@@ -10,9 +10,10 @@ import { laenderStart } from './landtagswahlen.js';
 import { kettenStart } from './krisenketten.js';
 import { epochenStart, zeitpunkt } from './epochen.js';
 import { epochen as epochenDaten } from '../data/epochen.js';
+import { problemSozialbeitraege } from '../data/sozialbeitraege.js';
 
 // Erhöhen, sobald sich die Form des Zustands ändert, und in MIGRATIONEN einen Schritt von der alten Version ergänzen.
-export const ZUSTAND_VERSION = 28; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
+export const ZUSTAND_VERSION = 29; // 2: wahlergebnis, wahlkampfStart (F05); 3: seed (F07); 4: wahlkampfSerie (F08); 5: verlauf (F09);
 // 6: koalition.minderheit und koalition.fehlschlaege (F11); 7: quartal (F12);
 // 8: probleme, reformen, reformImQuartal (F13); 9: offenesEreignis, ereignisseWahlperiode (F14);
 // 10: land (Kennzahlen, Schulden, BIP), gruppen, kapital; 11: haushalt.einnahmen statt haushalt.steuern, land.preise;
@@ -29,6 +30,7 @@ export const ZUSTAND_VERSION = 28; // 2: wahlergebnis, wahlkampfStart (F05); 3: 
 // 26: Wege der Epochen (epochen.folgen, aktiv[].wege/basis/startFaktor/kurswechsel), regierungSeit
 // 27: merkmale (Merkmale des Landes: id, seit, verblasst, getragen)
 // 28: generationen (Ablösungen von Problemen), anpassungen (Anpassungsgesetze der Legislatur); reformwege[].preisgekoppelt/angepasst
+// 29: Problem „Steigende Sozialbeiträge“ (probleme.sozialbeitraege)
 // 22: Monatstakt: monat (1–12) statt quartal, aktionenImMonat statt aktionenImQuartal; runde und alle Fristen in Monaten
 // 21: haushalt.einnahmen.stufen und verfahren[].stufen in feinen Reglerschritten statt geeichten Stufen (× eichSchritt / schritt)
 // 20: reformwege[id].start, .bundestag { ja, nein }, .bundesrat { ja, noetig } | null; loesungen[id].start (Zeitstrahl);
@@ -237,6 +239,8 @@ const MIGRATIONEN = {
   // Merkmale: bisher keine (vergangene Epochen vergeben nachträglich nichts)
   26: (z) => ({ ...z, version: 27, merkmale: [] }),
   27: (z) => ({ ...z, version: 28, generationen: [], anpassungen: 0 }),
+  // Sozialbeiträge: das neue Problem beginnt mit seinem Startwert
+  28: (z) => ({ ...z, version: 29, probleme: { ...z.probleme, [problemSozialbeitraege.id]: { wert: problemSozialbeitraege.start, verlauf: [problemSozialbeitraege.start] } } }),
 };
 
 // Spielstand aus Text laden, ältere Versionen werden schrittweise migriert. Wirft bei kaputtem oder zu altem Spielstand

@@ -66,6 +66,10 @@ export const config = {
     arten: ['geld', 'regeln', 'angebot'], // „Geld, Regeln oder Angebot“
     gleicheUrsacheFaktor: 0.5, // „ein zweites mit derselben Ursache wirkt nur halb“
   },
+  sozialbeitraege: {
+    trendJeMrd: 0.01, // TODO-BALANCE: je Mrd. € jährlicher Kosten „über Beiträge“ steigt „Steigende Sozialbeiträge“ um so viel je Monat
+    entlastungJeAnsatz: 0.1, // TODO-BALANCE: je geltendem Ansatz mit mehr Einzahlern (Bürgerversicherung) sinkt es um so viel je Monat
+  },
   wertverlust: {
     abJahr: 5, // „ab dem fünften Jahr“
     jeJahr: 0.03, // „jedes Jahr 3 % Wirkung“

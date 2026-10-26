@@ -1,4 +1,5 @@
 import { hinweisHtml } from '../components/hinweis.js';
+import { beitragsLast } from '../../engine/sozialbeitraege.js';
 import { parteien } from '../../data/parteien.js';
 import { ministerien } from '../../data/ministerien.js';
 import { config } from '../../data/config.js';
@@ -226,7 +227,7 @@ export function haushaltScreen(el, zustand, { entwurf, onBeschliessen }) {
         <span>Allgemeine Finanzverwaltung</span><span>${euro(festeAusgaben2026.finanzverwaltung)}</span>
         <span>Kanzleramt und Verfassungsorgane</span><span>${euro(festeAusgaben2026.verfassungsorgane)}</span>
         ${b.reformen ? `<span>Laufende Lösungen und Reformen</span><span>${euro(b.reformen)}</span>` : ''}
-      </div>`, { titel: 'Feste Ausgaben' });
+      </div>${beitragsLast(zustand) ? `<p class="klein">Nicht im Bundeshaushalt, über Beiträge (Renten-, Kranken-, Pflegeversicherung): ${euro(beitragsLast(zustand))} je Jahr. Das treibt „Steigende Sozialbeiträge“.</p>` : ''}`, { titel: 'Feste Ausgaben' });
   }
 
   // Rechtsrisiko (Feature 3): kurzer Hinweis und Erklärung, Werte sind Spielwerte

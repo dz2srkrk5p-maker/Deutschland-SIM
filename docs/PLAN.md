@@ -56,4 +56,5 @@ Nach `../Anweisungen/11-meilensteine.md`, ohne Altcode: M12 (Paritätsprüfung) 
 | 3 | Weichen, Wege, Aufgabe mit Fortschritt und Prognose, Rückenwind/Hypothek, Kurswechsel, zweiter Weg (Version 26) | fertig (2026-10-26) |
 | 4 | Merkmale und Landesprofil; Lösungen und Schwerpunkt-Wirkung für Epochenprobleme (Version 27) | fertig (2026-10-26) |
 | 5 | Generationen, Ursachen und Ergänzung, Wertverlust mit Preiskopplung und Anpassungsgesetz (Version 28) | fertig (2026-10-26) |
-| 6–9 | Sozialbeiträge, Großprojekte, Bestände/Bevölkerung/Obergrenze, UI und Bilanz | offen |
+| 6 | Sozialbeiträge: über Beiträge statt Bundeshaushalt, Problem „Steigende Sozialbeiträge“ (Version 29) | fertig (2026-10-26) |
+| 7–9 | Großprojekte, Bestände/Bevölkerung/Obergrenze, UI und Bilanz | offen |

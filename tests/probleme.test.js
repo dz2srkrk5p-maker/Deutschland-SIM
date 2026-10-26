@@ -111,9 +111,11 @@ test('Lösung: Sperren, Kosten, Abschluss mit Erfolg oder Fehlschlag', () => {
 });
 
 test('Jahresfolgen: nur Probleme ab „angespannt“ wirken, Krise voll', () => {
-  const ruhig = jahresFolgen(mitWerten(regierung(), Object.fromEntries(probleme.map((p) => [p.id, 10]))));
+  // alle Probleme der Partie (25 feste und „Steigende Sozialbeiträge“, Etappe 6)
+  const alle = (w) => Object.fromEntries(Object.keys(regierung().probleme).map((id) => [id, w]));
+  const ruhig = jahresFolgen(mitWerten(regierung(), alle(10)));
   expect(ruhig.wachstum).toBe(0);
-  const krise = jahresFolgen(mitWerten(regierung(), { ...Object.fromEntries(probleme.map((p) => [p.id, 10])), rezession: 90 }));
+  const krise = jahresFolgen(mitWerten(regierung(), { ...alle(10), rezession: 90 }));
   expect(krise.wachstum).toBeCloseTo(-0.4);
   expect(stufeVon(90).id).toBe('krise');
 });

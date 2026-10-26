@@ -8,6 +8,7 @@ import { ursachen } from '../src/data/ursachen.js';
 import { generationen } from '../src/data/generationen.js';
 import { bereiche } from '../src/data/reformwege.js';
 import { probleme } from '../src/data/probleme.js';
+import { problemSozialbeitraege } from '../src/data/sozialbeitraege.js';
 import { epochen } from '../src/data/epochen.js';
 import { config } from '../src/data/config.js';
 import { ministerien } from '../src/data/ministerien.js';
@@ -19,7 +20,7 @@ const imAmt = (stufe = 2) => ({
 });
 
 test('Daten: jeder Ansatz hat genau eine bekannte Ursache', () => {
-  const ids = [...bereiche.flatMap((b) => b.wege.map((w) => w.id)), ...[...probleme, ...epochen.flatMap((e) => e.probleme), ...generationen.map((g) => g.nach)].flatMap((p) => p.loesungen.map((l) => l.id))];
+  const ids = [...bereiche.flatMap((b) => b.wege.map((w) => w.id)), ...[...probleme, problemSozialbeitraege, ...epochen.flatMap((e) => e.probleme), ...generationen.map((g) => g.nach)].flatMap((p) => p.loesungen.map((l) => l.id))];
   for (const id of ids) expect(config.ursachen.arten, id).toContain(ursachen[id]);
   expect(Object.keys(ursachen).sort()).toEqual([...ids].sort());
 });

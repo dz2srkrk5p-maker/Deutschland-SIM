@@ -3,6 +3,8 @@ import { probleme } from '../data/probleme.js';
 import { epochen } from '../data/epochen.js';
 import { generationen } from '../data/generationen.js';
 import { ergaenzungFaktor } from './ursachen.js';
+import { problemSozialbeitraege } from '../data/sozialbeitraege.js';
+import { beitragsTrends, kasse } from './sozialbeitraege.js';
 import { parteien } from '../data/parteien.js';
 import { ministerien } from '../data/ministerien.js';
 import { etats2026 } from '../data/haushalt.js';
@@ -34,7 +36,7 @@ const name = (id) => parteien.find((p) => p.id === id).name;
 // Alle Problem-Daten: die 25 festen und die Epochenprobleme (Etappe 2). Im Spiel sind die festen immer da, Epochenprobleme
 // erst, wenn ihre Epoche sie bringt (Eintrag in zustand.probleme).
 // Generationen (Etappe 5): abgelöste Probleme ruhen (Eintrag bleibt mit abgeloest), ihre Nachfolger kommen dazu.
-export const alleProblemDaten = [...probleme, ...epochen.flatMap((e) => e.probleme), ...generationen.map((g) => g.nach)];
+export const alleProblemDaten = [...probleme, problemSozialbeitraege, ...epochen.flatMap((e) => e.probleme), ...generationen.map((g) => g.nach)];
 export const problemDaten = (zustand) => alleProblemDaten.filter((p) => zustand.probleme[p.id] && !zustand.probleme[p.id].abgeloest);
 export const problem = (id) => alleProblemDaten.find((p) => p.id === id);
 export function loesung(id) {
@@ -45,7 +47,8 @@ export function loesung(id) {
   return null;
 }
 export const stufeVon = (wert) => [...pc.stufen].reverse().find((s) => wert >= s.ab);
-export const startProbleme = () => Object.fromEntries(probleme.map((p) => [p.id, { wert: p.start, verlauf: [p.start] }]));
+// die 25 festen Probleme und „Steigende Sozialbeiträge“ (Etappe 6) sind von Anfang an da
+export const startProbleme = () => Object.fromEntries([...probleme, problemSozialbeitraege].map((p) => [p.id, { wert: p.start, verlauf: [p.start] }]));
 
 // Ursachen: Beitrag jedes Treibers zum Trend je Monat (für die Detailansicht und den Monatsschritt). Die Daten sind je
 // Quartal geeicht; je Monat wirkt der Anteil config.zeit.anteilJeMonat.
@@ -68,7 +71,7 @@ export function ursachen(zustand, p) {
   }
   liste.push(...wegTrends(zustand, p.id));
   // Stärken und Schwächen der Wege einer Epoche sind schon je Monat angegeben (Etappe 3)
-  return [...liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) })), ...wegEpochenTrends(zustand, p.id), ...aufgabenTrends(zustand, p.id), ...merkmalTrends(zustand, p.id)];
+  return [...liste.map((u) => ({ ...u, beitrag: r3(u.beitrag * anteil) })), ...wegEpochenTrends(zustand, p.id), ...aufgabenTrends(zustand, p.id), ...merkmalTrends(zustand, p.id), ...beitragsTrends(zustand, p.id)];
 }
 export const trend = (zustand, p) => r3(ursachen(zustand, p).reduce((s, u) => s + u.beitrag, 0));
 
@@ -89,8 +92,9 @@ export function problemListe(zustand) {
 }
 
 // Laufende Kosten aller Lösungen, die laufen oder gewirkt haben (tausend €/Jahr; negativ = Einsparung)
+// Lösungen, die eine Sozialversicherung bezahlt (Etappe 6), laufen über Beiträge und nicht über den Bundeshaushalt
 export const laufendeKosten = (zustand) =>
-  Object.entries(zustand.loesungen).filter(([, l]) => l.status !== 'gescheitert').reduce((s, [id]) => s + loesung(id).kosten, 0);
+  Object.entries(zustand.loesungen).filter(([id, l]) => l.status !== 'gescheitert' && !kasse(id)).reduce((s, [id]) => s + loesung(id).kosten, 0);
 
 // Erfolgschance: Grundwert ± Passung zum Richtungsprofil (ein marktliberaler Staat setzt marktliberale Lösungen besser um)
 export function erfolgschance(zustand, l) {

@@ -121,6 +121,13 @@ Jede Regel hier ist vom Nutzer freigegeben (Datum dabei). Was hier nicht steht, 
 - Balancing (`docs/BALANCING.md`, 2026-10-22): CDU/CSU 28–62 % Siege je Wahlkampf-Strategie (vorher mit F11-Rohfassung 100 %), AfD 0 %. Wer ohne Not als Minderheit antritt, scheitert fast immer.
 - Nicht enthalten (bewusst): Duldung gegen Zugeständnisse, Misstrauensvotum, Vertrauensfrage, Minderheitskoalitionen aus mehreren Parteien.
 
+## System: Sozialbeiträge (Epochen-Etappe 6, 2026-10-26)
+- Neues Problem „Steigende Sozialbeiträge“ in jeder Partie (zusätzlich zu den 25; Start 45, Grundtrend 0,15, Treiber Demografie, Pflegenotstand, Rentenwelle; Folgen Wachstum, Arbeitnehmer, Unternehmen; zwei Platzhalter-Lösungen). Alle Werte Spielwerte.
+- Ansätze, die eine Sozialversicherung bezahlt (`src/data/sozialbeitraege.js`, Vorschlag zur Prüfung), stehen nicht im Bundeshaushalt: Ihre Kosten fehlen in den laufenden Kosten des Haushalts und in der Prüfung der Schuldenbremse. Im Entwurf steht „über Beiträge (Kasse)“.
+- Ihre jährlichen Kosten treiben das Problem: je Mrd. € `sozialbeitraege.trendJeMrd` (0,01, TODO-BALANCE) je Monat; Einsparungen der Kassen senken es. Jeder beschlossene Ansatz mit mehr Einzahlern (Bürgerversicherung Rente und Gesundheit) senkt es um `entlastungJeAnsatz` (0,1, TODO-BALANCE) je Monat.
+- Haushalt › Ausgaben zeigt die Summe über Beiträge.
+- Spielstand-Version 29: Problem `sozialbeitraege` mit Startwert.
+
 ## System: Generationen, Ursachen, Wertverlust (Epochen-Etappe 5, 2026-10-26)
 Alle drei erst ab Stufe 2 (`config.spielstufen`).
 - Generationen (`src/data/generationen.js`, Platzhalter: „Einsatzfähigkeit der Bundeswehr“ → „Verteidigung in Europa“): Liegt das alte Problem `ruhigMonate` (24) lang unter `ruhigUnter` (30) (beides TODO-BALANCE; die Spec sagt nicht, wann), löst die neue Generation es ab. Das alte Problem ruht (Wert eingefroren, nicht mehr in der Liste), die neue startet mit ihrem Startwert. Reformwege mit Trend gegen das alte Problem wirken mit 50 % auf das neue. Problemkarte: Abschnitt „Geschichte“ mit Stammbaum.

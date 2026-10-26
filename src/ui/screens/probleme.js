@@ -5,6 +5,7 @@ import { ministerien } from '../../data/ministerien.js';
 import { achsen, gruppen, kennzahlen } from '../../data/kennzahlen.js';
 import { problemListe, ursachen, loesungSperre, erfolgschance, loesungKapital, problem as problemVon } from '../../engine/probleme.js';
 import { ursacheZeile, geschichteHtml } from '../components/ursachen.js';
+import { kasse } from '../../engine/sozialbeitraege.js';
 import { mrd } from '../../engine/haushalt.js';
 import { bereiche } from '../../data/reformwege.js';
 import { erklaerungen } from '../../data/hinweise.js';
@@ -78,7 +79,7 @@ function detail(zustand, id) {
       <table><tbody>
         <tr><th scope="row">Wirkung bei Erfolg</th><td>−${l.wirkung} Punkte</td></tr>
         <tr><th scope="row">Erfolgschance</th><td>${Math.round(erfolgschance(zustand, l) * 100)} %</td></tr>
-        <tr><th scope="row">Kosten</th><td>${l.kosten >= 0 ? `${zahl(mrd(l.kosten), 1)} Mrd. je Jahr` : `spart ${zahl(mrd(-l.kosten), 1)} Mrd. je Jahr`}</td></tr>
+        <tr><th scope="row">Kosten</th><td>${l.kosten >= 0 ? `${zahl(mrd(l.kosten), 1)} Mrd. je Jahr` : `spart ${zahl(mrd(-l.kosten), 1)} Mrd. je Jahr`}${kasse(l.id) ? ` <span class="gelb">über Beiträge (${kasse(l.id)}), nicht im Bundeshaushalt</span>` : ''}</td></tr>
         <tr><th scope="row">Dauer</th><td>${l.dauer} Monate</td></tr>
         <tr><th scope="row">Politisches Kapital</th><td>${loesungKapital(zustand, l)}</td></tr>
         ${ursacheZeile(zustand, l.id, [p.id])}
